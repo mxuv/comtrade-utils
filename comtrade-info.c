@@ -1,8 +1,12 @@
 #include <stdio.h>
 
+#include "format.h"
+
+
 int main(int argc, char **argv)
 {
     FILE *fd;
+    cmtrd_cfg_body_t cfg_body;
 
     if (argc < 2) {
         fputs("No input file\n", stderr);
