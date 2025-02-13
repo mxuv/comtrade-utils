@@ -85,7 +85,7 @@ typedef struct {
 
 typedef struct {
     int day;
-    int mon
+    int mon;
     int year;
     int hour;
     int min;
