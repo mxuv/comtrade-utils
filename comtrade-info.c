@@ -7,31 +7,54 @@
 
 enum getstring_status
 {
-    gls_ok,
-    gls_empty,
-    gls_eof,
-    gls_err,
-    gls_overflow
+    gss_ok,
+    gss_empty,
+    gss_eof,
+    gss_err,
+    gss_overflow
 };
 
+/*  read string from file
+    return: string length, status
+*/
 int getstring(FILE *fd, char *buffer, int size, enum getstring_status *status)
 {
     int len = 0;
 
-    *status = gls_ok;
+    *status = gss_ok;
     fgets(buffer, size, fd);
     len = stringlen(buffer);
     if (len == 0)
-        *status = gls_empty;
+        *status = gss_empty;
     if (buffer[len-1] != '\n') {
         if (feof(fd))
-            *status = gls_eof;
+            *status = gss_eof;
         if (ferror(fd))
-            *status = gls_err;
+            *status = gss_err;
         if (len == size - 1)
-            *status = gls_overflow;
+            *status = gss_overflow;
     }
     return len;
+}
+
+int check_line_ending(char *str, int len)
+{
+    if (str[len-2] == '\r')
+        return 1;
+    else
+        return 0;
+}
+
+int get_line_param_count(char *str, int len)
+{
+    int count = 0;
+    while (len) {
+        if (*str == ',')
+            count++;
+        str++;
+        len--;
+    }
+    return count;
 }
 
 void read_header()
@@ -61,6 +84,15 @@ int main(int argc, char **argv)
         perror(argv[1]);
         return 1;
     }
+    int len, count;
+    len = getstring(fd, buffer, 4096, &status);
+    if (check_line_ending(buffer, len))
+        fputs("<CR><LF> OK\n", stdout);
+    else
+        fputs("NO <CR>\n", stdout);
+
+    count = get_line_param_count(buffer, len);
+    printf("Line have a %d parametrs\n", count);
     fclose(fd);
     return 0;
 } 
@@ -69,20 +101,20 @@ int main(int argc, char **argv)
 /*
     int len = getstring(fd, buffer, 4094, &status);
     switch (status) {
-    case gls_ok:
+    case gss_ok:
         printf(buffer);
         printf("%d\n", len);
         break;
-    case gls_empty:
+    case gss_empty:
         fputs("Empty string\n", stderr);
         break;
-    case gls_eof:
+    case gss_eof:
         fputs("End of file\n", stderr);
         break;
-    case gls_err:
+    case gss_err:
         perror(argv[1]);
         break;
-    case gls_overflow:
+    case gss_overflow:
         fputs("Buffer overflow\n", stderr);
         break;
     default:
