@@ -17,23 +17,24 @@ enum getstring_status
 /*  read string from file
     return: string length, status
 */
-int getstring(FILE *fd, char *buffer, int size, enum getstring_status *status)
+int getstring(FILE *fd, char *buffer, int bufsize,
+                enum getstring_status *status)
 {
     int len = 0;
 
     *status = gss_ok;
-    fgets(buffer, size, fd);
-    len = stringlen(buffer);
-    if (len == 0)
-        *status = gss_empty;
-    if (buffer[len-1] != '\n') {
-        if (feof(fd))
-            *status = gss_eof;
-        if (ferror(fd))
-            *status = gss_err;
-        if (len == size - 1)
-            *status = gss_overflow;
-    }
+    if (fgets(buffer, bufsize, fd)) {
+        len = stringlen(buffer);
+        if (buffer[len-1] != '\n') {
+            if (len == bufsize - 1)
+                *status  = gss_overflow;
+        }
+    } 
+    if (feof(fd))
+        *status = gss_eof;
+    if (ferror(fd))
+        *status = gss_err;
+
     return len;
 }
 
@@ -84,8 +85,7 @@ int get_param_index(const char *str, int param)
     while (param_curr != param) {
         if (match_char(*str, ','))
             param_curr++;
-        else
-            str++;
+        str++;
     }
     return str - p;
 }
@@ -94,19 +94,23 @@ void read_header()
 {
 }
 
-void analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_body)
+int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_body)
 {
     char buffer[STR_BUFSIZE];
     int strlen;
     enum getstring_status status;
+    while (getstring(fd, buffer, STR_BUFSIZE, &status))
+            printf(buffer);
+    printf("End of file\n");
+    return 0;
 }
 
 int main(int argc, char **argv)
 {
     FILE *fd;
-    enum getstring_status status;
-    char buffer[4096];
-    char str[64];
+    /* enum getstring_status status; */
+    /* char buffer[4096]; */
+    /* char str[64]; */
     cmtrd_cfg_body_t cfg_body;
 
     if (argc < 2) {
@@ -120,21 +124,26 @@ int main(int argc, char **argv)
         perror(argv[1]);
         return 1;
     }
-    int len, count;
-    len = getstring(fd, buffer, 4096, &status);
-    if (check_line_ending(buffer, len))
-        fputs("<CR><LF> OK\n", stdout);
-    else
-        fputs("NO <CR>\n", stdout);
 
-    count = get_line_param_count(buffer, len);
-    printf("Line have a %d parametrs\n", count);
-/*    for (int i = 0; i < count; i++) { */
-        int index = get_param_index(buffer, 2);
-        printf("Index of %d parameter is %d\n", 1, index);
-        extract_parameter_from_string(str, buffer + index);
-        printf("Parameter [%d]: %s\n", 2, str);
-/*    }*/
+    analyze_cfgfile(fd, &cfg_body);
+    /* int len, count; */
+    /* len = getstring(fd, buffer, 4096, &status); */
+    /* len = getstring(fd, buffer, 4096, &status); */
+    /* len = getstring(fd, buffer, 4096, &status); */
+    /* if (check_line_ending(buffer, len)) */
+    /*     fputs("<CR><LF> OK\n", stdout); */
+    /* else */
+    /*     fputs("NO <CR>\n", stdout); */
+    /*  */
+    /* count = get_line_param_count(buffer, len); */
+    /* count++; */
+    /* printf("Line have a %d parametrs\n", count); */
+    /* for (int i = 0; i < count; i++) {  */
+    /*     int index = get_param_index(buffer, i+1); */
+    /*     printf("Index of %d parameter is %d\n", i+1, index); */
+    /*     extract_parameter_from_string(str, buffer + index); */
+    /*     printf("Parameter [%d]: %s\n", i+1, str); */
+    /* } */
 
     fclose(fd);
     return 0;
