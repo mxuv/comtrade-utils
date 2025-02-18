@@ -1,6 +1,7 @@
 #ifndef _FORMAT_H_
 #define _FORMAT_H_
 
+/* Parametrs length */
 #define STATION_NAME_LEN            64
 #define REC_DEV_ID_LEN              64
 #define REV_YEAR_LEN                4
@@ -50,6 +51,44 @@
 
 #define TMQ_CODE_LEN                1
 #define LEAPSEC_LEN                 1 
+
+/* Parametrs count in line */
+#define CP_TT                       3
+
+#define CP_AN_1991                  10
+#define CP_AN_1999                  13
+
+#define CP_DN_1991                  3
+#define CP_DN_1999                  5
+
+#define CP_LF                       1
+
+#define CP NRATES                   1
+
+#define CP_SAMP                     2
+
+#define CP_DATE_TIME                2
+
+#define CP_TRIGG_DATE_TIME          2
+
+#define CP_FILETYPE                 1
+
+#define CP_TIMEMULT                 1
+
+#define CP_TIME_CODE                2
+#define CP_TMQ_CODE                 2
+
+/* Line error codes */
+#define LN_ERR_NOCR                 1<<0
+#define LN_ERR_EXTRA_SPACES         1<<1
+#define LN_ERR_TOO_MANY_PARAM       1<<2
+#define LN_ERR_TOO_FEW_PARAM        1<<3
+#define LN_ERR_INCORRECT_PARAM      1<<4
+
+#define LN_ERR_MSK                  (LN_ERR_NOCR | LN_ERR_EXTRA_SPACES |\
+                                    LN_ERR_TOO_MANY_PARAM |\
+                                    LN_ERR_TOO_FEW_PARAM |\
+                                    LN_ERR_INCORRECT_PARAM)
 
 enum scales_ind {none, primary, secondary};
 enum file_format {ascii, binary, binary32, float32};

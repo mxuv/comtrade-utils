@@ -97,14 +97,21 @@ void read_header()
 int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_body)
 {
     char buffer[STR_BUFSIZE];
-    int strlen;
+    int strlen, current_line;
     enum getstring_status status;
-    while (getstring(fd, buffer, STR_BUFSIZE, &status))
-            printf(buffer);
-    printf("End of file\n");
+
+    current_line = 0;
+    while (strlen = getstring(fd, buffer, STR_BUFSIZE, &status)) {
+
+    }
+
     return 0;
 }
 
+/* return codes:
+ * 0 - Ok
+ * 1 - file read error
+*/
 int main(int argc, char **argv)
 {
     FILE *fd;
