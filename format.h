@@ -133,6 +133,11 @@ typedef struct {
 } cmtrd_timestamp_t;
 
 typedef struct {
+    int ln;
+    int err;
+} cmtrd_err_t;
+
+typedef struct {
     char *station_name;
     char *rec_dev_id;
     int rev_year;
@@ -151,6 +156,8 @@ typedef struct {
     char *local_code;
     int tmp_code;
     int leapsec;
+    int errcount;
+    cmtrd_err_t *errors;
 } cmtrd_cfg_body_t;
 
 #endif

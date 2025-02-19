@@ -94,16 +94,37 @@ void read_header()
 {
 }
 
+enum analyze_cfg_state
+{
+    analyze_header,
+    analyze_tt,
+    analyze_ach,
+    analyze_dch,
+    analyze_lf,
+    analyze_nrates,
+    analyze_samp,
+    analyze_sdatetime,
+    analyze_trigdatetime,
+    analyze_filetype,
+    analyze_timemult,
+    analyze_timecode,
+    analyze_tmqcode
+}
+
 int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_body)
 {
     char buffer[STR_BUFSIZE];
-    int strlen, current_line;
+    int strlen, current_line, lines_in_file = 2;
     enum getstring_status status;
+    enum analyze_cfg_state next_state = analyze_header;
 
-    current_line = 0;
+
     while (strlen = getstring(fd, buffer, STR_BUFSIZE, &status)) {
-
     }
+    /* while (current_line < lines_in_file){ */
+    /*     strlen = getstring(fd, buffer, STR_BUFSIZE, &status); */
+    /*     if (status == gss_eof && (current_line + 1) != lines_in_file) */
+    /* } */
 
     return 0;
 }
