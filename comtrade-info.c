@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "strings.h"
 #include "format.h"
@@ -12,6 +13,23 @@ enum getstring_status
     gss_eof,
     gss_err,
     gss_overflow
+};
+
+enum analyze_cfg_state
+{
+    analyze_header,
+    analyze_tt,
+    analyze_ach,
+    analyze_dch,
+    analyze_lf,
+    analyze_nrates,
+    analyze_samp,
+    analyze_sdatetime,
+    analyze_trigdatetime,
+    analyze_filetype,
+    analyze_timemult,
+    analyze_timecode,
+    analyze_tmqcode
 };
 
 /*  read string from file
@@ -38,7 +56,7 @@ int getstring(FILE *fd, char *buffer, int bufsize,
     return len;
 }
 
-int check_line_ending(const char *str, int len)
+int is_line_ending_ok(const char *str, int len)
 {
     if (str[len-2] == '\r')
         return 1;
@@ -94,24 +112,44 @@ void read_header()
 {
 }
 
-enum analyze_cfg_state
+void add_error_field(cmtrd_cfg_body_t *cfg_rec)
 {
-    analyze_header,
-    analyze_tt,
-    analyze_ach,
-    analyze_dch,
-    analyze_lf,
-    analyze_nrates,
-    analyze_samp,
-    analyze_sdatetime,
-    analyze_trigdatetime,
-    analyze_filetype,
-    analyze_timemult,
-    analyze_timecode,
-    analyze_tmqcode
+    int i;
+    cmtrd_err_t *p;
+
+    p = malloc((cfg_rec->errcount + 1) * sizeof(cmtrd_err_t));
+    if (p == NULL)
+        exit(5);
+    for (i = 0; i < cfg_rec->errcount; i++)
+        *(p+i) = *(cfg_rec->errors+i);
+    free(cfg_rec->errors);
+    cfg_rec->errors = p;
+    cfg_rec->errcount++;
 }
 
-int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_body)
+void add_error_code(int line, int code, cmtrd_cfg_body_t *cfg_rec)
+{
+    int i;
+    cmtrd_err_t *p = cfg_rec->errors;
+
+    for (i = 0; i < cfg_rec->errcount; i++) {
+        if ((p+i)->ln == line) 
+            (p+i)->err |= code;
+        return;
+    }
+
+    add_error_field(cfg_rec);
+    (cfg_rec->errors+cfg_rec->errcount-1)->ln = line;
+    (cfg_rec->errors+cfg_rec->errcount-1)->err |= code;
+}
+
+/* Return values:
+ * 0-Ok
+ * 2-Unexcepted end of file
+ * 3-Read error
+ * 4-Buffer overflow
+*/
+int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
 {
     char buffer[STR_BUFSIZE];
     int strlen, current_line, lines_in_file = 2;
@@ -119,7 +157,10 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_body)
     enum analyze_cfg_state next_state = analyze_header;
 
 
-    while (strlen = getstring(fd, buffer, STR_BUFSIZE, &status)) {
+    while ((strlen = getstring(fd, buffer, STR_BUFSIZE, &status))) {
+        if (status)
+            return status;
+        /* if (!is_line_ending_ok(buffer, strlen)) */
     }
     /* while (current_line < lines_in_file){ */
     /*     strlen = getstring(fd, buffer, STR_BUFSIZE, &status); */
@@ -139,7 +180,7 @@ int main(int argc, char **argv)
     /* enum getstring_status status; */
     /* char buffer[4096]; */
     /* char str[64]; */
-    cmtrd_cfg_body_t cfg_body;
+    cmtrd_cfg_body_t cfg_rec;
 
     if (argc < 2) {
         fputs("No input file\n", stderr);
@@ -153,12 +194,12 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    analyze_cfgfile(fd, &cfg_body);
+    analyze_cfgfile(fd, &cfg_rec);
     /* int len, count; */
     /* len = getstring(fd, buffer, 4096, &status); */
     /* len = getstring(fd, buffer, 4096, &status); */
     /* len = getstring(fd, buffer, 4096, &status); */
-    /* if (check_line_ending(buffer, len)) */
+    /* if (is_line_ending_ok(buffer, len)) */
     /*     fputs("<CR><LF> OK\n", stdout); */
     /* else */
     /*     fputs("NO <CR>\n", stdout); */
