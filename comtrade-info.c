@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "strings.h"
 #include "format.h"
@@ -133,9 +134,10 @@ void add_error_code(int line, int code, cmtrd_cfg_body_t *cfg_rec)
     cmtrd_err_t *p = cfg_rec->errors;
 
     for (i = 0; i < cfg_rec->errcount; i++) {
-        if ((p+i)->ln == line) 
+        if ((p+i)->ln == line) { 
             (p+i)->err |= code;
-        return;
+            return;
+        }
     }
 
     add_error_field(cfg_rec);
@@ -170,6 +172,10 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
     return 0;
 }
 
+void cfg_record_init(cmtrd_cfg_body_t *cfg_rec)
+{
+    memset(cfg_rec, 0, sizeof(cmtrd_cfg_body_t));
+}
 /* return codes:
  * 0 - Ok
  * 1 - file read error
@@ -194,7 +200,15 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    analyze_cfgfile(fd, &cfg_rec);
+    cfg_record_init(&cfg_rec);
+    /* analyze_cfgfile(fd, &cfg_rec); */
+    printf("errcount = %d\n", cfg_rec.errcount);
+    add_error_code(1, 2, &cfg_rec);
+    printf("errcount = %d\n", cfg_rec.errcount);
+    add_error_code(2, 1, &cfg_rec);
+    printf("errcount = %d\n", cfg_rec.errcount);
+    printf("%d, %d\n", (cfg_rec.errors)->ln, (cfg_rec.errors)->err);
+    printf("%d, %d\n", (cfg_rec.errors+1)->ln, (cfg_rec.errors+1)->err);
     /* int len, count; */
     /* len = getstring(fd, buffer, 4096, &status); */
     /* len = getstring(fd, buffer, 4096, &status); */
