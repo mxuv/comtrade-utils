@@ -7,6 +7,8 @@
 
 #define STR_BUFSIZE             4096
 
+#define EXIT_MEMERR()           exit(5)
+
 enum getstring_status
 {
     gss_ok,
@@ -32,6 +34,19 @@ enum analyze_cfg_state
     analyze_timecode,
     analyze_tmqcode
 };
+
+int match_char(char ch, char patt)
+{
+    if (ch == patt)
+        return 1;
+    else
+        return 0;
+}
+
+/* int find_char_in_string(const char *str, int strlen, char c) */
+/* { */
+/*  */
+/* } */
 
 /*  read string from file
     return: string length, status
@@ -77,13 +92,6 @@ int get_line_param_count(const char *str, int len)
     return count;
 }
 
-int match_char(char ch, char patt)
-{
-    if (ch == patt)
-        return 1;
-    else
-        return 0;
-}
 
 void extract_parameter_from_string(char *buffer, const char *str)
 {
@@ -97,7 +105,7 @@ void extract_parameter_from_string(char *buffer, const char *str)
 
 int get_param_index(const char *str, int param)
 {
-    int param_curr = 1;
+    int param_curr = 0;
     const char *p;
 
     p = str;
@@ -109,8 +117,19 @@ int get_param_index(const char *str, int param)
     return str - p;
 }
 
-void read_header()
+int get_param_length(const char *str, int strlen, int param, int param_count)
 {
+    int index;
+
+    index = get_param_index(str, param);
+    if ((param + 1) == param_count) {
+        if (match_char(*(str+(strlen - 2)), '\r'))
+            return strlen - 2 - index;
+        else
+            return strlen - 1 - index;
+    }
+    else
+        return get_param_index(str, param + 1) - index - 1;
 }
 
 void add_error_field(cmtrd_cfg_body_t *cfg_rec)
@@ -120,7 +139,7 @@ void add_error_field(cmtrd_cfg_body_t *cfg_rec)
 
     p = malloc((cfg_rec->errcount + 1) * sizeof(cmtrd_err_t));
     if (p == NULL)
-        exit(5);
+        EXIT_MEMERR();
     for (i = 0; i < cfg_rec->errcount; i++)
         *(p+i) = *(cfg_rec->errors+i);
     free(cfg_rec->errors);
@@ -145,6 +164,19 @@ void add_error_code(int line, int code, cmtrd_cfg_body_t *cfg_rec)
     (cfg_rec->errors+cfg_rec->errcount-1)->err |= code;
 }
 
+void analyze_cfg_header(const char *str, int strlen, int param_count)
+{ 
+    int i;
+    int index;
+    char s[64];
+    for (i = 0; i < param_count; i++) {
+        index = get_param_index(str, i);
+        extract_parameter_from_string(s, str + index);
+        printf("parameter %d, value=%s, index=%d, Length=%d\n", i, s, index, get_param_length(str, strlen, i, param_count));
+
+    }
+}
+
 /* Return values:
  * 0-Ok
  * 2-Unexcepted end of file
@@ -154,16 +186,37 @@ void add_error_code(int line, int code, cmtrd_cfg_body_t *cfg_rec)
 int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
 {
     char buffer[STR_BUFSIZE];
-    int strlen, current_line, lines_in_file = 2;
+    int strlen, param_count, current_line, lines_in_file = 2;
     enum getstring_status status;
     enum analyze_cfg_state next_state = analyze_header;
 
-
+    current_line = 0;
     while ((strlen = getstring(fd, buffer, STR_BUFSIZE, &status))) {
         if (status)
             return status;
-        /* if (!is_line_ending_ok(buffer, strlen)) */
+        if (!is_line_ending_ok(buffer, strlen))
+            add_error_code(current_line, LN_ERR_NOCR, cfg_rec);
+        param_count = get_line_param_count(buffer, strlen);
+        switch (next_state) {
+        case analyze_header:
+            analyze_cfg_header(buffer, strlen, param_count + 1);
+            next_state++;
+            break;
+        default:
+            break;
+        }
     }
+
+
+
+
+
+
+
+
+
+
+
     /* while (current_line < lines_in_file){ */
     /*     strlen = getstring(fd, buffer, STR_BUFSIZE, &status); */
     /*     if (status == gss_eof && (current_line + 1) != lines_in_file) */
@@ -201,7 +254,7 @@ int main(int argc, char **argv)
     }
 
     cfg_record_init(&cfg_rec);
-    /* analyze_cfgfile(fd, &cfg_rec); */
+    analyze_cfgfile(fd, &cfg_rec);
     printf("errcount = %d\n", cfg_rec.errcount);
     add_error_code(1, 2, &cfg_rec);
     printf("errcount = %d\n", cfg_rec.errcount);
