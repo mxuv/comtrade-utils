@@ -1,57 +1,6 @@
 #ifndef _FORMAT_H_
 #define _FORMAT_H_
 
-/* Parametrs length */
-#define STATION_NAME_LEN            64
-#define REC_DEV_ID_LEN              64
-#define REV_YEAR_LEN                4
-
-#define TT_LEN                      6
-#define AN_LEN                      7
-#define DN_LEN                      7
-
-#define A_N_LEN                     6
-#define A_CH_ID_LEN                 128
-#define A_PH_LEN                    2
-#define A_CCBM_LEN                  64
-#define A_A_LEN                     32
-#define A_B_LEN                     32
-#define A_SKEW_LEN                  32
-#define A_MIN_LEN                   13
-#define A_MAX_LEN                   13
-#define A_PRIMARY_LEN               32
-#define A_SECONDARY_LEN             32
-#define A_PS_LEN                    2
-
-#define D_N_LEN                     A_N_LEN
-#define D_CH_ID_LEN                 A_CH_ID_LEN
-#define D_PH_LEN                    A_PH_LEN
-#define D_CCBM_LEN                  A_CCBM_LEN
-#define D_Y_LEN                     1
-
-#define LF_LEN                      32
-
-#define NRATES_LEN                  3
-#define SAMP_LEN                    32
-#define ENDSAMP_LEN                 32
-
-#define DAY_LEN                     2
-#define MON_LEN                     2
-#define YEAR_LEN                    4
-#define HOUR_LEN                    2
-#define SECONDS_M_LEN               9
-#define SECONDS_N_LEN               12
-
-#define FILE_TYPE_LEN               8
-
-#define TIMEMULT_LEN                32
-
-#define TIME_CODE_LEN               6
-#define LOCAL_CODE_LEN              6
-
-#define TMQ_CODE_LEN                1
-#define LEAPSEC_LEN                 1 
-
 /* Parametrs count in line */
 #define CP_TT                       3
 
@@ -77,6 +26,100 @@
 
 #define CP_TIME_CODE                2
 #define CP_TMQ_CODE                 2
+
+/* Parametrs length */
+#define STATION_NAME_LEN_MIN        0
+#define STATION_NAME_LEN_MAX        64
+#define REC_DEV_ID_LEN_MIN          0
+#define REC_DEV_ID_LEN_MAX          64
+#define REV_YEAR_LEN_MIN            4
+#define REV_YEAR_LEN_MAX            4
+
+#define TT_LEN_MIN                  1
+#define TT_LEN_MAX                  6
+#define AN_LEN_MIN                  2
+#define AN_LEN_MAX                  7
+#define DN_LEN_MAX                  2
+#define DN_LEN_MIN                  7
+
+#define A_N_LEN_MIN                 1
+#define A_N_LEN_MAX                 6
+#define A_CH_ID_LEN_MIN             1
+#define A_CH_ID_LEN_MAX             128
+#define A_PH_LEN_MIN                0
+#define A_PH_LEN_MAX                2
+#define A_CCBM_LEN_MIN              0
+#define A_CCBM_LEN_MAX              64
+#define A_UU_LEN_MIN                1
+#define A_UU_LEN_MAX                32
+#define A_A_LEN_MIN                 1
+#define A_A_LEN_MAX                 32
+#define A_B_LEN_MIN                 1
+#define A_B_LEN_MAX                 32
+#define A_SKEW_LEN_MIN              1
+#define A_SKEW_LEN_MAX              32
+#define A_MINSC_LEN_MIN             1
+#define A_MINSC_LEN_MAX             13
+#define A_MAXSC_LEN_MIN             1
+#define A_MAXSC_LEN_MAX             13
+#define A_PRIMARY_LEN_MIN           1
+#define A_PRIMARY_LEN_MAX           32
+#define A_SECONDARY_LEN_MIN         1
+#define A_SECONDARY_LEN_MAX         32
+#define A_PS_LEN_MIN                1
+#define A_PS_LEN_MAX                1
+
+#define D_N_LEN_MIN                 1
+#define D_N_LEN_MAX                 6
+#define D_CH_ID_LEN_MIN             1
+#define D_CH_ID_LEN_MAX             128
+#define D_PH_LEN_MIN                0
+#define D_PH_LEN_MAX                2
+#define D_CCBM_LEN_MIN              0
+#define D_CCBM_LEN_MAX              64
+#define D_Y_LEN_MIN                 1
+#define D_Y_LEN_MAX                 1
+
+#define LF_LEN_MIN                  0
+#define LF_LEN_MAX                  32
+
+#define NRATES_LEN_MIN              1
+#define NRATES_LEN_MAX              3
+#define SAMP_LEN_MIN                1
+#define SAMP_LEN_MAX                32
+#define ENDSAMP_LEN_MIN             1
+#define ENDSAMP_LEN_MAX             10
+
+#define DAY_LEN_MIN                 1
+#define DAY_LEN_MAX                 2
+#define MON_LEN_MIN                 1
+#define MON_LEN_MAX                 2
+#define YEAR_LEN_MIN                4
+#define YEAR_LEN_MAX                4
+#define HOUR_LEN_MIN                2
+#define HOUR_LEN_MAX                2
+#define MIN_LEN_MIN                 2
+#define MIN_LEN_MAX                 2
+#define SECONDS_M_LEN_MIN           9
+#define SECONDS_M_LEN_MAX           9
+#define SECONDS_N_LEN_MIN           12
+#define SECONDS_N_LEN_MIN           12
+
+#define FILE_TYPE_LEN_MIN           5
+#define FILE_TYPE_LEN_MAX           8
+
+#define TIMEMULT_LEN_MIN            1
+#define TIMEMULT_LEN_MAX            32
+
+#define TIME_CODE_LEN_MIN           1
+#define TIME_CODE_LEN_MAX           6
+#define LOCAL_CODE_LEN_MIN          1
+#define LOCAL_CODE_LEN_MAX          6
+
+#define TMQ_CODE_LEN_MIN            1
+#define TMQ_CODE_LEN_MAX            1
+#define LEAPSEC_LEN_MIN             1 
+#define LEAPSEC_LEN_MAX             1 
 
 /* Line error codes */
 #define LN_ERR_NOCR                 1<<0
