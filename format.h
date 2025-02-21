@@ -1,7 +1,7 @@
 #ifndef _FORMAT_H_
 #define _FORMAT_H_
 
-/* Parametrs count in line */
+/* Parameters count in line */
 #define CP_TT                       3
 
 #define CP_AN_1991                  10
@@ -27,7 +27,7 @@
 #define CP_TIME_CODE                2
 #define CP_TMQ_CODE                 2
 
-/* Parametrs length */
+/* Parameters length */
 #define STATION_NAME_LEN_MIN        0
 #define STATION_NAME_LEN_MAX        64
 #define REC_DEV_ID_LEN_MIN          0
@@ -120,6 +120,45 @@
 #define TMQ_CODE_LEN_MAX            1
 #define LEAPSEC_LEN_MIN             1 
 #define LEAPSEC_LEN_MAX             1 
+
+/* Minimum and maximum values of parameters */
+#define TT_VAL_MIN                  1
+#define TT_VAL_MAX                  999999
+#define AN_VAL_MIN                  0
+#define AN_VAL_MAX                  999999
+#define DN_VAL_MIN                  0
+#define DN_VAL_MAX                  999999
+
+#define A_N_VAL_MIN                 1
+#define A_N_VAL_MAX                 999999
+#define A_MINSC_VAL_MIN             -3.4028235E38
+#define A_MINSC_VAL_MAX             3.4028235E38
+#define A_MAXSC_VAL_MIN             -3.4028235E38
+#define A_MAXSC_VAL_MAX             3.4028235E38
+
+#define D_N_VAL_MIN                 1
+#define D_N_VAL_MAX                 999999
+#define D_Y_VAL_MIN                 0
+#define D_Y_VAL_MAX                 1
+
+#define NRATES_VAL_MIN              0
+#define NRATES_VAL_MAX              999
+#define ENDSAMP_VAL_MIN             1
+#define ENDSAMP_VAL_MAX             9999999999
+
+#define DAY_VAL_MIN                 1
+#define DAY_VAL_MAX                 31
+#define MON_VAL_MIN                 1
+#define MON_VAL_MAX                 12
+#define YEAR_VAL_MIN                1900
+#define YEAR_VAL_MAX                9999
+#define HOUR_VAL_MIN                0
+#define HOUR_VAL_MAX                23
+#define MIN_VAL_MIN                 0
+#define MIN_VAL_MAX                 59
+
+#define LEAPSEC_VAL_MIN             0 
+#define LEAPSEC_VAL_MAX             3 
 
 /* Line error codes */
 #define LN_ERR_NOCR                 1<<0
