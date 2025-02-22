@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "strings.h"
 #include "format.h"
@@ -92,7 +91,7 @@ int get_line_param_count(const char *str, int len)
     return count;
 }
 
-
+#if 0
 void extract_parameter_from_string(char *buffer, const char *str)
 {
     while ((*str != ',') && (*str != '\r')) {
@@ -101,6 +100,12 @@ void extract_parameter_from_string(char *buffer, const char *str)
         buffer++;
     }
     *buffer = 0;
+}
+#endif
+
+void get_param(char *dest, const char *str, int index, int len)
+{
+    stringcopy_c(dest, str+index, len);
 }
 
 int get_param_index(const char *str, int param)
@@ -170,9 +175,6 @@ void analyze_cfg_header(const char *str, int strlen, int param_count)
     int index;
     char s[64];
     for (i = 0; i < param_count; i++) {
-        index = get_param_index(str, i);
-        extract_parameter_from_string(s, str + index);
-        printf("parameter %d, value=%s, index=%d, Length=%d\n", i, s, index, get_param_length(str, strlen, i, param_count));
 
     }
 }
@@ -227,7 +229,13 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
 
 void cfg_record_init(cmtrd_cfg_body_t *cfg_rec)
 {
-    memset(cfg_rec, 0, sizeof(cmtrd_cfg_body_t));
+    char *p;
+    int i;
+
+    p = (char*)cfg_rec;
+    for (i = 0; i < sizeof(cmtrd_cfg_body_t); i++)
+        *(p + i) = 0;
+    /* memset(cfg_rec, 0, sizeof(cmtrd_cfg_body_t)); */
 }
 /* return codes:
  * 0 - Ok
