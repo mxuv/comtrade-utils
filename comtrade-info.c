@@ -145,6 +145,10 @@ void add_error_field(cmtrd_cfg_body_t *cfg_rec)
     p = malloc((cfg_rec->errcount + 1) * sizeof(cmtrd_err_t));
     if (p == NULL)
         EXIT_MEMERR();
+
+    (p+cfg_rec->errcount)->ln = 0;
+    (p+cfg_rec->errcount)->strerr = 0;
+    (p+cfg_rec->errcount)->paramerr = 0;
     for (i = 0; i < cfg_rec->errcount; i++)
         *(p+i) = *(cfg_rec->errors+i);
     free(cfg_rec->errors);
@@ -152,28 +156,41 @@ void add_error_field(cmtrd_cfg_body_t *cfg_rec)
     cfg_rec->errcount++;
 }
 
-void add_error_code(int line, int code, cmtrd_cfg_body_t *cfg_rec)
+void add_error_code(int line, int strcode, int paramcode,
+                    cmtrd_cfg_body_t *cfg_rec)
 {
     int i;
     cmtrd_err_t *p = cfg_rec->errors;
 
     for (i = 0; i < cfg_rec->errcount; i++) {
         if ((p+i)->ln == line) { 
-            (p+i)->err |= code;
+            (p+i)->strerr |= strcode;
+            (p+i)->paramerr |= paramcode;
             return;
         }
     }
 
     add_error_field(cfg_rec);
     (cfg_rec->errors+cfg_rec->errcount-1)->ln = line;
-    (cfg_rec->errors+cfg_rec->errcount-1)->err |= code;
+    (cfg_rec->errors+cfg_rec->errcount-1)->strerr |= strcode;
+    (cfg_rec->errors+cfg_rec->errcount-1)->paramerr |= paramcode;
 }
 
-void analyze_cfg_header(const char *str, int strlen, int param_count)
+int is_correct_param_length(int len, int min, int max)
+{
+    if (len >= min && len <= max)
+        return 1;
+    else
+        return 0;
+}
+
+int analyze_cfg_header(const char *str, int strlen, int param_count, 
+                        cmtrd_cfg_body_t *cfg_rec)
 { 
     int i;
     int index;
     char s[64];
+    int err = 0;
     for (i = 0; i < param_count; i++) {
 
     }
@@ -197,11 +214,11 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
         if (status)
             return status;
         if (!is_line_ending_ok(buffer, strlen))
-            add_error_code(current_line, LN_ERR_NOCR, cfg_rec);
+            add_error_code(current_line, LN_ERR_NOCR, 0, cfg_rec);
         param_count = get_line_param_count(buffer, strlen);
         switch (next_state) {
         case analyze_header:
-            analyze_cfg_header(buffer, strlen, param_count + 1);
+            analyze_cfg_header(buffer, strlen, param_count + 1, cfg_rec);
             next_state++;
             break;
         default:
@@ -264,12 +281,12 @@ int main(int argc, char **argv)
     cfg_record_init(&cfg_rec);
     analyze_cfgfile(fd, &cfg_rec);
     printf("errcount = %d\n", cfg_rec.errcount);
-    add_error_code(1, 2, &cfg_rec);
+    add_error_code(1, 2, 6, &cfg_rec);
     printf("errcount = %d\n", cfg_rec.errcount);
-    add_error_code(2, 1, &cfg_rec);
+    add_error_code(2, 1, 16, &cfg_rec);
     printf("errcount = %d\n", cfg_rec.errcount);
-    printf("%d, %d\n", (cfg_rec.errors)->ln, (cfg_rec.errors)->err);
-    printf("%d, %d\n", (cfg_rec.errors+1)->ln, (cfg_rec.errors+1)->err);
+    printf("%d, %d, %ld\n", (cfg_rec.errors)->ln, (cfg_rec.errors)->strerr,(cfg_rec.errors)->paramerr);
+    printf("%d, %d, %ld\n", (cfg_rec.errors + 1)->ln, (cfg_rec.errors + 1)->strerr,(cfg_rec.errors + 1)->paramerr);
     /* int len, count; */
     /* len = getstring(fd, buffer, 4096, &status); */
     /* len = getstring(fd, buffer, 4096, &status); */

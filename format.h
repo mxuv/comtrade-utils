@@ -28,12 +28,12 @@
 #define CP_TMQ_CODE                 2
 
 /* Parameters length */
-#define STATION_NAME_LEN_MIN        0
-#define STATION_NAME_LEN_MAX        64
-#define REC_DEV_ID_LEN_MIN          0
-#define REC_DEV_ID_LEN_MAX          64
-#define REV_YEAR_LEN_MIN            4
-#define REV_YEAR_LEN_MAX            4
+#define SNAME_LEN_MIN               0
+#define SNAME_LEN_MAX               64
+#define RECDEV_LEN_MIN              0
+#define RECDEV_LEN_MAX              64
+#define REVYEAR_LEN_MIN             4
+#define REVYEAR_LEN_MAX             4
 
 #define TT_LEN_MIN                  1
 #define TT_LEN_MAX                  6
@@ -161,16 +161,66 @@
 #define LEAPSEC_VAL_MAX             3 
 
 /* Line error codes */
-#define LN_ERR_NOCR                 1<<0
-#define LN_ERR_EXTRA_SPACES         1<<1
-#define LN_ERR_TOO_MANY_PARAM       1<<2
-#define LN_ERR_TOO_FEW_PARAM        1<<3
-#define LN_ERR_INCORRECT_PARAM      1<<4
+#define LN_ERR_NOCR                 0
+#define LN_ERR_EXTRA_SPACES         1
+#define LN_ERR_TOO_MANY_PARAM       2
+#define LN_ERR_TOO_FEW_PARAM        3
+#define LN_ERR_INCORRECT_PARAM      4
+#define LN_ERR_INCORRECT_PARAM_LEN  5
 
+/* Parameters error codes */
+#define PM_ERR_SNAME                0
+#define PM_ERR_REC_ID               1
+#define PM_ERR_YEAR                 2
+
+#define PM_ERR_TT                   3
+#define PM_ERR_TT_A                 4
+#define PM_ERR_TT_D                 5
+
+#define PM_ERR_AN                   6
+#define PM_ERR_CHID                 7
+#define PM_ERR_PH                   8
+#define PM_ERR_CCBM                 9
+#define PM_ERR_UU                   10
+#define PM_ERR_A                    11
+#define PM_ERR_B                    12
+#define PM_ERR_SKEW                 13
+#define PM_ERR_MIN                  14
+#define PM_ERR_MAX                  15
+#define PM_ERR_PRIM                 16
+#define PM_ERR_SEC                  17
+#define PM_ERR_PS                   18
+
+#define PM_ERR_DN                   19
+#define PM_ERR_Y                    20
+
+#define PM_ERR_LF                   21
+
+#define PM_ERR_NRATES               22
+#define PM_ERR_SAMP                 23
+#define PM_ERR_ENDSAMP              24
+
+#define PM_ERR_DAY                  25
+#define PM_ERR_MON                  26
+#define PM_ERR_YYYY                 27
+#define PM_ERR_HOUR                 28
+#define PM_ERR_MINUT                29
+#define PM_ERR_SECONDS              30
+#define PM_ERR_FILETYPE             31
+#define PM_ERR_TIMEMULT             32
+#define PM_ERR_TC                   33
+#define PM_ERR_LC                   34
+#define PM_ERR_TMQ                  35
+#define PM_ERR_LEAPSEC              36
+
+#define ERRCODE(x)                  (1<<x)
+
+#if 0
 #define LN_ERR_MSK                  (LN_ERR_NOCR | LN_ERR_EXTRA_SPACES |\
                                     LN_ERR_TOO_MANY_PARAM |\
                                     LN_ERR_TOO_FEW_PARAM |\
                                     LN_ERR_INCORRECT_PARAM)
+#endif
 
 enum scales_ind {none, primary, secondary};
 enum file_format {ascii, binary, binary32, float32};
@@ -216,7 +266,8 @@ typedef struct {
 
 typedef struct {
     int ln;
-    int err;
+    int strerr;
+    long int paramerr;
 } cmtrd_err_t;
 
 typedef struct {
