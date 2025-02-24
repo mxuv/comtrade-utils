@@ -34,6 +34,14 @@ enum analyze_cfg_state
     analyze_tmqcode
 };
 
+typedef struct
+{
+    const char *str;
+    int strlen;
+    int nstr;
+    int param_count;
+} cfgfile_string_t;
+
 int match_char(char ch, char patt)
 {
     if (ch == patt)
@@ -79,7 +87,7 @@ int is_line_ending_ok(const char *str, int len)
         return 0;
 }
 
-int get_line_param_count(const char *str, int len)
+int get_param_count(const char *str, int len)
 {
     int count = 0;
     while (len) {
@@ -137,6 +145,22 @@ int get_param_length(const char *str, int strlen, int param, int param_count)
         return get_param_index(str, param + 1) - index - 1;
 }
 
+void get_all_param_len(const char *str, int strlen, int param_count, int *len)
+{
+    int i;
+
+    for (i = 0; i < param_count; i++)
+        len[i] = get_param_length(str, strlen, i, param_count);
+}
+
+void get_all_param_index(const char *str, int param_count, int *index)
+{
+    int i;
+
+    for (i = 0; i < param_count; i++)
+        index[i] = get_param_index(str, i);
+}
+
 void add_error_field(cmtrd_cfg_body_t *cfg_rec)
 {
     int i;
@@ -184,17 +208,60 @@ int is_correct_param_length(int len, int min, int max)
         return 0;
 }
 
+char* add_str_item(const char *src, int length)
+{
+    char *str;
+
+    str  = malloc(sizeof(char) * length + 1);
+    if (str == NULL)
+        EXIT_MEMERR();
+
+    stringcopy_c(str, src, length);
+    return str;
+}
+
+int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
+{
+    int index[CP_HEADER];
+    int len[CP_HEADER];
+
+    get_all_param_index(cfg_str->str, cfg_str->param_count, index);
+    get_all_param_len(cfg_str->str, cfg_str->strlen, cfg_str->param_count, len);
+
+    if (cfg_str->param_count < CP_HEADER_MIN) {
+        add_error_code(cfg_str->nstr, LN_ERR_TOO_FEW_PARAM, 0, cfg_rec); 
+        return 1;
+    }
+    if (!is_correct_param_length(len[0], SNAME_LEN_MIN, SNAME_LEN_MAX))
+        add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
+                PM_ERR_SNAME, cfg_rec);
+    if (len[0])
+        cfg_rec->station_name = add_str_item(cfg_str->str+index[0], len[0]);
+    if (len[1])
+        cfg_rec->rec_dev_id = add_str_item(cfg_str->str+index[1], len[1]);
+
+    if (cfg_str->param_count < CP_HEADER) {
+        cfg_rec->rev_year = 1991;
+    } else {
+
+    }
+
+}
+
+#if 0
 int analyze_cfg_header(const char *str, int strlen, int param_count, 
                         cmtrd_cfg_body_t *cfg_rec)
 { 
     int i;
-    int index;
-    char s[64];
-    int err = 0;
+    int index[CP_HEADER];
+    int param_len[CP_HEADER];
+    char s[REVYEAR_LEN_MAX + 1];
     for (i = 0; i < param_count; i++) {
 
     }
+    index = get
 }
+#endif
 
 /* Return values:
  * 0-Ok
@@ -205,20 +272,22 @@ int analyze_cfg_header(const char *str, int strlen, int param_count,
 int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
 {
     char buffer[STR_BUFSIZE];
-    int strlen, param_count, current_line, lines_in_file = 2;
+    cfgfile_string_t cfg_str;
     enum getstring_status status;
     enum analyze_cfg_state next_state = analyze_header;
 
-    current_line = 0;
-    while ((strlen = getstring(fd, buffer, STR_BUFSIZE, &status))) {
+    cfg_str.nstr = 0;
+    while ((cfg_str.strlen = getstring(fd, buffer, STR_BUFSIZE, &status))) {
         if (status)
             return status;
-        if (!is_line_ending_ok(buffer, strlen))
-            add_error_code(current_line, LN_ERR_NOCR, 0, cfg_rec);
-        param_count = get_line_param_count(buffer, strlen);
+        if (!is_line_ending_ok(buffer, cfg_str.strlen))
+            add_error_code(cfg_str.nstr, LN_ERR_NOCR, 0, cfg_rec);
+
+        cfg_str.str = buffer;
+        cfg_str.param_count = get_param_count(buffer, cfg_str.strlen);
         switch (next_state) {
         case analyze_header:
-            analyze_cfg_header(buffer, strlen, param_count + 1, cfg_rec);
+            analyze_cfg_header(&cfg_str, cfg_rec);
             next_state++;
             break;
         default:
@@ -296,7 +365,7 @@ int main(int argc, char **argv)
     /* else */
     /*     fputs("NO <CR>\n", stdout); */
     /*  */
-    /* count = get_line_param_count(buffer, len); */
+    /* count = get_param_count(buffer, len); */
     /* count++; */
     /* printf("Line have a %d parametrs\n", count); */
     /* for (int i = 0; i < count; i++) {  */

@@ -2,6 +2,9 @@
 #define _FORMAT_H_
 
 /* Parameters count in line */
+#define CP_HEADER                   3                   
+#define CP_HEADER_MIN               2                   
+
 #define CP_TT                       3
 
 #define CP_AN_1991                  10
@@ -30,6 +33,7 @@
 /* Parameters length */
 #define SNAME_LEN_MIN               0
 #define SNAME_LEN_MAX               64
+
 #define RECDEV_LEN_MIN              0
 #define RECDEV_LEN_MAX              64
 #define REVYEAR_LEN_MIN             4
