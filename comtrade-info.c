@@ -44,6 +44,51 @@ typedef struct
     int param_count;
 } cfgfile_string_t;
 
+const char lnerrmsg0[] = "Missing symbol <CR>";
+const char lnerrmsg1[] = "Line contains extra spaces";
+const char lnerrmsg2[] = "Line contains too many parametrs";
+const char lnerrmsg3[] = "Line contains too few parametrs";
+const char lnerrmsg4[] = "Incorrect parameter";
+const char lnerrmsg5[] = "Incorrect parameter length"
+
+const char parammsg0[] = "Station name";
+const char parammsg1[] = "Recording device id";
+const char parammsg2[] = "Year of the standart revision";
+const char parammsg3[] = "Total channels count";
+const char parammsg4[] = "Analog channels count";
+const char parammsg5[] = "Binary channels count";
+const char parammsg6[] = "Channel number";
+const char parammsg7[] = "Channel id";
+const char parammsg8[] = "Phase id";
+const char parammsg9[] = "Circuit component";
+const char parammsg10[] = "Channel unit";
+const char parammsg11[] = "Channel multipler";
+const char parammsg12[] = "Channel offset";
+const char parammsg13[] = "Channel time skew";
+const char parammsg14[] = "Channel minimum data value";
+const char parammsg15[] = "Channel data value";
+const char parammsg16[] = "";
+const char parammsg17[] = "";
+const char parammsg18[] = "";
+const char parammsg19[] = "";
+const char parammsg20[] = "";
+const char parammsg21[] = "";
+const char parammsg22[] = "";
+const char parammsg23[] = "";
+const char parammsg24[] = "";
+const char parammsg25[] = "";
+const char parammsg26[] = "";
+const char parammsg27[] = "";
+const char parammsg28[] = "";
+const char parammsg29[] = "";
+const char parammsg30[] = "";
+const char parammsg31[] = "";
+const char parammsg32[] = "";
+const char parammsg33[] = "";
+const char parammsg34[] = "";
+const char parammsg35[] = "";
+const char parammsg36[] = "";
+
 int match_char(char ch, char patt)
 {
     if (ch == patt)
@@ -309,6 +354,15 @@ void cfg_record_init(cmtrd_cfg_body_t *cfg_rec)
     for (i = 0; i < sizeof(cmtrd_cfg_body_t); i++)
         *(p + i) = 0;
     /* memset(cfg_rec, 0, sizeof(cmtrd_cfg_body_t)); */
+}
+
+void print_errors(cmtrd_cfg_body_t *cfg_rec)
+{
+    int i;
+    
+    for (i = 0; i < cfg_rec->errcount; i++) {
+
+    }
 }
 /* return codes:
  * 0 - Ok
