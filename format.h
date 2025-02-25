@@ -126,6 +126,9 @@
 #define LEAPSEC_LEN_MAX             1 
 
 /* Minimum and maximum values of parameters */
+#define REV_YEAR_VAL_MIN            1991
+#define REV_YEAR_VAL_MAX            2013
+
 #define TT_VAL_MIN                  1
 #define TT_VAL_MAX                  999999
 #define AN_VAL_MIN                  0

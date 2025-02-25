@@ -8,6 +8,8 @@
 
 #define EXIT_MEMERR()           exit(5)
 
+#define IS_CORRECT_INTPARAM_VAL(a, b, c) is_correct_param_length(a, b, c)
+
 enum getstring_status
 {
     gss_ok,
@@ -188,16 +190,16 @@ void add_error_code(int line, int strcode, int paramcode,
 
     for (i = 0; i < cfg_rec->errcount; i++) {
         if ((p+i)->ln == line) { 
-            (p+i)->strerr |= strcode;
-            (p+i)->paramerr |= paramcode;
+            (p+i)->strerr |= ERRCODE(strcode);
+            (p+i)->paramerr |= ERRCODE(paramcode);
             return;
         }
     }
 
     add_error_field(cfg_rec);
     (cfg_rec->errors+cfg_rec->errcount-1)->ln = line;
-    (cfg_rec->errors+cfg_rec->errcount-1)->strerr |= strcode;
-    (cfg_rec->errors+cfg_rec->errcount-1)->paramerr |= paramcode;
+    (cfg_rec->errors+cfg_rec->errcount-1)->strerr |= ERRCODE(strcode);
+    (cfg_rec->errors+cfg_rec->errcount-1)->paramerr |= ERRCODE(paramcode);
 }
 
 int is_correct_param_length(int len, int min, int max)
@@ -224,6 +226,7 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
 {
     int index[CP_HEADER];
     int len[CP_HEADER];
+    char c[REVYEAR_LEN_MAX + 1];
 
     get_all_param_index(cfg_str->str, cfg_str->param_count, index);
     get_all_param_len(cfg_str->str, cfg_str->strlen, cfg_str->param_count, len);
@@ -235,33 +238,32 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
     if (!is_correct_param_length(len[0], SNAME_LEN_MIN, SNAME_LEN_MAX))
         add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
                 PM_ERR_SNAME, cfg_rec);
-    if (len[0])
-        cfg_rec->station_name = add_str_item(cfg_str->str+index[0], len[0]);
-    if (len[1])
-        cfg_rec->rec_dev_id = add_str_item(cfg_str->str+index[1], len[1]);
+
+    if (!is_correct_param_length(len[1], RECDEV_LEN_MIN, RECDEV_LEN_MAX))
+        add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
+                PM_ERR_REC_ID, cfg_rec);
+
+    cfg_rec->station_name = add_str_item(cfg_str->str+index[0], len[0]);
+    cfg_rec->rec_dev_id = add_str_item(cfg_str->str+index[1], len[1]);
 
     if (cfg_str->param_count < CP_HEADER) {
         cfg_rec->rev_year = 1991;
     } else {
-
+        if (!is_correct_param_length(len[2], REVYEAR_LEN_MIN, REVYEAR_LEN_MAX)) {
+            add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
+                    PM_ERR_YEAR, cfg_rec);
+            cfg_rec->rev_year = 1991;
+        } else {
+            stringcopy_c(c, cfg_str->str + index[2], len[2]);
+            cfg_rec->rev_year = atoi(c);
+            if (!IS_CORRECT_INTPARAM_VAL(cfg_rec->rev_year, REV_YEAR_VAL_MIN,
+                        REV_YEAR_VAL_MAX))
+                add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM,
+                        PM_ERR_YEAR, cfg_rec);
+        }
     }
-
+    return 0;
 }
-
-#if 0
-int analyze_cfg_header(const char *str, int strlen, int param_count, 
-                        cmtrd_cfg_body_t *cfg_rec)
-{ 
-    int i;
-    int index[CP_HEADER];
-    int param_len[CP_HEADER];
-    char s[REVYEAR_LEN_MAX + 1];
-    for (i = 0; i < param_count; i++) {
-
-    }
-    index = get
-}
-#endif
 
 /* Return values:
  * 0-Ok
@@ -284,7 +286,7 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
             add_error_code(cfg_str.nstr, LN_ERR_NOCR, 0, cfg_rec);
 
         cfg_str.str = buffer;
-        cfg_str.param_count = get_param_count(buffer, cfg_str.strlen);
+        cfg_str.param_count = get_param_count(buffer, cfg_str.strlen) + 1;
         switch (next_state) {
         case analyze_header:
             analyze_cfg_header(&cfg_str, cfg_rec);
@@ -294,21 +296,6 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
             break;
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-    /* while (current_line < lines_in_file){ */
-    /*     strlen = getstring(fd, buffer, STR_BUFSIZE, &status); */
-    /*     if (status == gss_eof && (current_line + 1) != lines_in_file) */
-    /* } */
 
     return 0;
 }
@@ -330,9 +317,6 @@ void cfg_record_init(cmtrd_cfg_body_t *cfg_rec)
 int main(int argc, char **argv)
 {
     FILE *fd;
-    /* enum getstring_status status; */
-    /* char buffer[4096]; */
-    /* char str[64]; */
     cmtrd_cfg_body_t cfg_rec;
 
     if (argc < 2) {
@@ -350,57 +334,11 @@ int main(int argc, char **argv)
     cfg_record_init(&cfg_rec);
     analyze_cfgfile(fd, &cfg_rec);
     printf("errcount = %d\n", cfg_rec.errcount);
-    add_error_code(1, 2, 6, &cfg_rec);
-    printf("errcount = %d\n", cfg_rec.errcount);
-    add_error_code(2, 1, 16, &cfg_rec);
-    printf("errcount = %d\n", cfg_rec.errcount);
-    printf("%d, %d, %ld\n", (cfg_rec.errors)->ln, (cfg_rec.errors)->strerr,(cfg_rec.errors)->paramerr);
-    printf("%d, %d, %ld\n", (cfg_rec.errors + 1)->ln, (cfg_rec.errors + 1)->strerr,(cfg_rec.errors + 1)->paramerr);
-    /* int len, count; */
-    /* len = getstring(fd, buffer, 4096, &status); */
-    /* len = getstring(fd, buffer, 4096, &status); */
-    /* len = getstring(fd, buffer, 4096, &status); */
-    /* if (is_line_ending_ok(buffer, len)) */
-    /*     fputs("<CR><LF> OK\n", stdout); */
-    /* else */
-    /*     fputs("NO <CR>\n", stdout); */
-    /*  */
-    /* count = get_param_count(buffer, len); */
-    /* count++; */
-    /* printf("Line have a %d parametrs\n", count); */
-    /* for (int i = 0; i < count; i++) {  */
-    /*     int index = get_param_index(buffer, i+1); */
-    /*     printf("Index of %d parameter is %d\n", i+1, index); */
-    /*     extract_parameter_from_string(str, buffer + index); */
-    /*     printf("Parameter [%d]: %s\n", i+1, str); */
-    /* } */
+    
+    printf("Station name: %s\n", cfg_rec.station_name);
+    printf("Recorder id: %s\n", cfg_rec.rec_dev_id);
+    printf("Format revision: %d\n", cfg_rec.rev_year);
 
     fclose(fd);
     return 0;
 } 
-
-
-/*
-    int len = getstring(fd, buffer, 4094, &status);
-    switch (status) {
-    case gss_ok:
-        printf(buffer);
-        printf("%d\n", len);
-        break;
-    case gss_empty:
-        fputs("Empty string\n", stderr);
-        break;
-    case gss_eof:
-        fputs("End of file\n", stderr);
-        break;
-    case gss_err:
-        perror(argv[1]);
-        break;
-    case gss_overflow:
-        fputs("Buffer overflow\n", stderr);
-        break;
-    default:
-        break;
-    }
-
-*/
