@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "strings.h"
+#include "strutils.h"
 #include "format.h"
 
 #define STR_BUFSIZE             4096
