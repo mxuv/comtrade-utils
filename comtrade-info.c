@@ -44,7 +44,7 @@ typedef struct
     int param_count;
 } cfgfile_string_t;
 
-const char lnerrmsg0[] = "Missing symbol <CR>";
+const char lnerrmsg0[] = "Missing symbol <CR> at end of line";
 const char lnerrmsg1[] = "Line contains extra spaces";
 const char lnerrmsg2[] = "Line contains too many parametrs";
 const char lnerrmsg3[] = "Line contains too few parametrs";
@@ -83,7 +83,7 @@ const char parammsg28[] = "Hour";
 const char parammsg29[] = "Minuts";
 const char parammsg30[] = "Seconds";
 const char parammsg31[] = "Data file type";
-const char parammsg32[] = "Time multiplicaation factor";
+const char parammsg32[] = "Time multiplication factor";
 const char parammsg33[] = "Time code";
 const char parammsg34[] = "Local time code";
 const char parammsg35[] = "Time quality code";
@@ -247,7 +247,8 @@ void add_error_code(int line, int strcode, int paramcode,
     for (i = 0; i < cfg_rec->errcount; i++) {
         if ((p+i)->ln == line) { 
             (p+i)->strerr |= ERRCODE(strcode);
-            (p+i)->paramerr |= ERRCODE(paramcode);
+            if (paramcode != ERRNULL)
+                (p+i)->paramerr |= ERRCODE(paramcode);
             return;
         }
     }
@@ -255,7 +256,8 @@ void add_error_code(int line, int strcode, int paramcode,
     add_error_field(cfg_rec);
     (cfg_rec->errors+cfg_rec->errcount-1)->ln = line;
     (cfg_rec->errors+cfg_rec->errcount-1)->strerr |= ERRCODE(strcode);
-    (cfg_rec->errors+cfg_rec->errcount-1)->paramerr |= ERRCODE(paramcode);
+    if (paramcode != ERRNULL)
+        (cfg_rec->errors+cfg_rec->errcount-1)->paramerr |= ERRCODE(paramcode);
 }
 
 int is_correct_param_length(int len, int min, int max)
@@ -281,14 +283,14 @@ char* add_str_item(const char *src, int length)
 int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
 {
     int index[CP_HEADER];
-    int len[CP_HEADER];
+    int len[SNAME_LEN_MAX];
     char c[REVYEAR_LEN_MAX + 1];
 
     get_all_param_index(cfg_str->str, cfg_str->param_count, index);
     get_all_param_len(cfg_str->str, cfg_str->strlen, cfg_str->param_count, len);
 
     if (cfg_str->param_count < CP_HEADER_MIN) {
-        add_error_code(cfg_str->nstr, LN_ERR_TOO_FEW_PARAM, 0, cfg_rec); 
+        add_error_code(cfg_str->nstr, LN_ERR_TOO_FEW_PARAM, ERRNULL, cfg_rec); 
         return 1;
     }
     if (!is_correct_param_length(len[0], SNAME_LEN_MIN, SNAME_LEN_MAX))
@@ -339,7 +341,7 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
         if (status)
             return status;
         if (!is_line_ending_ok(buffer, cfg_str.strlen))
-            add_error_code(cfg_str.nstr, LN_ERR_NOCR, 0, cfg_rec);
+            add_error_code(cfg_str.nstr, LN_ERR_NOCR, ERRNULL, cfg_rec);
 
         cfg_str.str = buffer;
         cfg_str.param_count = get_param_count(buffer, cfg_str.strlen) + 1;
@@ -371,8 +373,25 @@ void print_errors(cmtrd_cfg_body_t *cfg_rec)
 {
     int i;
 
+    printf("\nThe following errors were found:\n");
     for (i = 0; i < cfg_rec->errcount; i++) {
+        int msg_index;
 
+        printf("line %d:\n", (cfg_rec->errors + i)->ln);
+        printf("    line errors:\n");
+        for (msg_index = 0; msg_index < LN_ERR_COUNT; msg_index++) {
+            int j = 1;
+            if ((cfg_rec->errors + i)->strerr & (j << msg_index))
+                printf("        %s\n", lnerrmsg[msg_index]);
+        }
+        if ((cfg_rec->errors + i)->paramerr) {
+            long int j = 1;
+            printf("    parameters with errors:\n");
+            for (msg_index = 0; msg_index < PARAM_COUNT_MAX; msg_index++) {
+                if ((cfg_rec->errors + i)->paramerr & (j << msg_index))
+                    printf("        %s\n", parammsg[msg_index]);
+            }
+        }
     }
 }
 /* return codes:
@@ -398,11 +417,13 @@ int main(int argc, char **argv)
 
     cfg_record_init(&cfg_rec);
     analyze_cfgfile(fd, &cfg_rec);
-    printf("errcount = %d\n", cfg_rec.errcount);
     
     printf("Station name: %s\n", cfg_rec.station_name);
     printf("Recorder id: %s\n", cfg_rec.rec_dev_id);
     printf("Format revision: %d\n", cfg_rec.rev_year);
+
+    if (cfg_rec.errors)
+        print_errors(&cfg_rec);
 
     fclose(fd);
     return 0;

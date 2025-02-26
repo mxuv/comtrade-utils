@@ -30,6 +30,8 @@
 #define CP_TIME_CODE                2
 #define CP_TMQ_CODE                 2
 
+#define PARAM_COUNT_MAX             37
+
 /* Parameters length */
 #define SNAME_LEN_MIN               0
 #define SNAME_LEN_MAX               64
@@ -174,6 +176,7 @@
 #define LN_ERR_TOO_FEW_PARAM        3
 #define LN_ERR_INCORRECT_PARAM      4
 #define LN_ERR_INCORRECT_PARAM_LEN  5
+#define LN_ERR_COUNT                6
 
 /* Parameters error codes */
 #define PM_ERR_SNAME                0
@@ -221,6 +224,7 @@
 #define PM_ERR_LEAPSEC              36
 
 #define ERRCODE(x)                  (1<<x)
+#define ERRNULL                     -1
 
 #if 0
 #define LN_ERR_MSK                  (LN_ERR_NOCR | LN_ERR_EXTRA_SPACES |\
