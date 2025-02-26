@@ -325,6 +325,60 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
     return 0;
 }
 
+int analyze_cfg_chinfo(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
+{
+    int index[CP_TT];
+    int len[AN_LEN_MAX];
+    char c[AN_LEN_MAX + 1];
+
+    if (cfg_str->param_count < CP_TT) {
+        add_error_code(cfg_str->nstr, LN_ERR_TOO_FEW_PARAM, ERRNULL, cfg_rec); 
+        return 1;
+    }
+    if (cfg_str->param_count > CP_TT) {
+        add_error_code(cfg_str->nstr, LN_ERR_TOO_MANY_PARAM, ERRNULL, cfg_rec); 
+        return 1;
+    }
+
+    get_all_param_index(cfg_str->str, cfg_str->param_count, index);
+    get_all_param_len(cfg_str->str, cfg_str->strlen, cfg_str->param_count, len);
+    if (!is_correct_param_length(len[0], TT_LEN_MIN, TT_LEN_MAX)) {
+        add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
+                PM_ERR_TT, cfg_rec);
+    } else {
+        stringcopy_c(c, cfg_str->str + index[0], len[0]);
+        cfg_rec->ch_count = atoi(c);
+        if (!IS_CORRECT_INTPARAM_VAL(cfg_rec->ch_count, TT_VAL_MIN,
+                    TT_VAL_MAX))
+            add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM,
+                    PM_ERR_TT, cfg_rec);
+    }
+    if (!is_correct_param_length(len[1], TT_LEN_MIN, TT_LEN_MAX)) {
+        add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
+                PM_ERR_TT_A, cfg_rec);
+    } else {
+        stringcopy_c(c, cfg_str->str + index[1], len[1] - 1);
+        cfg_rec->an_count = atoi(c);
+        if (!IS_CORRECT_INTPARAM_VAL(cfg_rec->ch_count, AN_VAL_MIN,
+                    AN_VAL_MAX))
+            add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM,
+                    PM_ERR_TT_A, cfg_rec);
+    }
+    if (!is_correct_param_length(len[2], TT_LEN_MIN, TT_LEN_MAX)) {
+        add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
+                PM_ERR_TT_A, cfg_rec);
+    } else {
+        stringcopy_c(c, cfg_str->str + index[2], len[2] - 1);
+        cfg_rec->dn_count = atoi(c);
+        if (!IS_CORRECT_INTPARAM_VAL(cfg_rec->ch_count, AN_VAL_MIN,
+                    AN_VAL_MAX))
+            add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM,
+                    PM_ERR_TT_A, cfg_rec);
+    }
+
+    return 0;
+}
+
 /* Return values:
  * 0-Ok
  * 2-Unexcepted end of file
@@ -352,9 +406,14 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
             analyze_cfg_header(&cfg_str, cfg_rec);
             next_state++;
             break;
+        case analyze_tt:
+            analyze_cfg_chinfo(&cfg_str, cfg_rec);
+            next_state++;
+            break;
         default:
             break;
         }
+        cfg_str.nstr++;
     }
 
     return 0;
@@ -396,6 +455,18 @@ void print_errors(cmtrd_cfg_body_t *cfg_rec)
         }
     }
 }
+void print_info(cmtrd_cfg_body_t *cfg_rec)
+{
+    printf("General info:\n");
+    printf("    Station name: %s\n", cfg_rec->station_name);
+    printf("    Recorder id: %s\n", cfg_rec->rec_dev_id);
+    printf("    Format revision: %d\n", cfg_rec->rev_year);
+    printf("Channels info:\n");
+    printf("    Total channels count: %d\n", cfg_rec->ch_count);
+    printf("    Analog channels count: %d\n", cfg_rec->an_count);
+    printf("    Digital channels count: %d\n", cfg_rec->dn_count);
+}
+
 /* return codes:
  * 0 - Ok
  * 1 - file read error
@@ -419,11 +490,7 @@ int main(int argc, char **argv)
 
     cfg_record_init(&cfg_rec);
     analyze_cfgfile(fd, &cfg_rec);
-    
-    printf("Station name: %s\n", cfg_rec.station_name);
-    printf("Recorder id: %s\n", cfg_rec.rec_dev_id);
-    printf("Format revision: %d\n", cfg_rec.rev_year);
-
+    print_info(&cfg_rec);
     if (cfg_rec.errors)
         print_errors(&cfg_rec);
 
