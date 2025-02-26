@@ -273,12 +273,32 @@ char* add_str_item(const char *src, int length)
 {
     char *str;
 
-    str  = malloc(sizeof(char) * length + 1);
+    str = malloc(sizeof(char) * length + 1);
     if (str == NULL)
         EXIT_MEMERR();
 
     stringcopy_c(str, src, length);
     return str;
+}
+
+void create_channels_fields(cmtrd_cfg_body_t *cfg_rec)
+{
+    void *p;
+
+    if (cfg_rec->an_count) {
+        p = malloc(sizeof(cmtrd_an_t) * cfg_rec->an_count);
+        if (p == NULL)
+            EXIT_MEMERR();
+        memset(p, 0, sizeof(cmtrd_an_t));
+        cfg_rec->anv = (cmtrd_an_t*)p;
+    }
+    if (cfg_rec->dn_count) {
+        p = malloc(sizeof(cmtrd_dn_t) * cfg_rec->dn_count);
+        if (p == NULL)
+            EXIT_MEMERR();
+        memset(p, 0, sizeof(cmtrd_dn_t));
+        cfg_rec->dnv = (cmtrd_dn_t*)p;
+    }
 }
 
 int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
