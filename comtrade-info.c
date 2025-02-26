@@ -286,13 +286,18 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
     int len[SNAME_LEN_MAX];
     char c[REVYEAR_LEN_MAX + 1];
 
-    get_all_param_index(cfg_str->str, cfg_str->param_count, index);
-    get_all_param_len(cfg_str->str, cfg_str->strlen, cfg_str->param_count, len);
-
+    cfg_rec->rev_year = 1991;
     if (cfg_str->param_count < CP_HEADER_MIN) {
         add_error_code(cfg_str->nstr, LN_ERR_TOO_FEW_PARAM, ERRNULL, cfg_rec); 
         return 1;
     }
+    if (cfg_str->param_count > CP_HEADER) {
+        add_error_code(cfg_str->nstr, LN_ERR_TOO_MANY_PARAM, ERRNULL, cfg_rec); 
+        return 1;
+    }
+
+    get_all_param_index(cfg_str->str, cfg_str->param_count, index);
+    get_all_param_len(cfg_str->str, cfg_str->strlen, cfg_str->param_count, len);
     if (!is_correct_param_length(len[0], SNAME_LEN_MIN, SNAME_LEN_MAX))
         add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
                 PM_ERR_SNAME, cfg_rec);
@@ -304,13 +309,10 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
     cfg_rec->station_name = add_str_item(cfg_str->str+index[0], len[0]);
     cfg_rec->rec_dev_id = add_str_item(cfg_str->str+index[1], len[1]);
 
-    if (cfg_str->param_count < CP_HEADER) {
-        cfg_rec->rev_year = 1991;
-    } else {
+    if (cfg_str->param_count == CP_HEADER) {
         if (!is_correct_param_length(len[2], REVYEAR_LEN_MIN, REVYEAR_LEN_MAX)) {
             add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
                     PM_ERR_YEAR, cfg_rec);
-            cfg_rec->rev_year = 1991;
         } else {
             stringcopy_c(c, cfg_str->str + index[2], len[2]);
             cfg_rec->rev_year = atoi(c);
