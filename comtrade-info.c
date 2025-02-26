@@ -51,6 +51,7 @@ const char lnerrmsg2[] = "Line contains too many parametrs";
 const char lnerrmsg3[] = "Line contains too few parametrs";
 const char lnerrmsg4[] = "Incorrect parameter";
 const char lnerrmsg5[] = "Incorrect parameter length";
+const char lnerrmsg6[] = "Incorrect parameters summ";
 
 const char parammsg0[] = "Station name";
 const char parammsg1[] = "Recording device id";
@@ -91,7 +92,7 @@ const char parammsg35[] = "Time quality code";
 const char parammsg36[] = "Leap second indicator";
 
 const char *lnerrmsg[] = { lnerrmsg0, lnerrmsg1, lnerrmsg2, lnerrmsg3,
-        lnerrmsg4, lnerrmsg5 };
+        lnerrmsg4, lnerrmsg5, lnerrmsg6 };
 
 const char *parammsg[] = { parammsg0, parammsg1, parammsg2, parammsg3,
         parammsg4, parammsg5, parammsg6, parammsg7, parammsg8, parammsg9,
@@ -301,6 +302,18 @@ void create_channels_fields(cmtrd_cfg_body_t *cfg_rec)
     }
 }
 
+int check_chinfo_summ(int nstr, cmtrd_cfg_body_t *cfg_rec)
+{
+    if ((cfg_rec->an_count + cfg_rec->dn_count) != cfg_rec->ch_count) {
+        add_error_code(nstr, LN_ERR_INCORRECT_PARAM_SUM, PM_ERR_TT, cfg_rec);
+        add_error_code(nstr, LN_ERR_INCORRECT_PARAM_SUM, PM_ERR_TT_A, cfg_rec);
+        add_error_code(nstr, LN_ERR_INCORRECT_PARAM_SUM, PM_ERR_TT_D, cfg_rec);
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
 int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
 {
     int index[CP_HEADER];
@@ -428,9 +441,12 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
             break;
         case analyze_tt:
             analyze_cfg_chinfo(&cfg_str, cfg_rec);
+            check_chinfo_summ(cfg_str.nstr, cfg_rec);
+            create_channels_fields(cfg_rec);
             next_state++;
             break;
         default:
+            return 0;
             break;
         }
         cfg_str.nstr++;

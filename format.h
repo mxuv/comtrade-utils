@@ -176,7 +176,8 @@
 #define LN_ERR_TOO_FEW_PARAM        3
 #define LN_ERR_INCORRECT_PARAM      4
 #define LN_ERR_INCORRECT_PARAM_LEN  5
-#define LN_ERR_COUNT                6
+#define LN_ERR_INCORRECT_PARAM_SUM  6
+#define LN_ERR_COUNT                7
 
 /* Parameters error codes */
 #define PM_ERR_SNAME                0
