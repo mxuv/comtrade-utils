@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "strings.h"
 #include "format.h"
@@ -123,7 +124,7 @@ int getstring(FILE *fd, char *buffer, int bufsize,
 
     *status = gss_ok;
     if (fgets(buffer, bufsize, fd)) {
-        len = stringlen(buffer);
+        len = strlen(buffer);
         if (buffer[len-1] != '\n') {
             if (len == bufsize - 1)
                 *status  = gss_overflow;
@@ -188,27 +189,27 @@ int get_param_index(const char *str, int param)
     return str - p;
 }
 
-int get_param_length(const char *str, int strlen, int param, int param_count)
+int get_param_length(const char *str, int stringlen, int param, int param_count)
 {
     int index;
 
     index = get_param_index(str, param);
     if ((param + 1) == param_count) {
-        if (match_char(*(str+(strlen - 2)), '\r'))
-            return strlen - 2 - index;
+        if (match_char(*(str+(stringlen - 2)), '\r'))
+            return stringlen - 2 - index;
         else
-            return strlen - 1 - index;
+            return stringlen - 1 - index;
     }
     else
         return get_param_index(str, param + 1) - index - 1;
 }
 
-void get_all_param_len(const char *str, int strlen, int param_count, int *len)
+void get_all_param_len(const char *str, int stringlen, int param_count, int *len)
 {
     int i;
 
     for (i = 0; i < param_count; i++)
-        len[i] = get_param_length(str, strlen, i, param_count);
+        len[i] = get_param_length(str, stringlen, i, param_count);
 }
 
 void get_all_param_index(const char *str, int param_count, int *index)
@@ -286,7 +287,6 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
     int len[SNAME_LEN_MAX];
     char c[REVYEAR_LEN_MAX + 1];
 
-    cfg_rec->rev_year = 1991;
     if (cfg_str->param_count < CP_HEADER_MIN) {
         add_error_code(cfg_str->nstr, LN_ERR_TOO_FEW_PARAM, ERRNULL, cfg_rec); 
         return 1;
@@ -421,13 +421,14 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
 
 void cfg_record_init(cmtrd_cfg_body_t *cfg_rec)
 {
-    char *p;
-    int i;
-
-    p = (char*)cfg_rec;
-    for (i = 0; i < sizeof(cmtrd_cfg_body_t); i++)
-        *(p + i) = 0;
-    /* memset(cfg_rec, 0, sizeof(cmtrd_cfg_body_t)); */
+    /* char *p; */
+    /* int i; */
+    /*  */
+    /* p = (char*)cfg_rec; */
+    /* for (i = 0; i < sizeof(cmtrd_cfg_body_t); i++) */
+    /*     *(p + i) = 0; */
+    memset(cfg_rec, 0, sizeof(cmtrd_cfg_body_t));
+    cfg_rec->rev_year = 1991;
 }
 
 void print_errors(cmtrd_cfg_body_t *cfg_rec)
