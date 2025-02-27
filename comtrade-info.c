@@ -243,7 +243,7 @@ void add_error_field(cmtrd_cfg_body_t *cfg_rec)
     if (p == NULL)
         EXIT_MEMERR();
 
-    memcpy(p, cfg_rec->errors, cfg_rec->errcount);
+    memcpy(p, cfg_rec->errors, cfg_rec->errcount * sizeof(cmtrd_err_t));
     (p+cfg_rec->errcount)->ln = 0;
     (p+cfg_rec->errcount)->strerr = 0;
     (p+cfg_rec->errcount)->paramerr = 0;
@@ -260,18 +260,18 @@ void add_error_code(int line, int strcode, int paramcode,
 
     for (i = 0; i < cfg_rec->errcount; i++) {
         if ((p+i)->ln == line) { 
-            (p+i)->strerr |= ERRCODE(strcode);
+            (p+i)->strerr |= strcode;
             if (paramcode != ERRNULL)
-                (p+i)->paramerr |= ERRCODE(paramcode);
+                (p+i)->paramerr |= paramcode;
             return;
         }
     }
 
     add_error_field(cfg_rec);
     (cfg_rec->errors+cfg_rec->errcount-1)->ln = line;
-    (cfg_rec->errors+cfg_rec->errcount-1)->strerr |= ERRCODE(strcode);
+    (cfg_rec->errors+cfg_rec->errcount-1)->strerr |= strcode;
     if (paramcode != ERRNULL)
-        (cfg_rec->errors+cfg_rec->errcount-1)->paramerr |= ERRCODE(paramcode);
+        (cfg_rec->errors+cfg_rec->errcount-1)->paramerr |= paramcode;
 }
 
 int is_correct_param_length(int len, int min, int max)
@@ -317,9 +317,9 @@ void create_channels_fields(cmtrd_cfg_body_t *cfg_rec)
 int check_chinfo_summ(int nstr, cmtrd_cfg_body_t *cfg_rec)
 {
     if ((cfg_rec->an_count + cfg_rec->dn_count) != cfg_rec->ch_count) {
-        add_error_code(nstr, LN_ERR_INCORRECT_PARAM_SUM, PM_ERR_TT, cfg_rec);
-        add_error_code(nstr, LN_ERR_INCORRECT_PARAM_SUM, PM_ERR_TT_A, cfg_rec);
-        add_error_code(nstr, LN_ERR_INCORRECT_PARAM_SUM, PM_ERR_TT_D, cfg_rec);
+        add_error_code(nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_SUM),
+                (ERRCODE(PM_ERR_TT) | ERRCODE(PM_ERR_TT_A) |
+                 ERRCODE(PM_ERR_TT_D)), cfg_rec);
         return 0;
     } else {
         return 1;
@@ -329,9 +329,9 @@ int check_chinfo_summ(int nstr, cmtrd_cfg_body_t *cfg_rec)
 int check_param_count(int count, int min, int max)
 {
     if (count < min)
-        return LN_ERR_TOO_FEW_PARAM;
+        return ERRCODE(LN_ERR_TOO_FEW_PARAM);
     if (count > max)
-        return LN_ERR_TOO_MANY_PARAM;
+        return ERRCODE(LN_ERR_TOO_MANY_PARAM);
     return 0;
 }
 
@@ -350,28 +350,31 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
 
     get_all_param_index(cfg_str->str, cfg_str->param_count, index);
     get_all_param_len(cfg_str->str, cfg_str->strlen, cfg_str->param_count, len);
-    if (!is_correct_param_length(len[0], SNAME_LEN_MIN, SNAME_LEN_MAX))
-        add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
-                PM_ERR_SNAME, cfg_rec);
+    if (!is_correct_param_length(len[PM_SNAME], SNAME_LEN_MIN, SNAME_LEN_MAX))
+        add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN),
+                ERRCODE(PM_ERR_SNAME), cfg_rec);
 
-    if (!is_correct_param_length(len[1], RECDEV_LEN_MIN, RECDEV_LEN_MAX))
-        add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
-                PM_ERR_REC_ID, cfg_rec);
+    if (!is_correct_param_length(len[PM_REC_ID], RECDEV_LEN_MIN, RECDEV_LEN_MAX))
+        add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN),
+                ERRCODE(PM_ERR_REC_ID), cfg_rec);
 
-    cfg_rec->station_name = add_str_item(cfg_str->str+index[0], len[0]);
-    cfg_rec->rec_dev_id = add_str_item(cfg_str->str+index[1], len[1]);
+    cfg_rec->station_name = add_str_item(cfg_str->str+index[PM_SNAME],
+            len[PM_SNAME]);
+    cfg_rec->rec_dev_id = add_str_item(cfg_str->str+index[PM_REC_ID],
+            len[PM_REC_ID]);
 
     if (cfg_str->param_count == CP_HEADER) {
-        if (!is_correct_param_length(len[2], REVYEAR_LEN_MIN, REVYEAR_LEN_MAX)) {
-            add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
-                    PM_ERR_YEAR, cfg_rec);
+        if (!is_correct_param_length(len[PM_YEAR],
+                    REVYEAR_LEN_MIN, REVYEAR_LEN_MAX)) {
+            add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN),
+                    ERRCODE(PM_ERR_YEAR), cfg_rec);
         } else {
-            stringcopy_c(c, cfg_str->str + index[2], len[2]);
+            stringcopy_c(c, cfg_str->str + index[PM_YEAR], len[PM_YEAR]);
             cfg_rec->rev_year = atoi(c);
             if (!IS_CORRECT_INTPARAM_VAL(cfg_rec->rev_year, REV_YEAR_VAL_MIN,
                         REV_YEAR_VAL_MAX))
-                add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM,
-                        PM_ERR_YEAR, cfg_rec);
+                add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM),
+                        ERRCODE(PM_ERR_YEAR), cfg_rec);
         }
     }
     return 0;
@@ -379,53 +382,51 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
 
 int analyze_cfg_chinfo(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
 {
+    int err;
     int index[CP_TT];
     int len[AN_LEN_MAX];
     char c[AN_LEN_MAX + 1];
 
-    if (cfg_str->param_count < CP_TT) {
-        add_error_code(cfg_str->nstr, LN_ERR_TOO_FEW_PARAM, ERRNULL, cfg_rec); 
-        return 1;
-    }
-    if (cfg_str->param_count > CP_TT) {
-        add_error_code(cfg_str->nstr, LN_ERR_TOO_MANY_PARAM, ERRNULL, cfg_rec); 
+    err = check_param_count(cfg_str->param_count, CP_TT, CP_TT);
+    if (err) {
+        add_error_code(cfg_str->nstr, err, ERRNULL, cfg_rec); 
         return 1;
     }
 
     get_all_param_index(cfg_str->str, cfg_str->param_count, index);
     get_all_param_len(cfg_str->str, cfg_str->strlen, cfg_str->param_count, len);
-    if (!is_correct_param_length(len[0], TT_LEN_MIN, TT_LEN_MAX)) {
-        add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
-                PM_ERR_TT, cfg_rec);
+    if (!is_correct_param_length(len[PM_TT], TT_LEN_MIN, TT_LEN_MAX)) {
+        add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN),
+                ERRCODE(PM_ERR_TT), cfg_rec);
     } else {
-        stringcopy_c(c, cfg_str->str + index[0], len[0]);
+        stringcopy_c(c, cfg_str->str + index[PM_TT], len[PM_TT]);
         cfg_rec->ch_count = atoi(c);
         if (!IS_CORRECT_INTPARAM_VAL(cfg_rec->ch_count, TT_VAL_MIN,
                     TT_VAL_MAX))
-            add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM,
-                    PM_ERR_TT, cfg_rec);
+            add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM),
+                    ERRCODE(PM_ERR_TT), cfg_rec);
     }
-    if (!is_correct_param_length(len[1], TT_LEN_MIN, TT_LEN_MAX)) {
-        add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
-                PM_ERR_TT_A, cfg_rec);
+    if (!is_correct_param_length(len[PM_TT], TT_LEN_MIN, TT_LEN_MAX)) {
+        add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN),
+                ERRCODE(PM_ERR_TT_A), cfg_rec);
     } else {
-        stringcopy_c(c, cfg_str->str + index[1], len[1] - 1);
+        stringcopy_c(c, cfg_str->str + index[PM_TT_A], len[PM_TT_A] - 1);
         cfg_rec->an_count = atoi(c);
         if (!IS_CORRECT_INTPARAM_VAL(cfg_rec->ch_count, AN_VAL_MIN,
                     AN_VAL_MAX))
-            add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM,
-                    PM_ERR_TT_A, cfg_rec);
+            add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM),
+                    ERRCODE(PM_ERR_TT_A), cfg_rec);
     }
-    if (!is_correct_param_length(len[2], TT_LEN_MIN, TT_LEN_MAX)) {
-        add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM_LEN,
-                PM_ERR_TT_A, cfg_rec);
+    if (!is_correct_param_length(len[PM_TT_D], TT_LEN_MIN, TT_LEN_MAX)) {
+        add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN),
+                ERRCODE(PM_ERR_TT_A), cfg_rec);
     } else {
-        stringcopy_c(c, cfg_str->str + index[2], len[2] - 1);
+        stringcopy_c(c, cfg_str->str + index[PM_TT_D], len[PM_TT_D] - 1);
         cfg_rec->dn_count = atoi(c);
         if (!IS_CORRECT_INTPARAM_VAL(cfg_rec->ch_count, AN_VAL_MIN,
                     AN_VAL_MAX))
-            add_error_code(cfg_str->nstr, LN_ERR_INCORRECT_PARAM,
-                    PM_ERR_TT_A, cfg_rec);
+            add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM),
+                    ERRCODE(PM_ERR_TT_A), cfg_rec);
     }
 
     return 0;
@@ -449,7 +450,7 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
         if (status)
             return status;
         if (!is_line_ending_ok(buffer, cfg_str.strlen))
-            add_error_code(cfg_str.nstr, LN_ERR_NOCR, ERRNULL, cfg_rec);
+            add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_NOCR), ERRNULL, cfg_rec);
 
         cfg_str.str = buffer;
         cfg_str.param_count = get_param_count(buffer, cfg_str.strlen) + 1;
