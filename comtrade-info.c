@@ -237,18 +237,16 @@ void get_all_param_index(const char *str, int param_count, int *index)
 
 void add_error_field(cmtrd_cfg_body_t *cfg_rec)
 {
-    int i;
     cmtrd_err_t *p;
 
     p = malloc((cfg_rec->errcount + 1) * sizeof(cmtrd_err_t));
     if (p == NULL)
         EXIT_MEMERR();
 
+    memcpy(p, cfg_rec->errors, cfg_rec->errcount);
     (p+cfg_rec->errcount)->ln = 0;
     (p+cfg_rec->errcount)->strerr = 0;
     (p+cfg_rec->errcount)->paramerr = 0;
-    for (i = 0; i < cfg_rec->errcount; i++)
-        *(p+i) = *(cfg_rec->errors+i);
     free(cfg_rec->errors);
     cfg_rec->errors = p;
     cfg_rec->errcount++;
@@ -344,7 +342,7 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
     int len[SNAME_LEN_MAX];
     char c[REVYEAR_LEN_MAX + 1];
 
-    err = check_param_count(cfg_str->param_count, CP_HEADER_MIN, CP_HEADER)
+    err = check_param_count(cfg_str->param_count, CP_HEADER_MIN, CP_HEADER);
     if (err) {
         add_error_code(cfg_str->nstr, err, ERRNULL, cfg_rec); 
         return 1;
