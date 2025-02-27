@@ -45,6 +45,14 @@ typedef struct
     int param_count;
 } cfgfile_string_t;
 
+typedef struct
+{
+    int plen_min;
+    int plen_max;
+    int pval_min;
+    int pval_max;
+} cfgfile_plv_t;
+
 const char lnerrmsg0[] = "Missing symbol <CR> at end of line";
 const char lnerrmsg1[] = "Line contains extra spaces";
 const char lnerrmsg2[] = "Line contains too many parametrs";
@@ -101,6 +109,12 @@ const char *parammsg[] = { parammsg0, parammsg1, parammsg2, parammsg3,
         parammsg22, parammsg23, parammsg24, parammsg25, parammsg26, parammsg27,
         parammsg28, parammsg29, parammsg30, parammsg31, parammsg32, parammsg33, 
         parammsg34, parammsg35, parammsg36 }; 
+
+const cfgfile_plv_t plv_sn = {SNAME_LEN_MIN, SNAME_LEN_MAX, 0, 0};
+const cfgfile_plv_t plv_rd = {RECDEV_LEN_MIN, RECDEV_LEN_MAX , 0, 0};
+const cfgfile_plv_t plv_ry = {REVYEAR_LEN_MAX, REVYEAR_LEN_MAX,
+                                REV_YEAR_VAL_MIN, REV_YEAR_VAL_MAX};
+const cfgfile_plv_t *plv[] = {&plv_sn, &plv_rd, &plv_ry};
 
 int match_char(char ch, char patt)
 {
@@ -314,18 +328,25 @@ int check_chinfo_summ(int nstr, cmtrd_cfg_body_t *cfg_rec)
     }
 }
 
+int check_param_count(int count, int min, int max)
+{
+    if (count < min)
+        return LN_ERR_TOO_FEW_PARAM;
+    if (count > max)
+        return LN_ERR_TOO_MANY_PARAM;
+    return 0;
+}
+
 int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
 {
+    int err;
     int index[CP_HEADER];
     int len[SNAME_LEN_MAX];
     char c[REVYEAR_LEN_MAX + 1];
 
-    if (cfg_str->param_count < CP_HEADER_MIN) {
-        add_error_code(cfg_str->nstr, LN_ERR_TOO_FEW_PARAM, ERRNULL, cfg_rec); 
-        return 1;
-    }
-    if (cfg_str->param_count > CP_HEADER) {
-        add_error_code(cfg_str->nstr, LN_ERR_TOO_MANY_PARAM, ERRNULL, cfg_rec); 
+    err = check_param_count(cfg_str->param_count, CP_HEADER_MIN, CP_HEADER)
+    if (err) {
+        add_error_code(cfg_str->nstr, err, ERRNULL, cfg_rec); 
         return 1;
     }
 

@@ -15,7 +15,7 @@
 
 #define CP_LF                       1
 
-#define CP NRATES                   1
+#define CP_NRATES                   1
 
 #define CP_SAMP                     2
 
@@ -110,6 +110,8 @@
 #define SECONDS_M_LEN_MAX           9
 #define SECONDS_N_LEN_MIN           12
 #define SECONDS_N_LEN_MIN           12
+#define TIME_LEN_MIN                DAY_LEN_MIN + MON_LEN_MIN + YEAR_LEN_MIN + \
+                                    HOUR_LEN_MIN
 
 #define FILE_TYPE_LEN_MIN           5
 #define FILE_TYPE_LEN_MAX           8
@@ -228,56 +230,64 @@
 #define ERRCODE(x)                  (1<<x)
 #define ERRNULL                     -1
 
-#define PM_N_SNAME                  0
-#define PM_N_REC_ID                 1
-#define PM_N_YEAR                   2
+#define PM_SNAME                    0
+#define PM_REC_ID                   1
+#define PM_YEAR                     2
 
-#define PM_N_TT                     0
-#define PM_N_TT_A                   1
-#define PM_N_TT_D                   2
+#define PM_TT_OFFSET                CP_HEADER
+#define PM_TT                       0
+#define PM_TT_A                     1
+#define PM_TT_D                     2
 
-#define PM_N_AN                     0
-#define PM_N_CHID                   1
-#define PM_N_PH                     2
-#define PM_N_CCBM                   3
-#define PM_N_UU                     4
-#define PM_N_A                      5
-#define PM_N_B                      6
-#define PM_N_SKEW                   7
-#define PM_N_MIN                    8
-#define PM_N_MAX                    9
-#define PM_N_PRIM                   10
-#define PM_N_SEC                    11
-#define PM_N_PS                     12
+#define PM_CH_A_OFFSET              TT_OFFSET + CP_TT
+#define PM_AN                       0
+#define PM_CHID                     1
+#define PM_PH                       2
+#define PM_CCBM                     3
+#define PM_UU                       4
+#define PM_A                        5
+#define PM_B                        6
+#define PM_SKEW                     7
+#define PM_MIN                      8
+#define PM_MAX                      9
+#define PM_PRIM                     10
+#define PM_SEC                      11
+#define PM_PS                       12
 
-#define PM_N_DN                     0 
-#define PM_N_CHID                   1   
-#define PM_N_PH                     2 
-#define PM_N_CCBM                   3   
-#define PM_N_Y                      4 
+#define PM_CH_D_OFFSET              PM_CH_A_OFFSET + CP_AN_1999
+#define PM_DN                       0
+#define PM_CHID                     1
+#define PM_PH                       2
+#define PM_CCBM                     3
+#define PM_Y                        4
 
-#define PM_N_LF                     0
+#define PM_LF_OFFSET                PM_CH_D_OFFSET + CP_DN_1999
+#define PM_LF                       0
 
-#define PM_N_NRATES                 0
-#define PM_N_SAMP                   1
-#define PM_N_ENDSAMP                2
+#define PM_NRATES_OFFSET            PM_LF_OFFSET + CP_LF
+#define PM_NRATES                   0
 
-#define PM_N_DAY                    0
-#define PM_N_MON                    1
-#define PM_N_YYYY                   2
-#define PM_N_HOUR                   3
-#define PM_N_MINUT                  4
-#define PM_N_SECONDS                5
+#define PM_SAMP_OFFSET              PM_NRATES_OFFSET + CP_NRATES
+#define PM_SAMP                     1
+#define PM_ENDSAMP                  2
 
-#define PM_N_FILETYPE               0
+#define PM_TIME_OFFSET              PM_SAMP_OFFSET + CP_DATE_TIME
+#define PM_DAY                      0
+#define PM_MON                      1
+#define PM_YYYY                     2
+#define PM_HOUR                     3
+#define PM_MINUT                    4
+#define PM_SECONDS                  5
 
-#define PM_N_TIMEMULT               0
+#define PM_FILETYPE                 0
 
-#define PM_N_TC                     0
-#define PM_N_LC                     1
+#define PM_TIMEMULT                 0
 
-#define PM_N_TMQ                    0
-#define PM_N_LEAPSEC                1
+#define PM_TC                       0
+#define PM_LC                       1
+
+#define PM_TMQ                      0
+#define PM_LEAPSEC                  1
 
 #if 0
 #define LN_ERR_MSK                  (LN_ERR_NOCR | LN_ERR_EXTRA_SPACES |\
