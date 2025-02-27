@@ -114,7 +114,6 @@ const cfgfile_plv_t plv_sn = {SNAME_LEN_MIN, SNAME_LEN_MAX, 0, 0};
 const cfgfile_plv_t plv_rd = {RECDEV_LEN_MIN, RECDEV_LEN_MAX , 0, 0};
 const cfgfile_plv_t plv_ry = {REVYEAR_LEN_MAX, REVYEAR_LEN_MAX,
                                 REV_YEAR_VAL_MIN, REV_YEAR_VAL_MAX};
-const cfgfile_plv_t *plv[] = {&plv_sn, &plv_rd, &plv_ry};
 
 int match_char(char ch, char patt)
 {
@@ -335,12 +334,21 @@ int check_param_count(int count, int min, int max)
     return 0;
 }
 
+int check_param_length(int len, const cfgfile_plv_t *plv)
+{
+    if (is_correct_param_length(len, plv->plen_min, plv->plen_max))
+        return 0;
+    else
+        return ERRCODE(LN_ERR_INCORRECT_PARAM_LEN);
+}
+
 int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
 {
     int err;
     int index[CP_HEADER];
     int len[SNAME_LEN_MAX];
     char c[REVYEAR_LEN_MAX + 1];
+    const cfgfile_plv_t *plv[] = {&plv_sn, &plv_rd, &plv_ry};
 
     err = check_param_count(cfg_str->param_count, CP_HEADER_MIN, CP_HEADER);
     if (err) {
@@ -350,9 +358,9 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
 
     get_all_param_index(cfg_str->str, cfg_str->param_count, index);
     get_all_param_len(cfg_str->str, cfg_str->strlen, cfg_str->param_count, len);
-    if (!is_correct_param_length(len[PM_SNAME], SNAME_LEN_MIN, SNAME_LEN_MAX))
-        add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN),
-                ERRCODE(PM_ERR_SNAME), cfg_rec);
+    err = check_param_length(len[PM_SNAME], *(plv+PM_SNAME)); 
+    if (err)
+        add_error_code(cfg_str->nstr, err, ERRCODE(PM_ERR_SNAME), cfg_rec);
 
     if (!is_correct_param_length(len[PM_REC_ID], RECDEV_LEN_MIN, RECDEV_LEN_MAX))
         add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN),
