@@ -223,9 +223,61 @@
 #define PM_ERR_LC                   34
 #define PM_ERR_TMQ                  35
 #define PM_ERR_LEAPSEC              36
+#define PM_ERR_COUNT                37
 
 #define ERRCODE(x)                  (1<<x)
 #define ERRNULL                     -1
+
+#define PM_N_SNAME                  0
+#define PM_N_REC_ID                 1
+#define PM_N_YEAR                   2
+
+#define PM_N_TT                     0
+#define PM_N_TT_A                   1
+#define PM_N_TT_D                   2
+
+#define PM_N_AN                     0
+#define PM_N_CHID                   1
+#define PM_N_PH                     2
+#define PM_N_CCBM                   3
+#define PM_N_UU                     4
+#define PM_N_A                      5
+#define PM_N_B                      6
+#define PM_N_SKEW                   7
+#define PM_N_MIN                    8
+#define PM_N_MAX                    9
+#define PM_N_PRIM                   10
+#define PM_N_SEC                    11
+#define PM_N_PS                     12
+
+#define PM_N_DN                     0 
+#define PM_N_CHID                   1   
+#define PM_N_PH                     2 
+#define PM_N_CCBM                   3   
+#define PM_N_Y                      4 
+
+#define PM_N_LF                     0
+
+#define PM_N_NRATES                 0
+#define PM_N_SAMP                   1
+#define PM_N_ENDSAMP                2
+
+#define PM_N_DAY                    0
+#define PM_N_MON                    1
+#define PM_N_YYYY                   2
+#define PM_N_HOUR                   3
+#define PM_N_MINUT                  4
+#define PM_N_SECONDS                5
+
+#define PM_N_FILETYPE               0
+
+#define PM_N_TIMEMULT               0
+
+#define PM_N_TC                     0
+#define PM_N_LC                     1
+
+#define PM_N_TMQ                    0
+#define PM_N_LEAPSEC                1
 
 #if 0
 #define LN_ERR_MSK                  (LN_ERR_NOCR | LN_ERR_EXTRA_SPACES |\
