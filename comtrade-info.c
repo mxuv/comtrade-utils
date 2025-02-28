@@ -5,11 +5,11 @@
 #include "strutils.h"
 #include "format.h"
 
-#define STR_BUFSIZE             4096
+#define STR_BUFSIZE                         4096
 
-#define EXIT_MEMERR()           exit(5)
+#define EXIT_MEMERR()                       exit(5)
 
-#define IS_CORRECT_INTPARAM_VAL(a, b, c) is_correct_param_length(a, b, c)
+#define IS_CORRECT_INTPARAM_VAL(a, b, c)    is_correct_param_length(a, b, c)
 
 enum getstring_status
 {
@@ -110,10 +110,13 @@ const char *parammsg[] = { parammsg0, parammsg1, parammsg2, parammsg3,
         parammsg28, parammsg29, parammsg30, parammsg31, parammsg32, parammsg33, 
         parammsg34, parammsg35, parammsg36 }; 
 
-const cfgfile_plv_t plv_sn = {SNAME_LEN_MIN, SNAME_LEN_MAX, 0, 0};
-const cfgfile_plv_t plv_rd = {RECDEV_LEN_MIN, RECDEV_LEN_MAX , 0, 0};
-const cfgfile_plv_t plv_ry = {REVYEAR_LEN_MAX, REVYEAR_LEN_MAX,
+const int sname[] = {pstring, PM_SNAME, SNAME_LEN_MIN, SNAME_LEN_MAX, 0, 0};
+
+const cfgfile_plv_t plv_sname = {SNAME_LEN_MIN, SNAME_LEN_MAX, 0, 0};
+const cfgfile_plv_t plv_recdev = {RECDEV_LEN_MIN, RECDEV_LEN_MAX , 0, 0};
+const cfgfile_plv_t plv_revyear = {REVYEAR_LEN_MAX, REVYEAR_LEN_MAX,
                                 REV_YEAR_VAL_MIN, REV_YEAR_VAL_MAX};
+const cfgfile_plv_t plv_tt = {SNAME_LEN_MIN, SNAME_LEN_MAX, 0, 0};
 
 int match_char(char ch, char patt)
 {
@@ -342,49 +345,88 @@ int check_param_length(int len, const cfgfile_plv_t *plv)
         return ERRCODE(LN_ERR_INCORRECT_PARAM_LEN);
 }
 
+/* void initparam_header(cfg_param_t *param) */
+/* { */
+/*      */
+/* } */
+void parsing_parameter(cfgfile_string_t *cfg_str, cfg_param_t *param)
+{
+    param->err = 0;
+    param->index = get_param_index(cfg_str->str, param->num);
+    param->len = get_param_length(cfg_str->str, cfg_str->strlen,
+            param->num, cfg_str->param_count);
+    if (!is_correct_param_length(param->len, param->len_min, param->len_max))
+        param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM_LEN);
+
+    switch (param->ptype) {
+    case pstring:
+        return;
+        break;
+    case pint:
+        break;
+    case pintc:
+        break;
+    case pfloat:
+        break;
+    case pchar:
+        return;
+        break;
+    default:
+        break;
+    }
+}
+
 int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
 {
-    int err;
-    int index[CP_HEADER];
-    int len[SNAME_LEN_MAX];
-    char c[REVYEAR_LEN_MAX + 1];
-    const cfgfile_plv_t *plv[] = {&plv_sn, &plv_rd, &plv_ry};
-
-    err = check_param_count(cfg_str->param_count, CP_HEADER_MIN, CP_HEADER);
-    if (err) {
-        add_error_code(cfg_str->nstr, err, ERRNULL, cfg_rec); 
+    int error;
+    cfg_param_t parameter;
+    
+    /* int err; */
+    /* int index[CP_HEADER]; */
+    /* int len[SNAME_LEN_MAX]; */
+    /* char c[REVYEAR_LEN_MAX + 1]; */
+    /* const cfgfile_plv_t *plv[] = {&plv_sn, &plv_rd, &plv_ry}; */
+    /*  */
+    error = check_param_count(cfg_str->param_count, CP_HEADER_MIN, CP_HEADER);
+    if (error) {
+        add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
         return 1;
     }
 
-    get_all_param_index(cfg_str->str, cfg_str->param_count, index);
-    get_all_param_len(cfg_str->str, cfg_str->strlen, cfg_str->param_count, len);
-    err = check_param_length(len[PM_SNAME], *(plv+PM_SNAME)); 
-    if (err)
-        add_error_code(cfg_str->nstr, err, ERRCODE(PM_ERR_SNAME), cfg_rec);
-
-    if (!is_correct_param_length(len[PM_REC_ID], RECDEV_LEN_MIN, RECDEV_LEN_MAX))
-        add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN),
-                ERRCODE(PM_ERR_REC_ID), cfg_rec);
-
-    cfg_rec->station_name = add_str_item(cfg_str->str+index[PM_SNAME],
-            len[PM_SNAME]);
-    cfg_rec->rec_dev_id = add_str_item(cfg_str->str+index[PM_REC_ID],
-            len[PM_REC_ID]);
-
-    if (cfg_str->param_count == CP_HEADER) {
-        if (!is_correct_param_length(len[PM_YEAR],
-                    REVYEAR_LEN_MIN, REVYEAR_LEN_MAX)) {
-            add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN),
-                    ERRCODE(PM_ERR_YEAR), cfg_rec);
-        } else {
-            stringcopy_c(c, cfg_str->str + index[PM_YEAR], len[PM_YEAR]);
-            cfg_rec->rev_year = atoi(c);
-            if (!IS_CORRECT_INTPARAM_VAL(cfg_rec->rev_year, REV_YEAR_VAL_MIN,
-                        REV_YEAR_VAL_MAX))
-                add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM),
-                        ERRCODE(PM_ERR_YEAR), cfg_rec);
-        }
-    }
+    /* Station name */
+    memcpy(&parameter, &sname, sizeof(sname));
+    parsing_parameter(cfg_str, &parameter);
+    /* } */
+    /*  */
+    /* get_all_param_index(cfg_str->str, cfg_str->param_count, index); */
+    /* get_all_param_len(cfg_str->str, cfg_str->strlen, cfg_str->param_count, len); */
+    /* err = check_param_length(len[PM_SNAME], *(plv+PM_SNAME));  */
+    /* if (err) */
+    /*     add_error_code(cfg_str->nstr, err, ERRCODE(PM_ERR_SNAME), cfg_rec); */
+    /*  */
+    /* if (!is_correct_param_length(len[PM_REC_ID], RECDEV_LEN_MIN, RECDEV_LEN_MAX)) */
+    /*     add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN), */
+    /*             ERRCODE(PM_ERR_REC_ID), cfg_rec); */
+    /*  */
+    /* cfg_rec->station_name = add_str_item(cfg_str->str+index[PM_SNAME], */
+    /*         len[PM_SNAME]); */
+    /* cfg_rec->rec_dev_id = add_str_item(cfg_str->str+index[PM_REC_ID], */
+    /*         len[PM_REC_ID]); */
+    /*  */
+    /* if (cfg_str->param_count == CP_HEADER) { */
+    /*     if (!is_correct_param_length(len[PM_YEAR], */
+    /*                 REVYEAR_LEN_MIN, REVYEAR_LEN_MAX)) { */
+    /*         add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN), */
+    /*                 ERRCODE(PM_ERR_YEAR), cfg_rec); */
+    /*     } else { */
+    /*         stringcopy_c(c, cfg_str->str + index[PM_YEAR], len[PM_YEAR]); */
+    /*         cfg_rec->rev_year = atoi(c); */
+    /*         if (!IS_CORRECT_INTPARAM_VAL(cfg_rec->rev_year, REV_YEAR_VAL_MIN, */
+    /*                     REV_YEAR_VAL_MAX)) */
+    /*             add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM), */
+    /*                     ERRCODE(PM_ERR_YEAR), cfg_rec); */
+    /*     } */
+    /* } */
     return 0;
 }
 

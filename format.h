@@ -298,6 +298,21 @@
 
 enum scales_ind {none, primary, secondary};
 enum file_format {ascii, binary, binary32, float32};
+enum param_type {pstring, pint, pintc, pfloat, pchar};
+
+typedef struct {
+    enum param_type ptype;
+    int num;
+    int len_min;
+    int len_max;
+    int val_min;
+    int val_max;
+    int index;
+    int len;
+    int val_int;
+    double val_float;
+    int err;
+} cfg_param_t;
 
 typedef struct {
     int num;
