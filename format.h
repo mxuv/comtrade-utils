@@ -129,6 +129,8 @@
 #define LEAPSEC_LEN_MIN             1 
 #define LEAPSEC_LEN_MAX             1 
 
+#define PARAM_LEN_MAX               128
+
 /* Minimum and maximum values of parameters */
 #define REV_YEAR_VAL_MIN            1991
 #define REV_YEAR_VAL_MAX            2013
@@ -305,8 +307,10 @@ typedef struct {
     int num;
     int len_min;
     int len_max;
-    int val_min;
-    int val_max;
+    int ival_min;
+    int ival_max;
+    double dval_min;
+    double dval_max;
     int index;
     int len;
     int val_int;

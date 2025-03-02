@@ -53,6 +53,18 @@ typedef struct
     int pval_max;
 } cfgfile_plv_t;
 
+typedef struct
+{
+    enum param_type ptype;
+    int num;
+    int len_min;
+    int len_max;
+    int ival_min;
+    int ival_max;
+    double dval_min;
+    double dval_max;
+} cfg_pvv_t;
+
 const char lnerrmsg0[] = "Missing symbol <CR> at end of line";
 const char lnerrmsg1[] = "Line contains extra spaces";
 const char lnerrmsg2[] = "Line contains too many parametrs";
@@ -110,7 +122,12 @@ const char *parammsg[] = { parammsg0, parammsg1, parammsg2, parammsg3,
         parammsg28, parammsg29, parammsg30, parammsg31, parammsg32, parammsg33, 
         parammsg34, parammsg35, parammsg36 }; 
 
-const int sname[] = {pstring, PM_SNAME, SNAME_LEN_MIN, SNAME_LEN_MAX, 0, 0};
+const cfg_pvv_t sname = {pstring, PM_SNAME, SNAME_LEN_MIN, SNAME_LEN_MAX,
+    0, 0, 0, 0};
+const cfg_pvv_t recdevid = {pstring, PM_REC_ID, RECDEV_LEN_MIN, RECDEV_LEN_MAX,
+    0, 0, 0, 0};
+const cfg_pvv_t revyear = {pint, PM_YEAR, REVYEAR_LEN_MIN, REVYEAR_LEN_MAX,
+    REV_YEAR_VAL_MIN, REV_YEAR_VAL_MAX, 0, 0};
 
 const cfgfile_plv_t plv_sname = {SNAME_LEN_MIN, SNAME_LEN_MAX, 0, 0};
 const cfgfile_plv_t plv_recdev = {RECDEV_LEN_MIN, RECDEV_LEN_MAX , 0, 0};
@@ -349,27 +366,45 @@ int check_param_length(int len, const cfgfile_plv_t *plv)
 /* { */
 /*      */
 /* } */
+
+void check_parameter_len(cfg_param_t *param)
+{
+    if (!is_correct_param_length(param->len, param->len_min, param->len_max))
+        param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM_LEN);
+}
+
+void check_parameter_ival(cfg_param_t *param)
+{
+    if (!IS_CORRECT_INTPARAM_VAL(param->val_int, param->ival_min,
+            param->ival_max))
+    param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM);
+}
+
 void parsing_parameter(cfgfile_string_t *cfg_str, cfg_param_t *param)
 {
+    char s[PARAM_LEN_MAX+1];
+
     param->err = 0;
     param->index = get_param_index(cfg_str->str, param->num);
     param->len = get_param_length(cfg_str->str, cfg_str->strlen,
             param->num, cfg_str->param_count);
-    if (!is_correct_param_length(param->len, param->len_min, param->len_max))
-        param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM_LEN);
-
+    check_parameter_len(param);
     switch (param->ptype) {
     case pstring:
-        return;
         break;
     case pint:
+        stringcopy_c(s, cfg_str->str + param->index, param->len);
+        param->val_int = atoi(s);
+        check_parameter_ival(param);
         break;
     case pintc:
+        stringcopy_c(s, cfg_str->str + param->index, param->len - 1);
+        param->val_int = atoi(s);
+        check_parameter_ival(param);
         break;
     case pfloat:
         break;
     case pchar:
-        return;
         break;
     default:
         break;
@@ -379,54 +414,40 @@ void parsing_parameter(cfgfile_string_t *cfg_str, cfg_param_t *param)
 int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
 {
     int error;
-    cfg_param_t parameter;
+    cfg_param_t pm;
     
-    /* int err; */
-    /* int index[CP_HEADER]; */
-    /* int len[SNAME_LEN_MAX]; */
-    /* char c[REVYEAR_LEN_MAX + 1]; */
-    /* const cfgfile_plv_t *plv[] = {&plv_sn, &plv_rd, &plv_ry}; */
-    /*  */
     error = check_param_count(cfg_str->param_count, CP_HEADER_MIN, CP_HEADER);
-    if (error) {
+    if (error)
         add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
+    if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
         return 1;
-    }
 
     /* Station name */
-    memcpy(&parameter, &sname, sizeof(sname));
-    parsing_parameter(cfg_str, &parameter);
-    /* } */
-    /*  */
-    /* get_all_param_index(cfg_str->str, cfg_str->param_count, index); */
-    /* get_all_param_len(cfg_str->str, cfg_str->strlen, cfg_str->param_count, len); */
-    /* err = check_param_length(len[PM_SNAME], *(plv+PM_SNAME));  */
-    /* if (err) */
-    /*     add_error_code(cfg_str->nstr, err, ERRCODE(PM_ERR_SNAME), cfg_rec); */
-    /*  */
-    /* if (!is_correct_param_length(len[PM_REC_ID], RECDEV_LEN_MIN, RECDEV_LEN_MAX)) */
-    /*     add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN), */
-    /*             ERRCODE(PM_ERR_REC_ID), cfg_rec); */
-    /*  */
-    /* cfg_rec->station_name = add_str_item(cfg_str->str+index[PM_SNAME], */
-    /*         len[PM_SNAME]); */
-    /* cfg_rec->rec_dev_id = add_str_item(cfg_str->str+index[PM_REC_ID], */
-    /*         len[PM_REC_ID]); */
-    /*  */
-    /* if (cfg_str->param_count == CP_HEADER) { */
-    /*     if (!is_correct_param_length(len[PM_YEAR], */
-    /*                 REVYEAR_LEN_MIN, REVYEAR_LEN_MAX)) { */
-    /*         add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN), */
-    /*                 ERRCODE(PM_ERR_YEAR), cfg_rec); */
-    /*     } else { */
-    /*         stringcopy_c(c, cfg_str->str + index[PM_YEAR], len[PM_YEAR]); */
-    /*         cfg_rec->rev_year = atoi(c); */
-    /*         if (!IS_CORRECT_INTPARAM_VAL(cfg_rec->rev_year, REV_YEAR_VAL_MIN, */
-    /*                     REV_YEAR_VAL_MAX)) */
-    /*             add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM), */
-    /*                     ERRCODE(PM_ERR_YEAR), cfg_rec); */
-    /*     } */
-    /* } */
+    memcpy(&pm, &sname, sizeof(sname));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_SNAME),
+                    cfg_rec); 
+    cfg_rec->station_name = add_str_item(cfg_str->str, pm.len);
+
+    /* Recorder device id */
+    memcpy(&pm, &recdevid, sizeof(recdevid));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_REC_ID),
+                    cfg_rec); 
+    cfg_rec->rec_dev_id = add_str_item(cfg_str->str + pm.index, pm.len);
+
+    if (cfg_str->param_count < CP_HEADER)
+        return 0;
+
+    /* Revison year */
+    memcpy(&pm, &revyear, sizeof(revyear));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_YEAR), cfg_rec); 
+    cfg_rec->rev_year = pm.val_int;
+
     return 0;
 }
 
