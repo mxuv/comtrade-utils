@@ -45,8 +45,8 @@
 #define TT_LEN_MAX                  6
 #define AN_LEN_MIN                  2
 #define AN_LEN_MAX                  7
-#define DN_LEN_MAX                  2
-#define DN_LEN_MIN                  7
+#define DN_LEN_MIN                  2
+#define DN_LEN_MAX                  7
 
 #define A_N_LEN_MIN                 1
 #define A_N_LEN_MAX                 6

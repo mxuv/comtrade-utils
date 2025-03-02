@@ -128,6 +128,12 @@ const cfg_pvv_t recdevid = {pstring, PM_REC_ID, RECDEV_LEN_MIN, RECDEV_LEN_MAX,
     0, 0, 0, 0};
 const cfg_pvv_t revyear = {pint, PM_YEAR, REVYEAR_LEN_MIN, REVYEAR_LEN_MAX,
     REV_YEAR_VAL_MIN, REV_YEAR_VAL_MAX, 0, 0};
+const cfg_pvv_t tt = {pint, PM_TT, TT_LEN_MIN, TT_LEN_MAX,
+    TT_VAL_MIN, TT_VAL_MAX, 0, 0};
+const cfg_pvv_t tt_a = {pintc, PM_TT_A, AN_LEN_MIN, AN_LEN_MAX,
+    AN_VAL_MIN, AN_VAL_MAX, 0, 0};
+const cfg_pvv_t tt_d = {pintc, PM_TT_D, DN_LEN_MIN, DN_LEN_MAX,
+    DN_VAL_MIN, DN_VAL_MAX, 0, 0};
 
 const cfgfile_plv_t plv_sname = {SNAME_LEN_MIN, SNAME_LEN_MAX, 0, 0};
 const cfgfile_plv_t plv_recdev = {RECDEV_LEN_MIN, RECDEV_LEN_MAX , 0, 0};
@@ -423,7 +429,7 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
         return 1;
 
     /* Station name */
-    memcpy(&pm, &sname, sizeof(sname));
+    memcpy(&pm, &sname, sizeof(cfg_pvv_t));
     parsing_parameter(cfg_str, &pm);
     if (pm.err)
         add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_SNAME),
@@ -431,7 +437,7 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
     cfg_rec->station_name = add_str_item(cfg_str->str, pm.len);
 
     /* Recorder device id */
-    memcpy(&pm, &recdevid, sizeof(recdevid));
+    memcpy(&pm, &recdevid, sizeof(cfg_pvv_t));
     parsing_parameter(cfg_str, &pm);
     if (pm.err)
         add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_REC_ID),
@@ -442,7 +448,7 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
         return 0;
 
     /* Revison year */
-    memcpy(&pm, &revyear, sizeof(revyear));
+    memcpy(&pm, &revyear, sizeof(cfg_pvv_t));
     parsing_parameter(cfg_str, &pm);
     if (pm.err)
         add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_YEAR), cfg_rec); 
@@ -453,54 +459,50 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
 
 int analyze_cfg_chinfo(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
 {
-    int err;
-    int index[CP_TT];
-    int len[AN_LEN_MAX];
-    char c[AN_LEN_MAX + 1];
-
-    err = check_param_count(cfg_str->param_count, CP_TT, CP_TT);
-    if (err) {
-        add_error_code(cfg_str->nstr, err, ERRNULL, cfg_rec); 
+    int error;
+    cfg_param_t pm;
+    
+    error = check_param_count(cfg_str->param_count, CP_TT, CP_TT);
+    if (error)
+        add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
+    if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
         return 1;
+
+    error = 0;
+
+    /* Total channels count */
+    memcpy(&pm, &tt, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_TT), cfg_rec); 
+    cfg_rec->ch_count = pm.val_int;
+
+    /* Analog channels count */
+    memcpy(&pm, &tt_a, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_TT_A), cfg_rec); 
+    cfg_rec->an_count = pm.val_int;
+    if (pm.err & ERRCODE(LN_ERR_INCORRECT_PARAM))
+        error++;
+
+    /* Digital channels count */
+    memcpy(&pm, &tt_d, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_TT_D), cfg_rec); 
+    cfg_rec->dn_count = pm.val_int;
+    if (pm.err & ERRCODE(LN_ERR_INCORRECT_PARAM))
+        error++;
+
+    if ((cfg_rec->an_count + cfg_rec->dn_count) != cfg_rec->ch_count) {
+        add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_SUM),
+                (ERRCODE(PM_ERR_TT) | ERRCODE(PM_ERR_TT_A) |
+                 ERRCODE(PM_ERR_TT_D)), cfg_rec);
+        error++;
     }
 
-    get_all_param_index(cfg_str->str, cfg_str->param_count, index);
-    get_all_param_len(cfg_str->str, cfg_str->strlen, cfg_str->param_count, len);
-    if (!is_correct_param_length(len[PM_TT], TT_LEN_MIN, TT_LEN_MAX)) {
-        add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN),
-                ERRCODE(PM_ERR_TT), cfg_rec);
-    } else {
-        stringcopy_c(c, cfg_str->str + index[PM_TT], len[PM_TT]);
-        cfg_rec->ch_count = atoi(c);
-        if (!IS_CORRECT_INTPARAM_VAL(cfg_rec->ch_count, TT_VAL_MIN,
-                    TT_VAL_MAX))
-            add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM),
-                    ERRCODE(PM_ERR_TT), cfg_rec);
-    }
-    if (!is_correct_param_length(len[PM_TT], TT_LEN_MIN, TT_LEN_MAX)) {
-        add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN),
-                ERRCODE(PM_ERR_TT_A), cfg_rec);
-    } else {
-        stringcopy_c(c, cfg_str->str + index[PM_TT_A], len[PM_TT_A] - 1);
-        cfg_rec->an_count = atoi(c);
-        if (!IS_CORRECT_INTPARAM_VAL(cfg_rec->ch_count, AN_VAL_MIN,
-                    AN_VAL_MAX))
-            add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM),
-                    ERRCODE(PM_ERR_TT_A), cfg_rec);
-    }
-    if (!is_correct_param_length(len[PM_TT_D], TT_LEN_MIN, TT_LEN_MAX)) {
-        add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_LEN),
-                ERRCODE(PM_ERR_TT_A), cfg_rec);
-    } else {
-        stringcopy_c(c, cfg_str->str + index[PM_TT_D], len[PM_TT_D] - 1);
-        cfg_rec->dn_count = atoi(c);
-        if (!IS_CORRECT_INTPARAM_VAL(cfg_rec->ch_count, AN_VAL_MIN,
-                    AN_VAL_MAX))
-            add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM),
-                    ERRCODE(PM_ERR_TT_A), cfg_rec);
-    }
-
-    return 0;
+    return error;
 }
 
 /* Return values:
@@ -532,7 +534,6 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
             break;
         case analyze_tt:
             analyze_cfg_chinfo(&cfg_str, cfg_rec);
-            check_chinfo_summ(cfg_str.nstr, cfg_rec);
             create_channels_fields(cfg_rec);
             next_state++;
             break;
