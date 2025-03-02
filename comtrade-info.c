@@ -533,7 +533,8 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
             next_state++;
             break;
         case analyze_tt:
-            analyze_cfg_chinfo(&cfg_str, cfg_rec);
+            if (analyze_cfg_chinfo(&cfg_str, cfg_rec))
+                return 1;
             create_channels_fields(cfg_rec);
             next_state++;
             break;
@@ -602,6 +603,7 @@ void print_info(cmtrd_cfg_body_t *cfg_rec)
 */
 int main(int argc, char **argv)
 {
+    int res;
     FILE *fd;
     cmtrd_cfg_body_t cfg_rec;
 
@@ -618,11 +620,15 @@ int main(int argc, char **argv)
     }
 
     cfg_record_init(&cfg_rec);
-    analyze_cfgfile(fd, &cfg_rec);
+    res = analyze_cfgfile(fd, &cfg_rec);
     print_info(&cfg_rec);
     if (cfg_rec.errors)
         print_errors(&cfg_rec);
 
     fclose(fd);
+    if (res) {
+        printf("Critical error. Analysis has been aborted.\n");
+        return 2;
+    }
     return 0;
 } 
