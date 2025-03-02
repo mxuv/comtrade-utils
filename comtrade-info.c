@@ -47,14 +47,6 @@ typedef struct
 
 typedef struct
 {
-    int plen_min;
-    int plen_max;
-    int pval_min;
-    int pval_max;
-} cfgfile_plv_t;
-
-typedef struct
-{
     enum param_type ptype;
     int num;
     int len_min;
@@ -135,12 +127,6 @@ const cfg_pvv_t tt_a = {pintc, PM_TT_A, AN_LEN_MIN, AN_LEN_MAX,
 const cfg_pvv_t tt_d = {pintc, PM_TT_D, DN_LEN_MIN, DN_LEN_MAX,
     DN_VAL_MIN, DN_VAL_MAX, 0, 0};
 
-const cfgfile_plv_t plv_sname = {SNAME_LEN_MIN, SNAME_LEN_MAX, 0, 0};
-const cfgfile_plv_t plv_recdev = {RECDEV_LEN_MIN, RECDEV_LEN_MAX , 0, 0};
-const cfgfile_plv_t plv_revyear = {REVYEAR_LEN_MAX, REVYEAR_LEN_MAX,
-                                REV_YEAR_VAL_MIN, REV_YEAR_VAL_MAX};
-const cfgfile_plv_t plv_tt = {SNAME_LEN_MIN, SNAME_LEN_MAX, 0, 0};
-
 int match_char(char ch, char patt)
 {
     if (ch == patt)
@@ -149,14 +135,6 @@ int match_char(char ch, char patt)
         return 0;
 }
 
-/* int find_char_in_string(const char *str, int strlen, char c) */
-/* { */
-/*  */
-/* } */
-
-/*  read string from file
-    return: string length, status
-*/
 int getstring(FILE *fd, char *buffer, int bufsize,
                 enum getstring_status *status)
 {
@@ -244,6 +222,7 @@ int get_param_length(const char *str, int stringlen, int param, int param_count)
         return get_param_index(str, param + 1) - index - 1;
 }
 
+#if 0
 void get_all_param_len(const char *str, int stringlen, int param_count, int *len)
 {
     int i;
@@ -259,6 +238,7 @@ void get_all_param_index(const char *str, int param_count, int *index)
     for (i = 0; i < param_count; i++)
         index[i] = get_param_index(str, i);
 }
+#endif
 
 void add_error_field(cmtrd_cfg_body_t *cfg_rec)
 {
@@ -339,18 +319,6 @@ void create_channels_fields(cmtrd_cfg_body_t *cfg_rec)
     }
 }
 
-int check_chinfo_summ(int nstr, cmtrd_cfg_body_t *cfg_rec)
-{
-    if ((cfg_rec->an_count + cfg_rec->dn_count) != cfg_rec->ch_count) {
-        add_error_code(nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_SUM),
-                (ERRCODE(PM_ERR_TT) | ERRCODE(PM_ERR_TT_A) |
-                 ERRCODE(PM_ERR_TT_D)), cfg_rec);
-        return 0;
-    } else {
-        return 1;
-    }
-}
-
 int check_param_count(int count, int min, int max)
 {
     if (count < min)
@@ -359,19 +327,6 @@ int check_param_count(int count, int min, int max)
         return ERRCODE(LN_ERR_TOO_MANY_PARAM);
     return 0;
 }
-
-int check_param_length(int len, const cfgfile_plv_t *plv)
-{
-    if (is_correct_param_length(len, plv->plen_min, plv->plen_max))
-        return 0;
-    else
-        return ERRCODE(LN_ERR_INCORRECT_PARAM_LEN);
-}
-
-/* void initparam_header(cfg_param_t *param) */
-/* { */
-/*      */
-/* } */
 
 void check_parameter_len(cfg_param_t *param)
 {
@@ -550,12 +505,6 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
 
 void cfg_record_init(cmtrd_cfg_body_t *cfg_rec)
 {
-    /* char *p; */
-    /* int i; */
-    /*  */
-    /* p = (char*)cfg_rec; */
-    /* for (i = 0; i < sizeof(cmtrd_cfg_body_t); i++) */
-    /*     *(p + i) = 0; */
     memset(cfg_rec, 0, sizeof(cmtrd_cfg_body_t));
     cfg_rec->rev_year = 1991;
 }
