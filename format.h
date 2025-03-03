@@ -50,8 +50,8 @@
 
 #define A_N_LEN_MIN                 1
 #define A_N_LEN_MAX                 6
-#define A_CH_ID_LEN_MIN             1
-#define A_CH_ID_LEN_MAX             128
+#define A_CHID_LEN_MIN              1
+#define A_CHID_LEN_MAX              128
 #define A_PH_LEN_MIN                0
 #define A_PH_LEN_MAX                2
 #define A_CCBM_LEN_MIN              0

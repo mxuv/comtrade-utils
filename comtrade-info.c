@@ -128,6 +128,14 @@ const cfg_pvv_t tt_d = {pintc, PM_TT_D, DN_LEN_MIN, DN_LEN_MAX,
     DN_VAL_MIN, DN_VAL_MAX, 0, 0};
 const cfg_pvv_t ach_num = {pint, PM_AN, A_N_LEN_MIN, A_N_LEN_MAX,
     A_N_VAL_MIN, A_N_VAL_MAX, 0, 0};
+const cfg_pvv_t ach_chid = {pstring, PM_CHID, A_CHID_LEN_MIN, A_CHID_LEN_MAX,
+    0, 0, 0, 0};
+const cfg_pvv_t ach_phase = {pstring, PM_PH, A_PH_LEN_MIN, A_PH_LEN_MAX,
+    0, 0, 0, 0};
+const cfg_pvv_t ach_ccbm = {pstring, PM_CCBM, A_CCBM_LEN_MIN, A_CCBM_LEN_MAX,
+    0, 0, 0, 0};
+const cfg_pvv_t ach_uu = {pstring, PM_UU, A_UU_LEN_MIN, A_UU_LEN_MAX,
+    0, 0, 0, 0};
 
 int match_char(char ch, char patt)
 {
@@ -496,6 +504,38 @@ int analyze_cfg_achannel(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
         add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_AN), cfg_rec); 
     (cfg_rec->anv + ch_index)->num = pm.val_int;
 
+    /* Channel id */
+    memcpy(&pm, &ach_chid, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_CHID), cfg_rec); 
+    (cfg_rec->anv + ch_index)->ch_id = add_str_item(cfg_str->str + pm.index,
+            pm.len);
+
+    /* Channel phase */
+    memcpy(&pm, &ach_phase, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_PH), cfg_rec); 
+    (cfg_rec->anv + ch_index)->phase = add_str_item(cfg_str->str + pm.index,
+            pm.len);
+
+    /* Channel circuit component */
+    memcpy(&pm, &ach_ccbm, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_CCBM), cfg_rec); 
+    (cfg_rec->anv + ch_index)->ccbm = add_str_item(cfg_str->str + pm.index,
+            pm.len);
+
+    /* Channel unit */
+    memcpy(&pm, &ach_uu, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_UU), cfg_rec); 
+    (cfg_rec->anv + ch_index)->uu = add_str_item(cfg_str->str + pm.index,
+            pm.len);
+
     return error;
 }
 
@@ -560,7 +600,7 @@ void print_errors(cmtrd_cfg_body_t *cfg_rec)
     for (i = 0; i < cfg_rec->errcount; i++) {
         int msg_index;
 
-        printf("line %d:\n", (cfg_rec->errors + i)->ln);
+        printf("line %d:\n", (cfg_rec->errors + i)->ln + 1);
         printf("    line errors:\n");
         for (msg_index = 0; msg_index < LN_ERR_COUNT; msg_index++) {
             int j = 1;
@@ -589,6 +629,10 @@ void print_info(cmtrd_cfg_body_t *cfg_rec)
     printf("    Digital channels count: %d\n", cfg_rec->dn_count);
     printf("Analog channel:\n");
     printf("    Channel number: %d\n", cfg_rec->anv->num);
+    printf("    Channel id: %s\n", cfg_rec->anv->ch_id);
+    printf("    Channel phase: %s\n", cfg_rec->anv->phase);
+    printf("    Channel circuit: %s\n", cfg_rec->anv->ccbm);
+    printf("    Channel unit: %s\n", cfg_rec->anv->uu);
 }
 
 /* return codes:
