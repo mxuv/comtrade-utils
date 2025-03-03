@@ -385,6 +385,20 @@ void check_parameter_dval(cfg_param_t *param)
     param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM);
 }
 
+char check_ps_value(cfgfile_string_t *cfg_str, cfg_param_t *pm)
+{
+    char c;
+
+    c = cfg_str->str[pm->index];
+    c = upcase_letter(c);
+    if (c == 'P' || c == 'S') {
+        return c;
+    } else {
+        pm->err |= ERRCODE(LN_ERR_INCORRECT_PARAM);
+        return '-';
+    }
+}
+
 void parsing_parameter(cfgfile_string_t *cfg_str, cfg_param_t *param)
 {
     char s[PARAM_LEN_MAX+1];
@@ -625,8 +639,10 @@ int analyze_cfg_achannel(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
     /* Channel P/S */
     memcpy(&pm, &ach_ps, sizeof(cfg_pvv_t));
     parsing_parameter(cfg_str, &pm);
+    (cfg_rec->anv + ch_index)->ps = check_ps_value(cfg_str, &pm);
     if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_PS), cfg_rec); 
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_PS), cfg_rec);
+
     return error;
 }
 
@@ -729,6 +745,9 @@ void print_info(cmtrd_cfg_body_t *cfg_rec)
     printf("    Channel time skew: %lf\n", cfg_rec->anv->skew);
     printf("    Channel min scale: %lf\n", cfg_rec->anv->min);
     printf("    Channel max scale: %lf\n", cfg_rec->anv->max);
+    printf("    Channel primary value: %lf\n", cfg_rec->anv->primary);
+    printf("    Channel secondary value: %lf\n", cfg_rec->anv->secondary);
+    printf("    Channel P or S: %c\n", cfg_rec->anv->ps);
 }
 
 /* return codes:

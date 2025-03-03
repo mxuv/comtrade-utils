@@ -331,7 +331,7 @@ typedef struct {
     double max;
     double primary;
     double secondary;
-    enum scales_ind ps;
+    char ps;
 } cmtrd_an_t;
 
 typedef struct {
