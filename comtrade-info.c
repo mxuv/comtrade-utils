@@ -126,6 +126,8 @@ const cfg_pvv_t tt_a = {pintc, PM_TT_A, AN_LEN_MIN, AN_LEN_MAX,
     AN_VAL_MIN, AN_VAL_MAX, 0, 0};
 const cfg_pvv_t tt_d = {pintc, PM_TT_D, DN_LEN_MIN, DN_LEN_MAX,
     DN_VAL_MIN, DN_VAL_MAX, 0, 0};
+const cfg_pvv_t ach_num = {pint, PM_AN, A_N_LEN_MIN, A_N_LEN_MAX,
+    A_N_VAL_MIN, A_N_VAL_MAX, 0, 0};
 
 int match_char(char ch, char patt)
 {
@@ -371,6 +373,16 @@ void parsing_parameter(cfgfile_string_t *cfg_str, cfg_param_t *param)
     }
 }
 
+int get_empty_anfield(cmtrd_cfg_body_t *cfg_rec, cmtrd_an_t *ch)
+{
+    int i;
+    for (i = 0; i < cfg_rec->an_count; i++) {
+        if ((ch + i)->num == 0)
+            return i;
+    }
+    return -1;
+}
+
 int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
 {
     int error;
@@ -459,6 +471,34 @@ int analyze_cfg_chinfo(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
     return error;
 }
 
+int analyze_cfg_achannel(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
+{
+    int error;
+    int ch_index;
+    cfg_param_t pm;
+
+    error = check_param_count(cfg_str->param_count, CP_AN_1991, CP_AN_1999);
+    if (error)
+        add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
+    if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
+        return 1;
+
+    ch_index = get_empty_anfield(cfg_rec, cfg_rec->anv);
+    if (ch_index == -1)
+        return ch_index;
+
+    error = 0;
+
+    /* Channel number */
+    memcpy(&pm, &ach_num, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_AN), cfg_rec); 
+    (cfg_rec->anv + ch_index)->num = pm.val_int;
+
+    return error;
+}
+
 /* Return values:
  * 0-Ok
  * 2-Unexcepted end of file
@@ -490,6 +530,10 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
             if (analyze_cfg_chinfo(&cfg_str, cfg_rec))
                 return 1;
             create_channels_fields(cfg_rec);
+            next_state++;
+            break;
+        case analyze_ach:
+            analyze_cfg_achannel(&cfg_str, cfg_rec);
             next_state++;
             break;
         default:
@@ -543,6 +587,8 @@ void print_info(cmtrd_cfg_body_t *cfg_rec)
     printf("    Total channels count: %d\n", cfg_rec->ch_count);
     printf("    Analog channels count: %d\n", cfg_rec->an_count);
     printf("    Digital channels count: %d\n", cfg_rec->dn_count);
+    printf("Analog channel:\n");
+    printf("    Channel number: %d\n", cfg_rec->anv->num);
 }
 
 /* return codes:
