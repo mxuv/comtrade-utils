@@ -64,6 +64,7 @@ const char lnerrmsg3[] = "Line contains too few parametrs";
 const char lnerrmsg4[] = "Incorrect parameter";
 const char lnerrmsg5[] = "Incorrect parameter length";
 const char lnerrmsg6[] = "Incorrect parameters summ";
+/* const char lnerrmsg7[] = "Format line dosen't match revision"; */
 
 const char parammsg0[] = "Station name";
 const char parammsg1[] = "Recording device id";
@@ -104,7 +105,7 @@ const char parammsg35[] = "Time quality code";
 const char parammsg36[] = "Leap second indicator";
 
 const char *lnerrmsg[] = { lnerrmsg0, lnerrmsg1, lnerrmsg2, lnerrmsg3,
-        lnerrmsg4, lnerrmsg5, lnerrmsg6 };
+        lnerrmsg4, lnerrmsg5, lnerrmsg6/*, lnerrmsg7*/ };
 
 const char *parammsg[] = { parammsg0, parammsg1, parammsg2, parammsg3,
         parammsg4, parammsg5, parammsg6, parammsg7, parammsg8, parammsg9,
@@ -142,6 +143,15 @@ const cfg_pvv_t ach_b = {pfloat, PM_B, A_B_LEN_MIN, A_B_LEN_MAX,
     0, 0, 0, 0};
 const cfg_pvv_t ach_skew = {pfloat, PM_SKEW, A_SKEW_LEN_MIN, A_SKEW_LEN_MAX,
     0, 0, 0, 0};
+const cfg_pvv_t ach_min = {pfloat, PM_MIN, A_MINSC_LEN_MIN, A_MINSC_LEN_MAX,
+    0, 0, A_MINSC_VAL_MIN, A_MINSC_VAL_MAX};
+const cfg_pvv_t ach_max = {pfloat, PM_MAX, A_MAXSC_LEN_MIN, A_MAXSC_LEN_MAX,
+    0, 0, A_MAXSC_VAL_MIN, A_MAXSC_VAL_MAX};
+const cfg_pvv_t ach_primary = {pfloat, PM_PRIM, A_PRIMARY_LEN_MIN,
+    A_PRIMARY_LEN_MAX, 0, 0, 0, 0};
+const cfg_pvv_t ach_secondary = {pfloat, PM_SEC, A_SECONDARY_LEN_MIN,
+    A_SECONDARY_LEN_MAX, 0, 0, 0, 0};
+const cfg_pvv_t ach_ps = {pchar, PM_PS, A_PS_LEN_MIN, A_PS_LEN_MAX, 0, 0, 0, 0};
 
 int match_char(char ch, char patt)
 {
@@ -519,9 +529,6 @@ int analyze_cfg_achannel(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
         return 1;
 
     ch_index = get_empty_anfield(cfg_rec, cfg_rec->anv);
-    if (ch_index == -1)
-        return ch_index;
-
     error = 0;
 
     /* Channel number */
@@ -584,6 +591,42 @@ int analyze_cfg_achannel(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
         add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_SKEW), cfg_rec); 
     (cfg_rec->anv + ch_index)->skew = pm.val_float;
 
+    /* Channel minimum scale */
+    memcpy(&pm, &ach_min, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_MIN), cfg_rec); 
+    (cfg_rec->anv + ch_index)->min = pm.val_float;
+
+    /* Channel maximum scale */
+    memcpy(&pm, &ach_max, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_MAX), cfg_rec); 
+    (cfg_rec->anv + ch_index)->max = pm.val_float;
+
+    if (cfg_str->param_count != CP_AN_1999)
+        return error;
+
+    /* Channel primary value */
+    memcpy(&pm, &ach_primary, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_PRIM), cfg_rec); 
+    (cfg_rec->anv + ch_index)->primary = pm.val_float;
+
+    /* Channel secondary value */
+    memcpy(&pm, &ach_secondary, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_SEC), cfg_rec); 
+    (cfg_rec->anv + ch_index)->secondary = pm.val_float;
+
+    /* Channel P/S */
+    memcpy(&pm, &ach_ps, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_PS), cfg_rec); 
     return error;
 }
 
@@ -684,6 +727,8 @@ void print_info(cmtrd_cfg_body_t *cfg_rec)
     printf("    Channel multipler: %lf\n", cfg_rec->anv->a);
     printf("    Channel offset: %lf\n", cfg_rec->anv->b);
     printf("    Channel time skew: %lf\n", cfg_rec->anv->skew);
+    printf("    Channel min scale: %lf\n", cfg_rec->anv->min);
+    printf("    Channel max scale: %lf\n", cfg_rec->anv->max);
 }
 
 /* return codes:
