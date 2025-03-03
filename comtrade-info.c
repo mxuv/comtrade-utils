@@ -740,6 +740,31 @@ void print_errors(cmtrd_cfg_body_t *cfg_rec)
         }
     }
 }
+
+void print_achannels_info(cmtrd_cfg_body_t *cfg_rec)
+{
+    int i;
+
+    for (i = 0; i < cfg_rec->an_count; i++) {
+        printf("Analog channel:\n");
+        printf("    Channel number: %d\n", (cfg_rec->anv + i)->num);
+        printf("    Channel id: %s\n", (cfg_rec->anv + i)->ch_id);
+        printf("    Channel phase: %s\n", (cfg_rec->anv + i)->phase);
+        printf("    Channel circuit: %s\n", (cfg_rec->anv + i)->ccbm);
+        printf("    Channel unit: %s\n", (cfg_rec->anv + i)->uu);
+        printf("    Channel multipler: %lf\n", (cfg_rec->anv + i)->a);
+        printf("    Channel offset: %lf\n", (cfg_rec->anv + i)->b);
+        printf("    Channel time skew: %lf\n", (cfg_rec->anv + i)->skew);
+        printf("    Channel min scale: %lf\n", (cfg_rec->anv + i)->min);
+        printf("    Channel max scale: %lf\n", (cfg_rec->anv + i)->max);
+        printf("    Channel primary value: %lf\n", (cfg_rec->anv + i)->primary);
+        printf("    Channel secondary value: %lf\n",
+                (cfg_rec->anv + i)->secondary);
+        printf("    Channel P or S: %c\n", (cfg_rec->anv + i)->ps);
+
+    }
+}
+
 void print_info(cmtrd_cfg_body_t *cfg_rec)
 {
     printf("General info:\n");
@@ -750,20 +775,8 @@ void print_info(cmtrd_cfg_body_t *cfg_rec)
     printf("    Total channels count: %d\n", cfg_rec->ch_count);
     printf("    Analog channels count: %d\n", cfg_rec->an_count);
     printf("    Digital channels count: %d\n", cfg_rec->dn_count);
-    printf("Analog channel:\n");
-    printf("    Channel number: %d\n", cfg_rec->anv->num);
-    printf("    Channel id: %s\n", cfg_rec->anv->ch_id);
-    printf("    Channel phase: %s\n", cfg_rec->anv->phase);
-    printf("    Channel circuit: %s\n", cfg_rec->anv->ccbm);
-    printf("    Channel unit: %s\n", cfg_rec->anv->uu);
-    printf("    Channel multipler: %lf\n", cfg_rec->anv->a);
-    printf("    Channel offset: %lf\n", cfg_rec->anv->b);
-    printf("    Channel time skew: %lf\n", cfg_rec->anv->skew);
-    printf("    Channel min scale: %lf\n", cfg_rec->anv->min);
-    printf("    Channel max scale: %lf\n", cfg_rec->anv->max);
-    printf("    Channel primary value: %lf\n", cfg_rec->anv->primary);
-    printf("    Channel secondary value: %lf\n", cfg_rec->anv->secondary);
-    printf("    Channel P or S: %c\n", cfg_rec->anv->ps);
+
+    print_achannels_info(cfg_rec);
 }
 
 /* return codes:
