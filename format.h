@@ -181,7 +181,8 @@
 #define LN_ERR_INCORRECT_PARAM      4
 #define LN_ERR_INCORRECT_PARAM_LEN  5
 #define LN_ERR_INCORRECT_PARAM_SUM  6
-#define LN_ERR_COUNT                7
+#define LN_ERR_MATCH_REV_YEAR       7
+#define LN_ERR_COUNT                8
 
 /* Parameters error codes */
 #define PM_ERR_SNAME                0
@@ -301,6 +302,13 @@
 enum scales_ind {none, primary, secondary};
 enum file_format {ascii, binary, binary32, float32};
 enum param_type {pstring, pchar, pint, pintc, pfloat};
+enum revision
+{
+    rev1991 = 1991,
+    rev1999 = 1999,
+    rev2001 = 2001,
+    rev2013 = 2013 
+};
 
 typedef struct {
     enum param_type ptype;

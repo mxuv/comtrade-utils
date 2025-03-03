@@ -64,7 +64,7 @@ const char lnerrmsg3[] = "Line contains too few parametrs";
 const char lnerrmsg4[] = "Incorrect parameter";
 const char lnerrmsg5[] = "Incorrect parameter length";
 const char lnerrmsg6[] = "Incorrect parameters summ";
-/* const char lnerrmsg7[] = "Format line dosen't match revision"; */
+const char lnerrmsg7[] = "Format line dosen't match revision";
 
 const char parammsg0[] = "Station name";
 const char parammsg1[] = "Recording device id";
@@ -105,7 +105,7 @@ const char parammsg35[] = "Time quality code";
 const char parammsg36[] = "Leap second indicator";
 
 const char *lnerrmsg[] = { lnerrmsg0, lnerrmsg1, lnerrmsg2, lnerrmsg3,
-        lnerrmsg4, lnerrmsg5, lnerrmsg6/*, lnerrmsg7*/ };
+        lnerrmsg4, lnerrmsg5, lnerrmsg6, lnerrmsg7 };
 
 const char *parammsg[] = { parammsg0, parammsg1, parammsg2, parammsg3,
         parammsg4, parammsg5, parammsg6, parammsg7, parammsg8, parammsg9,
@@ -399,6 +399,27 @@ char check_ps_value(cfgfile_string_t *cfg_str, cfg_param_t *pm)
     }
 }
 
+int get_empty_anfield(cmtrd_cfg_body_t *cfg_rec, cmtrd_an_t *ch)
+{
+    int i;
+    for (i = 0; i < cfg_rec->an_count; i++) {
+        if ((ch + i)->num == 0)
+            return i;
+    }
+    return -1;
+}
+
+int is_match_ach_rev(int param_count, int rev_year)
+{
+    if (rev_year >= rev1991 && rev_year < rev1999 && param_count == CP_AN_1991)
+        return 1;
+
+    if (rev_year >= rev1999 && param_count == CP_AN_1999)
+        return 1;
+
+    return 0;
+}
+
 void parsing_parameter(cfgfile_string_t *cfg_str, cfg_param_t *param)
 {
     char s[PARAM_LEN_MAX+1];
@@ -430,16 +451,6 @@ void parsing_parameter(cfgfile_string_t *cfg_str, cfg_param_t *param)
     default:
         break;
     }
-}
-
-int get_empty_anfield(cmtrd_cfg_body_t *cfg_rec, cmtrd_an_t *ch)
-{
-    int i;
-    for (i = 0; i < cfg_rec->an_count; i++) {
-        if ((ch + i)->num == 0)
-            return i;
-    }
-    return -1;
 }
 
 int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
@@ -537,13 +548,13 @@ int analyze_cfg_achannel(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
     cfg_param_t pm;
 
     error = check_param_count(cfg_str->param_count, CP_AN_1991, CP_AN_1999);
+    ch_index = get_empty_anfield(cfg_rec, cfg_rec->anv);
     if (error)
         add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
     if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
-        return 1;
-
-    ch_index = get_empty_anfield(cfg_rec, cfg_rec->anv);
-    error = 0;
+        return ch_index;
+    if (ch_index == -1)
+        return ch_index;
 
     /* Channel number */
     memcpy(&pm, &ach_num, sizeof(cfg_pvv_t));
@@ -643,7 +654,7 @@ int analyze_cfg_achannel(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
     if (pm.err)
         add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_PS), cfg_rec);
 
-    return error;
+    return ch_index;
 }
 
 /* Return values:
@@ -680,8 +691,13 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
             next_state++;
             break;
         case analyze_ach:
-            analyze_cfg_achannel(&cfg_str, cfg_rec);
-            next_state++;
+            int result;
+            result = analyze_cfg_achannel(&cfg_str, cfg_rec);
+            if (result == -1 || result == cfg_rec->an_count - 1)
+                next_state++;
+            if (!is_match_ach_rev(cfg_str.param_count, cfg_rec->rev_year))
+                add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR),
+                    ERRNULL, cfg_rec);
             break;
         default:
             return 0;
