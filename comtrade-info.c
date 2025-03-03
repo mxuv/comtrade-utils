@@ -136,6 +136,12 @@ const cfg_pvv_t ach_ccbm = {pstring, PM_CCBM, A_CCBM_LEN_MIN, A_CCBM_LEN_MAX,
     0, 0, 0, 0};
 const cfg_pvv_t ach_uu = {pstring, PM_UU, A_UU_LEN_MIN, A_UU_LEN_MAX,
     0, 0, 0, 0};
+const cfg_pvv_t ach_a = {pfloat, PM_A, A_A_LEN_MIN, A_A_LEN_MAX,
+    0, 0, 0, 0};
+const cfg_pvv_t ach_b = {pfloat, PM_B, A_B_LEN_MIN, A_B_LEN_MAX,
+    0, 0, 0, 0};
+const cfg_pvv_t ach_skew = {pfloat, PM_SKEW, A_SKEW_LEN_MIN, A_SKEW_LEN_MAX,
+    0, 0, 0, 0};
 
 int match_char(char ch, char patt)
 {
@@ -351,6 +357,24 @@ void check_parameter_ival(cfg_param_t *param)
     param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM);
 }
 
+int is_correct_dparam_val(double val, double min, double max)
+{
+    if (min == 0 && max == 0)
+        return 1;
+
+    if (val > min && val < max)
+        return 1;
+    else
+        return 0;
+}
+
+void check_parameter_dval(cfg_param_t *param)
+{
+    if (!is_correct_dparam_val(param->val_float, param->dval_min,
+            param->dval_max))
+    param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM);
+}
+
 void parsing_parameter(cfgfile_string_t *cfg_str, cfg_param_t *param)
 {
     char s[PARAM_LEN_MAX+1];
@@ -375,6 +399,9 @@ void parsing_parameter(cfgfile_string_t *cfg_str, cfg_param_t *param)
         check_parameter_ival(param);
         break;
     case pfloat:
+        stringcopy_c(s, cfg_str->str + param->index, param->len);
+        param->val_float = atof(s);
+        check_parameter_dval(param);
         break;
     default:
         break;
@@ -536,6 +563,27 @@ int analyze_cfg_achannel(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
     (cfg_rec->anv + ch_index)->uu = add_str_item(cfg_str->str + pm.index,
             pm.len);
 
+    /* Channel multipler (a) */
+    memcpy(&pm, &ach_a, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_A), cfg_rec); 
+    (cfg_rec->anv + ch_index)->a = pm.val_float;
+
+    /* Channel offset (b) */
+    memcpy(&pm, &ach_b, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_B), cfg_rec); 
+    (cfg_rec->anv + ch_index)->b = pm.val_float;
+
+    /* Channel time skew */
+    memcpy(&pm, &ach_skew, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, &pm);
+    if (pm.err)
+        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_SKEW), cfg_rec); 
+    (cfg_rec->anv + ch_index)->skew = pm.val_float;
+
     return error;
 }
 
@@ -633,6 +681,9 @@ void print_info(cmtrd_cfg_body_t *cfg_rec)
     printf("    Channel phase: %s\n", cfg_rec->anv->phase);
     printf("    Channel circuit: %s\n", cfg_rec->anv->ccbm);
     printf("    Channel unit: %s\n", cfg_rec->anv->uu);
+    printf("    Channel multipler: %lf\n", cfg_rec->anv->a);
+    printf("    Channel offset: %lf\n", cfg_rec->anv->b);
+    printf("    Channel time skew: %lf\n", cfg_rec->anv->skew);
 }
 
 /* return codes:
