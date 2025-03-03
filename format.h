@@ -300,7 +300,7 @@
 
 enum scales_ind {none, primary, secondary};
 enum file_format {ascii, binary, binary32, float32};
-enum param_type {pstring, pint, pintc, pfloat, pchar};
+enum param_type {pstring, pchar, pint, pintc, pfloat};
 
 typedef struct {
     enum param_type ptype;

@@ -352,6 +352,7 @@ void parsing_parameter(cfgfile_string_t *cfg_str, cfg_param_t *param)
     check_parameter_len(param);
     switch (param->ptype) {
     case pstring:
+    case pchar:
         break;
     case pint:
         stringcopy_c(s, cfg_str->str + param->index, param->len);
@@ -364,8 +365,6 @@ void parsing_parameter(cfgfile_string_t *cfg_str, cfg_param_t *param)
         check_parameter_ival(param);
         break;
     case pfloat:
-        break;
-    case pchar:
         break;
     default:
         break;
