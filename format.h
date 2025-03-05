@@ -324,7 +324,7 @@ typedef struct {
     int val_int;
     double val_float;
     int err;
-} cfg_param_t;
+} cfg_pm_t;
 
 typedef struct {
     int num;
@@ -392,6 +392,6 @@ typedef struct {
     int leapsec;
     int errcount;
     cmtrd_err_t *errors;
-} cmtrd_cfg_body_t;
+} cmtrd_cfg_t;
 
 #endif

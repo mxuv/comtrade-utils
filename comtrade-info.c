@@ -43,7 +43,7 @@ typedef struct
     int strlen;
     int nstr;
     int param_count;
-} cfgfile_string_t;
+} cfg_str_t;
 
 typedef struct
 {
@@ -266,7 +266,7 @@ void get_all_param_index(const char *str, int param_count, int *index)
 }
 #endif
 
-void add_error_field(cmtrd_cfg_body_t *cfg_rec)
+void add_error_field(cmtrd_cfg_t *cfg_rec)
 {
     cmtrd_err_t *p;
 
@@ -284,7 +284,7 @@ void add_error_field(cmtrd_cfg_body_t *cfg_rec)
 }
 
 void add_error_code(int line, int strcode, int paramcode,
-                    cmtrd_cfg_body_t *cfg_rec)
+                    cmtrd_cfg_t *cfg_rec)
 {
     int i;
     cmtrd_err_t *p = cfg_rec->errors;
@@ -325,7 +325,7 @@ char* add_str_item(const char *src, int length)
     return str;
 }
 
-void create_channels_fields(cmtrd_cfg_body_t *cfg_rec)
+void create_channels_fields(cmtrd_cfg_t *cfg_rec)
 {
     void *p;
 
@@ -354,13 +354,13 @@ int check_param_count(int count, int min, int max)
     return 0;
 }
 
-void check_parameter_len(cfg_param_t *param)
+void check_parameter_len(cfg_pm_t *param)
 {
     if (!is_correct_param_length(param->len, param->len_min, param->len_max))
         param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM_LEN);
 }
 
-void check_parameter_ival(cfg_param_t *param)
+void check_parameter_ival(cfg_pm_t *param)
 {
     if (!IS_CORRECT_INTPARAM_VAL(param->val_int, param->ival_min,
             param->ival_max))
@@ -378,14 +378,14 @@ int is_correct_dparam_val(double val, double min, double max)
         return 0;
 }
 
-void check_parameter_dval(cfg_param_t *param)
+void check_parameter_dval(cfg_pm_t *param)
 {
     if (!is_correct_dparam_val(param->val_float, param->dval_min,
             param->dval_max))
     param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM);
 }
 
-char check_ps_value(cfgfile_string_t *cfg_str, cfg_param_t *pm)
+char check_ps_value(cfg_str_t *cfg_str, cfg_pm_t *pm)
 {
     char c;
 
@@ -399,7 +399,7 @@ char check_ps_value(cfgfile_string_t *cfg_str, cfg_param_t *pm)
     }
 }
 
-int get_empty_anfield(cmtrd_cfg_body_t *cfg_rec, cmtrd_an_t *ch)
+int get_empty_anfield(cmtrd_cfg_t *cfg_rec, cmtrd_an_t *ch)
 {
     int i;
     for (i = 0; i < cfg_rec->an_count; i++) {
@@ -420,7 +420,7 @@ int is_match_ach_rev(int param_count, int rev_year)
     return 0;
 }
 
-void parsing_parameter(cfgfile_string_t *cfg_str, cfg_param_t *param)
+void parsing_parameter(cfg_str_t *cfg_str, cfg_pm_t *param)
 {
     char s[PARAM_LEN_MAX+1];
 
@@ -453,10 +453,65 @@ void parsing_parameter(cfgfile_string_t *cfg_str, cfg_param_t *param)
     }
 }
 
-int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
+void parsing_sname(cfg_pm_t *pm, cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+{
+    memcpy(pm, &sname, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_SNAME), cfg_rec); 
+    cfg_rec->station_name = add_str_item(cfg_str->str, pm->len);
+}
+
+void parsing_recdevid(cfg_pm_t *pm, cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+{
+    memcpy(pm, &recdevid, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_REC_ID), cfg_rec); 
+    cfg_rec->rec_dev_id = add_str_item(cfg_str->str + pm->index, pm->len);
+}
+
+void parsing_revyear(cfg_pm_t *pm, cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+{
+    memcpy(pm, &revyear, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_YEAR), cfg_rec); 
+    cfg_rec->rev_year = pm->val_int;
+}
+
+void parsing_tt(cfg_pm_t *pm, cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+{
+    memcpy(pm, &tt, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_TT), cfg_rec); 
+    cfg_rec->ch_count = pm->val_int;
+}
+
+void parsing_tt_a(cfg_pm_t *pm, cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+{
+    memcpy(pm, &tt_a, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_TT_A), cfg_rec); 
+    cfg_rec->an_count = pm->val_int;
+}
+
+void parsing_tt_d(cfg_pm_t *pm, cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+{
+    memcpy(pm, &tt_d, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_TT_D), cfg_rec); 
+    cfg_rec->dn_count = pm->val_int;
+}
+
+
+int analyze_cfg_header(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 {
     int error;
-    cfg_param_t pm;
+    cfg_pm_t pm;
     
     error = check_param_count(cfg_str->param_count, CP_HEADER_MIN, CP_HEADER);
     if (error)
@@ -465,38 +520,24 @@ int analyze_cfg_header(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
         return 1;
 
     /* Station name */
-    memcpy(&pm, &sname, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_SNAME),
-                    cfg_rec); 
-    cfg_rec->station_name = add_str_item(cfg_str->str, pm.len);
+    parsing_sname(&pm, cfg_str, cfg_rec);
 
     /* Recorder device id */
-    memcpy(&pm, &recdevid, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_REC_ID),
-                    cfg_rec); 
-    cfg_rec->rec_dev_id = add_str_item(cfg_str->str + pm.index, pm.len);
+    parsing_recdevid(&pm, cfg_str, cfg_rec);
 
     if (cfg_str->param_count < CP_HEADER)
         return 0;
 
     /* Revison year */
-    memcpy(&pm, &revyear, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_YEAR), cfg_rec); 
-    cfg_rec->rev_year = pm.val_int;
+    parsing_revyear(&pm, cfg_str, cfg_rec);
 
     return 0;
 }
 
-int analyze_cfg_chinfo(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
+int analyze_cfg_chinfo(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 {
     int error;
-    cfg_param_t pm;
+    cfg_pm_t pm;
     
     error = check_param_count(cfg_str->param_count, CP_TT, CP_TT);
     if (error)
@@ -507,27 +548,15 @@ int analyze_cfg_chinfo(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
     error = 0;
 
     /* Total channels count */
-    memcpy(&pm, &tt, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_TT), cfg_rec); 
-    cfg_rec->ch_count = pm.val_int;
+    parsing_tt(&pm, cfg_str, cfg_rec);
 
     /* Analog channels count */
-    memcpy(&pm, &tt_a, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_TT_A), cfg_rec); 
-    cfg_rec->an_count = pm.val_int;
+    parsing_tt_a(&pm, cfg_str, cfg_rec);
     if (pm.err & ERRCODE(LN_ERR_INCORRECT_PARAM))
         error++;
 
     /* Digital channels count */
-    memcpy(&pm, &tt_d, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_TT_D), cfg_rec); 
-    cfg_rec->dn_count = pm.val_int;
+    parsing_tt_d(&pm, cfg_str, cfg_rec);
     if (pm.err & ERRCODE(LN_ERR_INCORRECT_PARAM))
         error++;
 
@@ -541,11 +570,145 @@ int analyze_cfg_chinfo(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
     return error;
 }
 
-int analyze_cfg_achannel(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
+void parsing_a_num(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &ach_num, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_AN), cfg_rec); 
+    (cfg_rec->anv + ch_index)->num = pm->val_int;
+}
+
+void parsing_a_chid(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &ach_chid, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_CHID), cfg_rec); 
+    (cfg_rec->anv + ch_index)->ch_id = add_str_item(cfg_str->str + pm->index,
+            pm->len);
+}
+
+void parsing_a_phase(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &ach_phase, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_PH), cfg_rec); 
+    (cfg_rec->anv + ch_index)->phase = add_str_item(cfg_str->str + pm->index,
+            pm->len);
+}
+
+void parsing_a_ccbm(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &ach_ccbm, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_CCBM), cfg_rec); 
+    (cfg_rec->anv + ch_index)->ccbm = add_str_item(cfg_str->str + pm->index,
+            pm->len);
+}
+
+void parsing_a_uu(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &ach_uu, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_UU), cfg_rec); 
+    (cfg_rec->anv + ch_index)->uu = add_str_item(cfg_str->str + pm->index,
+            pm->len);
+}
+
+void parsing_a_a(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &ach_a, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_A), cfg_rec); 
+    (cfg_rec->anv + ch_index)->a = pm->val_float;
+}
+
+void parsing_a_b(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &ach_b, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_B), cfg_rec); 
+    (cfg_rec->anv + ch_index)->b = pm->val_float;
+}
+
+void parsing_a_skew(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &ach_skew, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_SKEW), cfg_rec); 
+    (cfg_rec->anv + ch_index)->skew = pm->val_float;
+}
+
+void parsing_a_min(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &ach_min, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_MIN), cfg_rec); 
+    (cfg_rec->anv + ch_index)->min = pm->val_float;
+}
+
+void parsing_a_max(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &ach_max, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_MAX), cfg_rec); 
+    (cfg_rec->anv + ch_index)->max = pm->val_float;
+}
+
+void parsing_a_prim(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &ach_primary, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_PRIM), cfg_rec); 
+    (cfg_rec->anv + ch_index)->primary = pm->val_float;
+}
+
+void parsing_a_sec(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &ach_secondary, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_SEC), cfg_rec); 
+    (cfg_rec->anv + ch_index)->secondary = pm->val_float;
+}
+
+void parsing_a_ps(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &ach_ps, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    (cfg_rec->anv + ch_index)->ps = check_ps_value(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_PS), cfg_rec);
+}
+
+int analyze_cfg_achannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 {
     int error;
     int ch_index;
-    cfg_param_t pm;
+    cfg_pm_t pm;
 
     error = check_param_count(cfg_str->param_count, CP_AN_1991, CP_AN_1999);
     ch_index = get_empty_anfield(cfg_rec, cfg_rec->anv);
@@ -557,103 +720,46 @@ int analyze_cfg_achannel(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
         return ch_index;
 
     /* Channel number */
-    memcpy(&pm, &ach_num, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_AN), cfg_rec); 
-    (cfg_rec->anv + ch_index)->num = pm.val_int;
+    parsing_a_num(&pm, cfg_str, cfg_rec, ch_index);
 
     /* Channel id */
-    memcpy(&pm, &ach_chid, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_CHID), cfg_rec); 
-    (cfg_rec->anv + ch_index)->ch_id = add_str_item(cfg_str->str + pm.index,
-            pm.len);
+    parsing_a_chid(&pm, cfg_str, cfg_rec, ch_index);
 
     /* Channel phase */
-    memcpy(&pm, &ach_phase, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_PH), cfg_rec); 
-    (cfg_rec->anv + ch_index)->phase = add_str_item(cfg_str->str + pm.index,
-            pm.len);
+    parsing_a_phase(&pm, cfg_str, cfg_rec, ch_index);
 
     /* Channel circuit component */
-    memcpy(&pm, &ach_ccbm, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_CCBM), cfg_rec); 
-    (cfg_rec->anv + ch_index)->ccbm = add_str_item(cfg_str->str + pm.index,
-            pm.len);
+    parsing_a_ccbm(&pm, cfg_str, cfg_rec, ch_index);
 
     /* Channel unit */
-    memcpy(&pm, &ach_uu, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_UU), cfg_rec); 
-    (cfg_rec->anv + ch_index)->uu = add_str_item(cfg_str->str + pm.index,
-            pm.len);
+    parsing_a_uu(&pm, cfg_str, cfg_rec, ch_index);
 
     /* Channel multipler (a) */
-    memcpy(&pm, &ach_a, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_A), cfg_rec); 
-    (cfg_rec->anv + ch_index)->a = pm.val_float;
+    parsing_a_a(&pm, cfg_str, cfg_rec, ch_index);
 
     /* Channel offset (b) */
-    memcpy(&pm, &ach_b, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_B), cfg_rec); 
-    (cfg_rec->anv + ch_index)->b = pm.val_float;
+    parsing_a_b(&pm, cfg_str, cfg_rec, ch_index);
 
     /* Channel time skew */
-    memcpy(&pm, &ach_skew, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_SKEW), cfg_rec); 
-    (cfg_rec->anv + ch_index)->skew = pm.val_float;
+    parsing_a_skew(&pm, cfg_str, cfg_rec, ch_index);
 
     /* Channel minimum scale */
-    memcpy(&pm, &ach_min, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_MIN), cfg_rec); 
-    (cfg_rec->anv + ch_index)->min = pm.val_float;
+    parsing_a_min(&pm, cfg_str, cfg_rec, ch_index);
 
     /* Channel maximum scale */
-    memcpy(&pm, &ach_max, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_MAX), cfg_rec); 
-    (cfg_rec->anv + ch_index)->max = pm.val_float;
+    parsing_a_max(&pm, cfg_str, cfg_rec, ch_index);
 
     if (cfg_str->param_count != CP_AN_1999)
         return error;
 
     /* Channel primary value */
-    memcpy(&pm, &ach_primary, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_PRIM), cfg_rec); 
-    (cfg_rec->anv + ch_index)->primary = pm.val_float;
+    parsing_a_prim(&pm, cfg_str, cfg_rec, ch_index);
 
     /* Channel secondary value */
-    memcpy(&pm, &ach_secondary, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_SEC), cfg_rec); 
-    (cfg_rec->anv + ch_index)->secondary = pm.val_float;
+    parsing_a_sec(&pm, cfg_str, cfg_rec, ch_index);
 
     /* Channel P/S */
-    memcpy(&pm, &ach_ps, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, &pm);
-    (cfg_rec->anv + ch_index)->ps = check_ps_value(cfg_str, &pm);
-    if (pm.err)
-        add_error_code(cfg_str->nstr, pm.err, ERRCODE(PM_ERR_PS), cfg_rec);
-
+    parsing_a_ps(&pm, cfg_str, cfg_rec, ch_index);
     return ch_index;
 }
 
@@ -663,10 +769,10 @@ int analyze_cfg_achannel(cfgfile_string_t *cfg_str, cmtrd_cfg_body_t *cfg_rec)
  * 3-Read error
  * 4-Buffer overflow
 */
-int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
+int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
 {
     char buffer[STR_BUFSIZE];
-    cfgfile_string_t cfg_str;
+    cfg_str_t cfg_str;
     enum getstring_status status;
     enum analyze_cfg_state next_state = analyze_header;
 
@@ -709,13 +815,13 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_body_t *cfg_rec)
     return 0;
 }
 
-void cfg_record_init(cmtrd_cfg_body_t *cfg_rec)
+void cfg_record_init(cmtrd_cfg_t *cfg_rec)
 {
-    memset(cfg_rec, 0, sizeof(cmtrd_cfg_body_t));
+    memset(cfg_rec, 0, sizeof(cmtrd_cfg_t));
     cfg_rec->rev_year = 1991;
 }
 
-void print_errors(cmtrd_cfg_body_t *cfg_rec)
+void print_errors(cmtrd_cfg_t *cfg_rec)
 {
     int i;
 
@@ -741,7 +847,7 @@ void print_errors(cmtrd_cfg_body_t *cfg_rec)
     }
 }
 
-void print_achannels_info(cmtrd_cfg_body_t *cfg_rec)
+void print_achannels_info(cmtrd_cfg_t *cfg_rec)
 {
     int i;
 
@@ -765,7 +871,7 @@ void print_achannels_info(cmtrd_cfg_body_t *cfg_rec)
     }
 }
 
-void print_info(cmtrd_cfg_body_t *cfg_rec)
+void print_info(cmtrd_cfg_t *cfg_rec)
 {
     printf("General info:\n");
     printf("    Station name: %s\n", cfg_rec->station_name);
@@ -787,7 +893,7 @@ int main(int argc, char **argv)
 {
     int res;
     FILE *fd;
-    cmtrd_cfg_body_t cfg_rec;
+    cmtrd_cfg_t cfg_rec;
 
     if (argc < 2) {
         fputs("No input file\n", stderr);
