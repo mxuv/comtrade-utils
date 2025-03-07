@@ -77,8 +77,8 @@
 
 #define D_N_LEN_MIN                 1
 #define D_N_LEN_MAX                 6
-#define D_CH_ID_LEN_MIN             1
-#define D_CH_ID_LEN_MAX             128
+#define D_CHID_LEN_MIN              1
+#define D_CHID_LEN_MAX              128
 #define D_PH_LEN_MIN                0
 #define D_PH_LEN_MAX                2
 #define D_CCBM_LEN_MIN              0
@@ -259,10 +259,8 @@
 
 #define PM_CH_D_OFFSET              PM_CH_A_OFFSET + CP_AN_1999
 #define PM_DN                       0
-#define PM_CHID                     1
-#define PM_PH                       2
-#define PM_CCBM                     3
-#define PM_Y                        4
+#define PM_Y_1991                   2
+#define PM_Y_1999                   4
 
 #define PM_LF_OFFSET                PM_CH_D_OFFSET + CP_DN_1999
 #define PM_LF                       0

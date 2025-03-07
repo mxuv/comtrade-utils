@@ -152,6 +152,18 @@ const cfg_pvv_t ach_primary = {pfloat, PM_PRIM, A_PRIMARY_LEN_MIN,
 const cfg_pvv_t ach_secondary = {pfloat, PM_SEC, A_SECONDARY_LEN_MIN,
     A_SECONDARY_LEN_MAX, 0, 0, 0, 0};
 const cfg_pvv_t ach_ps = {pchar, PM_PS, A_PS_LEN_MIN, A_PS_LEN_MAX, 0, 0, 0, 0};
+const cfg_pvv_t dch_num = {pint, PM_DN, D_N_LEN_MIN, D_N_LEN_MAX,
+    D_N_VAL_MIN, D_N_VAL_MAX, 0, 0};
+const cfg_pvv_t dch_chid = {pstring, PM_CHID, D_CHID_LEN_MIN, D_CHID_LEN_MAX,
+    0, 0, 0, 0};
+const cfg_pvv_t dch_phase = {pstring, PM_PH, D_PH_LEN_MIN, D_PH_LEN_MAX,
+    0, 0, 0, 0};
+const cfg_pvv_t dch_ccbm = {pstring, PM_CCBM, D_CCBM_LEN_MIN, D_CCBM_LEN_MAX,
+    0, 0, 0, 0};
+const cfg_pvv_t dch_y1991 = {pint, PM_Y_1991, D_Y_LEN_MIN, D_Y_LEN_MAX,
+    D_Y_VAL_MIN, D_Y_VAL_MAX, 0, 0};
+const cfg_pvv_t dch_y1999 = {pint, PM_Y_1999, D_Y_LEN_MIN, D_Y_LEN_MAX,
+    D_Y_VAL_MIN, D_Y_VAL_MAX, 0, 0};
 
 int match_char(char ch, char patt)
 {
@@ -399,6 +411,17 @@ char check_ps_value(cfg_str_t *cfg_str, cfg_pm_t *pm)
     }
 }
 
+int get_empty_field(int *p, int count, int fieldsize)
+{
+    int i;
+    for (i = 0; i < count; i++) {
+        if (*(p + (i * fieldsize / sizeof(*p))) == 0)
+            return i;
+    }
+    return -1;
+}
+
+#if 0
 int get_empty_anfield(cmtrd_cfg_t *cfg_rec, cmtrd_an_t *ch)
 {
     int i;
@@ -409,12 +432,34 @@ int get_empty_anfield(cmtrd_cfg_t *cfg_rec, cmtrd_an_t *ch)
     return -1;
 }
 
+int get_empty_dnfield(cmtrd_cfg_t *cfg_rec, cmtrd_dn_t *ch)
+{
+    int i;
+    for (i = 0; i < cfg_rec->dn_count; i++) {
+        if ((ch + i)->num == 0)
+            return i;
+    }
+    return -1;
+}
+#endif
+
 int is_match_ach_rev(int param_count, int rev_year)
 {
     if (rev_year >= rev1991 && rev_year < rev1999 && param_count == CP_AN_1991)
         return 1;
 
     if (rev_year >= rev1999 && param_count == CP_AN_1999)
+        return 1;
+
+    return 0;
+}
+
+int is_match_dch_rev(int param_count, int rev_year)
+{
+    if (rev_year >= rev1991 && rev_year < rev1999 && param_count == CP_DN_1991)
+        return 1;
+
+    if (rev_year >= rev1999 && param_count == CP_DN_1999)
         return 1;
 
     return 0;
@@ -711,7 +756,10 @@ int analyze_cfg_achannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     cfg_pm_t pm;
 
     error = check_param_count(cfg_str->param_count, CP_AN_1991, CP_AN_1999);
-    ch_index = get_empty_anfield(cfg_rec, cfg_rec->anv);
+    ch_index = get_empty_field(&cfg_rec->anv->num, cfg_rec->an_count,
+            sizeof(cmtrd_an_t));
+    /* ch_index = get_empty_anfield(cfg_rec, cfg_rec->anv); */
+    /* printf("%d\n", sizeof(*(cfg_rec->anv))); */
     if (error)
         add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
     if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
@@ -750,7 +798,7 @@ int analyze_cfg_achannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     parsing_a_max(&pm, cfg_str, cfg_rec, ch_index);
 
     if (cfg_str->param_count != CP_AN_1999)
-        return error;
+        return ch_index;
 
     /* Channel primary value */
     parsing_a_prim(&pm, cfg_str, cfg_rec, ch_index);
@@ -763,6 +811,100 @@ int analyze_cfg_achannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     return ch_index;
 }
 
+void parsing_d_num(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &dch_num, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_DN), cfg_rec); 
+    (cfg_rec->dnv + ch_index)->num = pm->val_int;
+}
+
+void parsing_d_chid(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &dch_chid, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_CHID), cfg_rec); 
+    (cfg_rec->dnv + ch_index)->ch_id = add_str_item(cfg_str->str + pm->index,
+            pm->len);
+}
+
+void parsing_d_phase(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &dch_phase, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_PH), cfg_rec); 
+    (cfg_rec->dnv + ch_index)->phase = add_str_item(cfg_str->str + pm->index,
+            pm->len);
+}
+
+void parsing_d_ccbm(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    memcpy(pm, &dch_ccbm, sizeof(cfg_pvv_t));
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_CCBM), cfg_rec); 
+    (cfg_rec->dnv + ch_index)->ccbm = add_str_item(cfg_str->str + pm->index,
+            pm->len);
+}
+
+void parsing_d_y(cfg_pm_t *pm, cfg_str_t *cfg_str,
+        cmtrd_cfg_t *cfg_rec, int ch_index)
+{
+    if (cfg_rec->rev_year < rev1999)
+        memcpy(pm, &dch_y1991, sizeof(cfg_pvv_t));
+    else
+        memcpy(pm, &dch_y1999, sizeof(cfg_pvv_t));
+
+    parsing_parameter(cfg_str, pm);
+    if (pm->err)
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_Y), cfg_rec); 
+    (cfg_rec->dnv + ch_index)->y = pm->val_int;
+}
+
+int analyze_cfg_dchannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+{
+    int error;
+    int ch_index;
+    cfg_pm_t pm;
+
+    error = check_param_count(cfg_str->param_count, CP_DN_1991, CP_DN_1999);
+    ch_index = get_empty_field(&cfg_rec->dnv->num, cfg_rec->dn_count,
+            sizeof(cmtrd_dn_t));
+    if (error)
+        add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
+    if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
+        return ch_index;
+    if (ch_index == -1)
+        return ch_index;
+
+    /* Channel number */
+    parsing_d_num(&pm, cfg_str, cfg_rec, ch_index);
+
+    /* Channel id */
+    parsing_d_chid(&pm, cfg_str, cfg_rec, ch_index);
+
+    if (cfg_str->param_count >= CP_DN_1999) {
+
+        /* Channel phase */
+        parsing_d_phase(&pm, cfg_str, cfg_rec, ch_index);
+
+        /* Channel circuit component */
+        parsing_d_ccbm(&pm, cfg_str, cfg_rec, ch_index);
+    }
+
+    /* Channel default state */
+    parsing_d_y(&pm, cfg_str, cfg_rec, ch_index);
+
+    return ch_index;
+}
+
 /* Return values:
  * 0-Ok
  * 2-Unexcepted end of file
@@ -771,6 +913,7 @@ int analyze_cfg_achannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 */
 int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
 {
+    int result;
     char buffer[STR_BUFSIZE];
     cfg_str_t cfg_str;
     enum getstring_status status;
@@ -797,11 +940,18 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
             next_state++;
             break;
         case analyze_ach:
-            int result;
             result = analyze_cfg_achannel(&cfg_str, cfg_rec);
             if (result == -1 || result == cfg_rec->an_count - 1)
                 next_state++;
             if (!is_match_ach_rev(cfg_str.param_count, cfg_rec->rev_year))
+                add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR),
+                    ERRNULL, cfg_rec);
+            break;
+        case analyze_dch:
+            result = analyze_cfg_dchannel(&cfg_str, cfg_rec);
+            if (result == -1 || result == cfg_rec->dn_count - 1)
+                next_state++;
+            if (!is_match_dch_rev(cfg_str.param_count, cfg_rec->rev_year))
                 add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR),
                     ERRNULL, cfg_rec);
             break;
@@ -871,6 +1021,21 @@ void print_achannels_info(cmtrd_cfg_t *cfg_rec)
     }
 }
 
+void print_dchannels_info(cmtrd_cfg_t *cfg_rec)
+{
+    int i;
+
+    for (i = 0; i < cfg_rec->dn_count; i++) {
+        printf("Digital channel:\n");
+        printf("    Channel number: %d\n", (cfg_rec->dnv + i)->num);
+        printf("    Channel id: %s\n", (cfg_rec->dnv + i)->ch_id);
+        printf("    Channel phase: %s\n", (cfg_rec->dnv + i)->phase);
+        printf("    Channel circuit: %s\n", (cfg_rec->dnv + i)->ccbm);
+        printf("    Channel default state: %d\n", (cfg_rec->dnv + i)->y);
+
+    }
+}
+
 void print_info(cmtrd_cfg_t *cfg_rec)
 {
     printf("General info:\n");
@@ -881,8 +1046,8 @@ void print_info(cmtrd_cfg_t *cfg_rec)
     printf("    Total channels count: %d\n", cfg_rec->ch_count);
     printf("    Analog channels count: %d\n", cfg_rec->an_count);
     printf("    Digital channels count: %d\n", cfg_rec->dn_count);
-
     print_achannels_info(cfg_rec);
+    print_dchannels_info(cfg_rec);
 }
 
 /* return codes:
