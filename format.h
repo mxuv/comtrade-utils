@@ -2,7 +2,7 @@
 #define _FORMAT_H_
 
 /* Parameters count in line */
-#define CP_HEADER                   3                   
+#define CP_HEADER_MAX               3                   
 #define CP_HEADER_MIN               2                   
 
 #define CP_TT                       3

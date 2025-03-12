@@ -49,6 +49,7 @@ typedef struct
 {
     enum param_type ptype;
     int num;
+    int err;
     int len_min;
     int len_max;
     int ival_min;
@@ -115,55 +116,282 @@ const char *parammsg[] = { parammsg0, parammsg1, parammsg2, parammsg3,
         parammsg28, parammsg29, parammsg30, parammsg31, parammsg32, parammsg33, 
         parammsg34, parammsg35, parammsg36 }; 
 
-const cfg_pvv_t sname = {pstring, PM_SNAME, SNAME_LEN_MIN, SNAME_LEN_MAX,
-    0, 0, 0, 0};
-const cfg_pvv_t recdevid = {pstring, PM_REC_ID, RECDEV_LEN_MIN, RECDEV_LEN_MAX,
-    0, 0, 0, 0};
-const cfg_pvv_t revyear = {pint, PM_YEAR, REVYEAR_LEN_MIN, REVYEAR_LEN_MAX,
-    REV_YEAR_VAL_MIN, REV_YEAR_VAL_MAX, 0, 0};
-const cfg_pvv_t tt = {pint, PM_TT, TT_LEN_MIN, TT_LEN_MAX,
-    TT_VAL_MIN, TT_VAL_MAX, 0, 0};
-const cfg_pvv_t tt_a = {pintc, PM_TT_A, AN_LEN_MIN, AN_LEN_MAX,
-    AN_VAL_MIN, AN_VAL_MAX, 0, 0};
-const cfg_pvv_t tt_d = {pintc, PM_TT_D, DN_LEN_MIN, DN_LEN_MAX,
-    DN_VAL_MIN, DN_VAL_MAX, 0, 0};
-const cfg_pvv_t ach_num = {pint, PM_AN, A_N_LEN_MIN, A_N_LEN_MAX,
-    A_N_VAL_MIN, A_N_VAL_MAX, 0, 0};
-const cfg_pvv_t ach_chid = {pstring, PM_CHID, A_CHID_LEN_MIN, A_CHID_LEN_MAX,
-    0, 0, 0, 0};
-const cfg_pvv_t ach_phase = {pstring, PM_PH, A_PH_LEN_MIN, A_PH_LEN_MAX,
-    0, 0, 0, 0};
-const cfg_pvv_t ach_ccbm = {pstring, PM_CCBM, A_CCBM_LEN_MIN, A_CCBM_LEN_MAX,
-    0, 0, 0, 0};
-const cfg_pvv_t ach_uu = {pstring, PM_UU, A_UU_LEN_MIN, A_UU_LEN_MAX,
-    0, 0, 0, 0};
-const cfg_pvv_t ach_a = {pfloat, PM_A, A_A_LEN_MIN, A_A_LEN_MAX,
-    0, 0, 0, 0};
-const cfg_pvv_t ach_b = {pfloat, PM_B, A_B_LEN_MIN, A_B_LEN_MAX,
-    0, 0, 0, 0};
-const cfg_pvv_t ach_skew = {pfloat, PM_SKEW, A_SKEW_LEN_MIN, A_SKEW_LEN_MAX,
-    0, 0, 0, 0};
-const cfg_pvv_t ach_min = {pfloat, PM_MIN, A_MINSC_LEN_MIN, A_MINSC_LEN_MAX,
-    0, 0, A_MINSC_VAL_MIN, A_MINSC_VAL_MAX};
-const cfg_pvv_t ach_max = {pfloat, PM_MAX, A_MAXSC_LEN_MIN, A_MAXSC_LEN_MAX,
-    0, 0, A_MAXSC_VAL_MIN, A_MAXSC_VAL_MAX};
-const cfg_pvv_t ach_primary = {pfloat, PM_PRIM, A_PRIMARY_LEN_MIN,
-    A_PRIMARY_LEN_MAX, 0, 0, 0, 0};
-const cfg_pvv_t ach_secondary = {pfloat, PM_SEC, A_SECONDARY_LEN_MIN,
-    A_SECONDARY_LEN_MAX, 0, 0, 0, 0};
-const cfg_pvv_t ach_ps = {pchar, PM_PS, A_PS_LEN_MIN, A_PS_LEN_MAX, 0, 0, 0, 0};
-const cfg_pvv_t dch_num = {pint, PM_DN, D_N_LEN_MIN, D_N_LEN_MAX,
-    D_N_VAL_MIN, D_N_VAL_MAX, 0, 0};
-const cfg_pvv_t dch_chid = {pstring, PM_CHID, D_CHID_LEN_MIN, D_CHID_LEN_MAX,
-    0, 0, 0, 0};
-const cfg_pvv_t dch_phase = {pstring, PM_PH, D_PH_LEN_MIN, D_PH_LEN_MAX,
-    0, 0, 0, 0};
-const cfg_pvv_t dch_ccbm = {pstring, PM_CCBM, D_CCBM_LEN_MIN, D_CCBM_LEN_MAX,
-    0, 0, 0, 0};
-const cfg_pvv_t dch_y1991 = {pint, PM_Y_1991, D_Y_LEN_MIN, D_Y_LEN_MAX,
-    D_Y_VAL_MIN, D_Y_VAL_MAX, 0, 0};
-const cfg_pvv_t dch_y1999 = {pint, PM_Y_1999, D_Y_LEN_MIN, D_Y_LEN_MAX,
-    D_Y_VAL_MIN, D_Y_VAL_MAX, 0, 0};
+const cfg_pvv_t sname = {
+    pstring,
+    PM_SNAME,
+    PM_ERR_SNAME,
+    SNAME_LEN_MIN,
+    SNAME_LEN_MAX, 
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t recdevid = {
+    pstring,
+    PM_REC_ID,
+    PM_ERR_REC_ID,
+    RECDEV_LEN_MIN,
+    RECDEV_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t revyear = {
+    pint,
+    PM_YEAR,
+    PM_ERR_YEAR,
+    REVYEAR_LEN_MIN,
+    REVYEAR_LEN_MAX,
+    REV_YEAR_VAL_MIN,
+    REV_YEAR_VAL_MAX,
+    0,
+    0
+};
+const cfg_pvv_t tt = {
+    pint,
+    PM_TT,
+    PM_ERR_TT,
+    TT_LEN_MIN,
+    TT_LEN_MAX,
+    TT_VAL_MIN,
+    TT_VAL_MAX,
+    0,
+    0
+};
+const cfg_pvv_t tt_a = {
+    pintc,
+    PM_TT_A,
+    PM_ERR_TT_A,
+    AN_LEN_MIN,
+    AN_LEN_MAX,
+    AN_VAL_MIN,
+    AN_VAL_MAX,
+    0,
+    0
+};
+const cfg_pvv_t tt_d = {
+    pintc,
+    PM_TT_D,
+    PM_ERR_TT_D,
+    DN_LEN_MIN,
+    DN_LEN_MAX,
+    DN_VAL_MIN,
+    DN_VAL_MAX,
+    0,
+    0
+};
+const cfg_pvv_t ach_num = {
+    pint,
+    PM_AN,
+    PM_ERR_AN,
+    A_N_LEN_MIN,
+    A_N_LEN_MAX,
+    A_N_VAL_MIN,
+    A_N_VAL_MAX,
+    0,
+    0
+};
+const cfg_pvv_t ach_chid = {
+    pstring,
+    PM_CHID,
+    PM_ERR_CHID,
+    A_CHID_LEN_MIN,
+    A_CHID_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t ach_phase = {
+    pstring,
+    PM_PH,
+    PM_ERR_PH,
+    A_PH_LEN_MIN,
+    A_PH_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t ach_ccbm = {
+    pstring,
+    PM_CCBM,
+    PM_ERR_CCBM,
+    A_CCBM_LEN_MIN,
+    A_CCBM_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t ach_uu = {
+    pstring, 
+    PM_UU,
+    PM_ERR_UU,
+    A_UU_LEN_MIN,
+    A_UU_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t ach_a = {
+    pfloat,
+    PM_A,
+    PM_ERR_A,
+    A_A_LEN_MIN,
+    A_A_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t ach_b = {
+    pfloat,
+    PM_B,
+    PM_ERR_B,
+    A_B_LEN_MIN,
+    A_B_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t ach_skew = {
+    pfloat,
+    PM_SKEW,
+    PM_ERR_SKEW,
+    A_SKEW_LEN_MIN,
+    A_SKEW_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t ach_min = {
+    pfloat,
+    PM_MIN,
+    PM_ERR_MIN,
+    A_MINSC_LEN_MIN,
+    A_MINSC_LEN_MAX,
+    0,
+    0,
+    A_MINSC_VAL_MIN,
+    A_MINSC_VAL_MAX
+};
+const cfg_pvv_t ach_max = {
+    pfloat,
+    PM_MAX,
+    PM_ERR_MAX,
+    A_MAXSC_LEN_MIN,
+    A_MAXSC_LEN_MAX,
+    0,
+    0,
+    A_MAXSC_VAL_MIN,
+    A_MAXSC_VAL_MAX
+};
+const cfg_pvv_t ach_primary = {
+    pfloat,
+    PM_PRIM,
+    A_PRIMARY_LEN_MIN,
+    A_PRIMARY_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t ach_secondary = {
+    pfloat,
+    PM_SEC,
+    PM_ERR_SEC,
+    A_SECONDARY_LEN_MIN,
+    A_SECONDARY_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t ach_ps = {
+    pchar,
+    PM_PS,
+    PM_ERR_PS,
+    A_PS_LEN_MIN,
+    A_PS_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t dch_num = {
+    pint,
+    PM_DN,
+    PM_ERR_DN,
+    D_N_LEN_MIN,
+    D_N_LEN_MAX,
+    D_N_VAL_MIN,
+    D_N_VAL_MAX,
+    0,
+    0
+};
+const cfg_pvv_t dch_chid = {
+    pstring,
+    PM_CHID,
+    PM_ERR_CHID,
+    D_CHID_LEN_MIN,
+    D_CHID_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t dch_phase = {
+    pstring,
+    PM_PH,
+    PM_ERR_PH,
+    D_PH_LEN_MIN,
+    D_PH_LEN_MAX,
+    0, 
+    0,
+    0,
+    0
+};
+const cfg_pvv_t dch_ccbm = {
+    pstring,
+    PM_CCBM,
+    PM_ERR_CCBM,
+    D_CCBM_LEN_MIN,
+    D_CCBM_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t dch_y1991 = {
+    pint,
+    PM_Y_1991,
+    PM_ERR_Y,
+    D_Y_LEN_MIN,
+    D_Y_LEN_MAX,
+    D_Y_VAL_MIN,
+    D_Y_VAL_MAX,
+    0,
+    0
+};
+const cfg_pvv_t dch_y1999 = {
+    pint,
+    PM_Y_1999,
+    PM_ERR_Y,
+    D_Y_LEN_MIN,
+    D_Y_LEN_MAX,
+    D_Y_VAL_MIN,
+    D_Y_VAL_MAX,
+    0,
+    0
+};
+
+const cfg_pvv_t pvv[] = { sname, recdevid, revyear, tt, tt_a, tt_d };
 
 int match_char(char ch, char patt)
 {
@@ -558,7 +786,8 @@ int analyze_cfg_header(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     int error;
     cfg_pm_t pm;
     
-    error = check_param_count(cfg_str->param_count, CP_HEADER_MIN, CP_HEADER);
+    error = check_param_count(cfg_str->param_count, CP_HEADER_MIN,
+            CP_HEADER_MAX);
     if (error)
         add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
     if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
@@ -570,7 +799,7 @@ int analyze_cfg_header(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     /* Recorder device id */
     parsing_recdevid(&pm, cfg_str, cfg_rec);
 
-    if (cfg_str->param_count < CP_HEADER)
+    if (cfg_str->param_count < CP_HEADER_MAX)
         return 0;
 
     /* Revison year */
