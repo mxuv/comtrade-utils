@@ -706,6 +706,15 @@ void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     case prev_year:
         cfg_rec->rev_year = pm->val_int;
         break;
+    case ptt:
+        cfg_rec->ch_count = pm->val_int;
+        break;
+    case ptt_a:
+        cfg_rec->an_count = pm->val_int;
+        break;
+    case ptt_d:
+        cfg_rec->dn_count = pm->val_int;
+        break;
     default:
         break;
     }
@@ -822,7 +831,7 @@ int analyze_cfg_header(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 
     return 0;
 }
-#if 0
+
 int analyze_cfg_chinfo(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 {
     int error;
@@ -837,15 +846,15 @@ int analyze_cfg_chinfo(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     error = 0;
 
     /* Total channels count */
-    parsing_tt(&pm, cfg_str, cfg_rec);
+    parsing_parameter(ptt, cfg_str, &pm, cfg_rec);
 
     /* Analog channels count */
-    parsing_tt_a(&pm, cfg_str, cfg_rec);
+    parsing_parameter(ptt_a, cfg_str, &pm, cfg_rec);
     if (pm.err & ERRCODE(LN_ERR_INCORRECT_PARAM))
         error++;
 
     /* Digital channels count */
-    parsing_tt_d(&pm, cfg_str, cfg_rec);
+    parsing_parameter(ptt_d, cfg_str, &pm, cfg_rec);
     if (pm.err & ERRCODE(LN_ERR_INCORRECT_PARAM))
         error++;
 
@@ -859,6 +868,7 @@ int analyze_cfg_chinfo(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     return error;
 }
 
+#if 0
 void parsing_a_num(cfg_pm_t *pm, cfg_str_t *cfg_str,
         cmtrd_cfg_t *cfg_rec, int ch_index)
 {
@@ -1179,9 +1189,9 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
             next_state++;
             break;
         case analyze_tt:
-            /* if (analyze_cfg_chinfo(&cfg_str, cfg_rec)) */
-            /*     return 1; */
-            /* create_channels_fields(cfg_rec); */
+            if (analyze_cfg_chinfo(&cfg_str, cfg_rec))
+                return 1;
+            create_channels_fields(cfg_rec);
             next_state++;
             break;
         case analyze_ach:
