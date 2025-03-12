@@ -106,19 +106,19 @@ const char parammsg35[] = "Time quality code";
 const char parammsg36[] = "Leap second indicator";
 
 const char *lnerrmsg[] = { lnerrmsg0, lnerrmsg1, lnerrmsg2, lnerrmsg3,
-        lnerrmsg4, lnerrmsg5, lnerrmsg6, lnerrmsg7 };
+    lnerrmsg4, lnerrmsg5, lnerrmsg6, lnerrmsg7 };
 
 const char *parammsg[] = { parammsg0, parammsg1, parammsg2, parammsg3,
-        parammsg4, parammsg5, parammsg6, parammsg7, parammsg8, parammsg9,
-        parammsg10, parammsg11, parammsg12, parammsg13, parammsg14, parammsg15,
-        parammsg16, parammsg17, parammsg18, parammsg19, parammsg20, parammsg21,
-        parammsg22, parammsg23, parammsg24, parammsg25, parammsg26, parammsg27,
-        parammsg28, parammsg29, parammsg30, parammsg31, parammsg32, parammsg33, 
-        parammsg34, parammsg35, parammsg36 }; 
+    parammsg4, parammsg5, parammsg6, parammsg7, parammsg8, parammsg9,
+    parammsg10, parammsg11, parammsg12, parammsg13, parammsg14, parammsg15,
+    parammsg16, parammsg17, parammsg18, parammsg19, parammsg20, parammsg21,
+    parammsg22, parammsg23, parammsg24, parammsg25, parammsg26, parammsg27,
+    parammsg28, parammsg29, parammsg30, parammsg31, parammsg32, parammsg33, 
+    parammsg34, parammsg35, parammsg36 }; 
 
 const cfg_pvv_t sname = {
     pstring,
-    PM_SNAME,
+    PM_SNAME_POS,
     PM_ERR_SNAME,
     SNAME_LEN_MIN,
     SNAME_LEN_MAX, 
@@ -129,7 +129,7 @@ const cfg_pvv_t sname = {
 };
 const cfg_pvv_t recdevid = {
     pstring,
-    PM_REC_ID,
+    PM_REC_ID_POS,
     PM_ERR_REC_ID,
     RECDEV_LEN_MIN,
     RECDEV_LEN_MAX,
@@ -140,7 +140,7 @@ const cfg_pvv_t recdevid = {
 };
 const cfg_pvv_t revyear = {
     pint,
-    PM_YEAR,
+    PM_YEAR_POS,
     PM_ERR_YEAR,
     REVYEAR_LEN_MIN,
     REVYEAR_LEN_MAX,
@@ -151,7 +151,7 @@ const cfg_pvv_t revyear = {
 };
 const cfg_pvv_t tt = {
     pint,
-    PM_TT,
+    PM_TT_POS,
     PM_ERR_TT,
     TT_LEN_MIN,
     TT_LEN_MAX,
@@ -162,7 +162,7 @@ const cfg_pvv_t tt = {
 };
 const cfg_pvv_t tt_a = {
     pintc,
-    PM_TT_A,
+    PM_TT_A_POS,
     PM_ERR_TT_A,
     AN_LEN_MIN,
     AN_LEN_MAX,
@@ -173,7 +173,7 @@ const cfg_pvv_t tt_a = {
 };
 const cfg_pvv_t tt_d = {
     pintc,
-    PM_TT_D,
+    PM_TT_D_POS,
     PM_ERR_TT_D,
     DN_LEN_MIN,
     DN_LEN_MAX,
@@ -184,7 +184,7 @@ const cfg_pvv_t tt_d = {
 };
 const cfg_pvv_t ach_num = {
     pint,
-    PM_AN,
+    PM_AN_POS,
     PM_ERR_AN,
     A_N_LEN_MIN,
     A_N_LEN_MAX,
@@ -195,7 +195,7 @@ const cfg_pvv_t ach_num = {
 };
 const cfg_pvv_t ach_chid = {
     pstring,
-    PM_CHID,
+    PM_CHID_POS,
     PM_ERR_CHID,
     A_CHID_LEN_MIN,
     A_CHID_LEN_MAX,
@@ -206,7 +206,7 @@ const cfg_pvv_t ach_chid = {
 };
 const cfg_pvv_t ach_phase = {
     pstring,
-    PM_PH,
+    PM_PH_POS,
     PM_ERR_PH,
     A_PH_LEN_MIN,
     A_PH_LEN_MAX,
@@ -217,7 +217,7 @@ const cfg_pvv_t ach_phase = {
 };
 const cfg_pvv_t ach_ccbm = {
     pstring,
-    PM_CCBM,
+    PM_CCBM_POS,
     PM_ERR_CCBM,
     A_CCBM_LEN_MIN,
     A_CCBM_LEN_MAX,
@@ -228,7 +228,7 @@ const cfg_pvv_t ach_ccbm = {
 };
 const cfg_pvv_t ach_uu = {
     pstring, 
-    PM_UU,
+    PM_UU_POS,
     PM_ERR_UU,
     A_UU_LEN_MIN,
     A_UU_LEN_MAX,
@@ -239,7 +239,7 @@ const cfg_pvv_t ach_uu = {
 };
 const cfg_pvv_t ach_a = {
     pfloat,
-    PM_A,
+    PM_A_POS,
     PM_ERR_A,
     A_A_LEN_MIN,
     A_A_LEN_MAX,
@@ -250,7 +250,7 @@ const cfg_pvv_t ach_a = {
 };
 const cfg_pvv_t ach_b = {
     pfloat,
-    PM_B,
+    PM_B_POS,
     PM_ERR_B,
     A_B_LEN_MIN,
     A_B_LEN_MAX,
@@ -261,7 +261,7 @@ const cfg_pvv_t ach_b = {
 };
 const cfg_pvv_t ach_skew = {
     pfloat,
-    PM_SKEW,
+    PM_SKEW_POS,
     PM_ERR_SKEW,
     A_SKEW_LEN_MIN,
     A_SKEW_LEN_MAX,
@@ -269,10 +269,9 @@ const cfg_pvv_t ach_skew = {
     0,
     0,
     0
-};
-const cfg_pvv_t ach_min = {
+}; const cfg_pvv_t ach_min = {
     pfloat,
-    PM_MIN,
+    PM_MIN_POS,
     PM_ERR_MIN,
     A_MINSC_LEN_MIN,
     A_MINSC_LEN_MAX,
@@ -283,7 +282,7 @@ const cfg_pvv_t ach_min = {
 };
 const cfg_pvv_t ach_max = {
     pfloat,
-    PM_MAX,
+    PM_MAX_POS,
     PM_ERR_MAX,
     A_MAXSC_LEN_MIN,
     A_MAXSC_LEN_MAX,
@@ -294,7 +293,7 @@ const cfg_pvv_t ach_max = {
 };
 const cfg_pvv_t ach_primary = {
     pfloat,
-    PM_PRIM,
+    PM_PRIM_POS,
     A_PRIMARY_LEN_MIN,
     A_PRIMARY_LEN_MAX,
     0,
@@ -304,7 +303,7 @@ const cfg_pvv_t ach_primary = {
 };
 const cfg_pvv_t ach_secondary = {
     pfloat,
-    PM_SEC,
+    PM_SEC_POS,
     PM_ERR_SEC,
     A_SECONDARY_LEN_MIN,
     A_SECONDARY_LEN_MAX,
@@ -315,7 +314,7 @@ const cfg_pvv_t ach_secondary = {
 };
 const cfg_pvv_t ach_ps = {
     pchar,
-    PM_PS,
+    PM_PS_POS,
     PM_ERR_PS,
     A_PS_LEN_MIN,
     A_PS_LEN_MAX,
@@ -326,7 +325,7 @@ const cfg_pvv_t ach_ps = {
 };
 const cfg_pvv_t dch_num = {
     pint,
-    PM_DN,
+    PM_DN_POS,
     PM_ERR_DN,
     D_N_LEN_MIN,
     D_N_LEN_MAX,
@@ -337,7 +336,7 @@ const cfg_pvv_t dch_num = {
 };
 const cfg_pvv_t dch_chid = {
     pstring,
-    PM_CHID,
+    PM_CHID_POS,
     PM_ERR_CHID,
     D_CHID_LEN_MIN,
     D_CHID_LEN_MAX,
@@ -348,7 +347,7 @@ const cfg_pvv_t dch_chid = {
 };
 const cfg_pvv_t dch_phase = {
     pstring,
-    PM_PH,
+    PM_PH_POS,
     PM_ERR_PH,
     D_PH_LEN_MIN,
     D_PH_LEN_MAX,
@@ -359,7 +358,7 @@ const cfg_pvv_t dch_phase = {
 };
 const cfg_pvv_t dch_ccbm = {
     pstring,
-    PM_CCBM,
+    PM_CCBM_POS,
     PM_ERR_CCBM,
     D_CCBM_LEN_MIN,
     D_CCBM_LEN_MAX,
@@ -370,7 +369,7 @@ const cfg_pvv_t dch_ccbm = {
 };
 const cfg_pvv_t dch_y1991 = {
     pint,
-    PM_Y_1991,
+    PM_Y_1991_POS,
     PM_ERR_Y,
     D_Y_LEN_MIN,
     D_Y_LEN_MAX,
@@ -381,7 +380,7 @@ const cfg_pvv_t dch_y1991 = {
 };
 const cfg_pvv_t dch_y1999 = {
     pint,
-    PM_Y_1999,
+    PM_Y_1999_POS,
     PM_ERR_Y,
     D_Y_LEN_MIN,
     D_Y_LEN_MAX,
@@ -391,7 +390,10 @@ const cfg_pvv_t dch_y1999 = {
     0
 };
 
-const cfg_pvv_t pvv[] = { sname, recdevid, revyear, tt, tt_a, tt_d };
+const cfg_pvv_t *pvv[] = { &sname, &recdevid, &revyear, &tt, &tt_a, &tt_d,
+    &ach_num, &ach_chid, &ach_phase, &ach_ccbm, &ach_uu, &ach_a, &ach_b,
+    &ach_skew, &ach_min, &ach_max, &ach_primary, &ach_secondary, &ach_ps,
+    &dch_num, &dch_chid, &dch_phase, &dch_ccbm, &dch_y1991, &dch_y1999 };
 
 int match_char(char ch, char patt)
 {
@@ -594,17 +596,16 @@ int check_param_count(int count, int min, int max)
     return 0;
 }
 
-void check_parameter_len(cfg_pm_t *param)
+void check_parameter_len(cfg_pm_t *param, int min, int max)
 {
-    if (!is_correct_param_length(param->len, param->len_min, param->len_max))
+    if (!is_correct_param_length(param->len, min, max))
         param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM_LEN);
 }
 
-void check_parameter_ival(cfg_pm_t *param)
+void check_parameter_ival(cfg_pm_t *param, int min, int max)
 {
-    if (!IS_CORRECT_INTPARAM_VAL(param->val_int, param->ival_min,
-            param->ival_max))
-    param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM);
+    if (!IS_CORRECT_INTPARAM_VAL(param->val_int, min, max))
+        param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM);
 }
 
 int is_correct_dparam_val(double val, double min, double max)
@@ -618,10 +619,9 @@ int is_correct_dparam_val(double val, double min, double max)
         return 0;
 }
 
-void check_parameter_dval(cfg_pm_t *param)
+void check_parameter_dval(cfg_pm_t *param, double min, double max)
 {
-    if (!is_correct_dparam_val(param->val_float, param->dval_min,
-            param->dval_max))
+    if (!is_correct_dparam_val(param->val_float, min, max))
     param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM);
 }
 
@@ -693,48 +693,63 @@ int is_match_dch_rev(int param_count, int rev_year)
     return 0;
 }
 
-void parsing_parameter(cfg_str_t *cfg_str, cfg_pm_t *param)
+void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
+        cmtrd_cfg_t *cfg_rec)
 {
-    char s[PARAM_LEN_MAX+1];
-
-    param->err = 0;
-    param->index = get_param_index(cfg_str->str, param->num);
-    param->len = get_param_length(cfg_str->str, cfg_str->strlen,
-            param->num, cfg_str->param_count);
-    check_parameter_len(param);
-    switch (param->ptype) {
-    case pstring:
-    case pchar:
+    switch (pn) {
+    case psname:
+        cfg_rec->station_name = add_str_item(cfg_str->str + pm->index, pm->len);
         break;
-    case pint:
-        stringcopy_c(s, cfg_str->str + param->index, param->len);
-        param->val_int = atoi(s);
-        check_parameter_ival(param);
+    case prec_id:
+        cfg_rec->rec_dev_id = add_str_item(cfg_str->str + pm->index, pm->len);
         break;
-    case pintc:
-        stringcopy_c(s, cfg_str->str + param->index, param->len - 1);
-        param->val_int = atoi(s);
-        check_parameter_ival(param);
-        break;
-    case pfloat:
-        stringcopy_c(s, cfg_str->str + param->index, param->len);
-        param->val_float = atof(s);
-        check_parameter_dval(param);
+    case prev_year:
+        cfg_rec->rev_year = pm->val_int;
         break;
     default:
         break;
     }
 }
 
-void parsing_sname(cfg_pm_t *pm, cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+void parsing_parameter(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
+        cmtrd_cfg_t *cfg_rec)
 {
-    memcpy(pm, &sname, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
+    char s[PARAM_LEN_MAX+1];
+
+    pm->err = 0;
+    pm->index = get_param_index(cfg_str->str, pvv[pn]->num);
+    pm->len = get_param_length(cfg_str->str, cfg_str->strlen, pvv[pn]->num,
+            cfg_str->param_count);
+    check_parameter_len(pm, pvv[pn]->len_min, pvv[pn]->len_max);
+    switch (pvv[pn]->ptype) {
+    case pstring:
+    case pchar:
+        break;
+    case pint:
+        stringcopy_c(s, cfg_str->str + pm->index, pm->len);
+        pm->val_int = atoi(s);
+        check_parameter_ival(pm, pvv[pn]->ival_min, pvv[pn]->ival_max);
+        break;
+    case pintc:
+        stringcopy_c(s, cfg_str->str + pm->index, pm->len - 1);
+        pm->val_int = atoi(s);
+        check_parameter_ival(pm, pvv[pn]->ival_min, pvv[pn]->ival_max);
+        break;
+    case pfloat:
+        stringcopy_c(s, cfg_str->str + pm->index, pm->len);
+        pm->val_float = atof(s);
+        check_parameter_dval(pm, pvv[pn]->dval_min, pvv[pn]->dval_max);
+        break;
+    default:
+        break;
+    }
+
+    save_value2rec(pn, cfg_str, pm, cfg_rec);
     if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_SNAME), cfg_rec); 
-    cfg_rec->station_name = add_str_item(cfg_str->str, pm->len);
+        add_error_code(cfg_str->nstr, pm->err, ERRCODE(pvv[pn]->err), cfg_rec); 
 }
 
+#if 0
 void parsing_recdevid(cfg_pm_t *pm, cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 {
     memcpy(pm, &recdevid, sizeof(cfg_pvv_t));
@@ -780,7 +795,7 @@ void parsing_tt_d(cfg_pm_t *pm, cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     cfg_rec->dn_count = pm->val_int;
 }
 
-
+#endif
 int analyze_cfg_header(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 {
     int error;
@@ -794,20 +809,20 @@ int analyze_cfg_header(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
         return 1;
 
     /* Station name */
-    parsing_sname(&pm, cfg_str, cfg_rec);
+    parsing_parameter(psname, cfg_str, &pm, cfg_rec);
 
     /* Recorder device id */
-    parsing_recdevid(&pm, cfg_str, cfg_rec);
+    parsing_parameter(prec_id, cfg_str, &pm, cfg_rec);
 
     if (cfg_str->param_count < CP_HEADER_MAX)
         return 0;
 
     /* Revison year */
-    parsing_revyear(&pm, cfg_str, cfg_rec);
+    parsing_parameter(prev_year, cfg_str, &pm, cfg_rec);
 
     return 0;
 }
-
+#if 0
 int analyze_cfg_chinfo(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 {
     int error;
@@ -1133,6 +1148,7 @@ int analyze_cfg_dchannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 
     return ch_index;
 }
+#endif
 
 /* Return values:
  * 0-Ok
@@ -1163,26 +1179,28 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
             next_state++;
             break;
         case analyze_tt:
-            if (analyze_cfg_chinfo(&cfg_str, cfg_rec))
-                return 1;
-            create_channels_fields(cfg_rec);
+            /* if (analyze_cfg_chinfo(&cfg_str, cfg_rec)) */
+            /*     return 1; */
+            /* create_channels_fields(cfg_rec); */
             next_state++;
             break;
         case analyze_ach:
-            result = analyze_cfg_achannel(&cfg_str, cfg_rec);
-            if (result == -1 || result == cfg_rec->an_count - 1)
-                next_state++;
-            if (!is_match_ach_rev(cfg_str.param_count, cfg_rec->rev_year))
-                add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR),
-                    ERRNULL, cfg_rec);
+            /* result = analyze_cfg_achannel(&cfg_str, cfg_rec); */
+            /* if (result == -1 || result == cfg_rec->an_count - 1) */
+            /*     next_state++; */
+            /* if (!is_match_ach_rev(cfg_str.param_count, cfg_rec->rev_year)) */
+            /*     add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR), */
+            /*         ERRNULL, cfg_rec); */
+            next_state++;
             break;
         case analyze_dch:
-            result = analyze_cfg_dchannel(&cfg_str, cfg_rec);
-            if (result == -1 || result == cfg_rec->dn_count - 1)
-                next_state++;
-            if (!is_match_dch_rev(cfg_str.param_count, cfg_rec->rev_year))
-                add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR),
-                    ERRNULL, cfg_rec);
+            /* result = analyze_cfg_dchannel(&cfg_str, cfg_rec); */
+            /* if (result == -1 || result == cfg_rec->dn_count - 1) */
+            /*     next_state++; */
+            /* if (!is_match_dch_rev(cfg_str.param_count, cfg_rec->rev_year)) */
+            /*     add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR), */
+            /*         ERRNULL, cfg_rec); */
+            next_state++;
             break;
         default:
             return 0;

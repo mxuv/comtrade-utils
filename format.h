@@ -233,62 +233,62 @@
 #define ERRCODE(x)                  (1<<x)
 #define ERRNULL                     -1
 
-#define PM_SNAME                    0
-#define PM_REC_ID                   1
-#define PM_YEAR                     2
+#define PM_SNAME_POS                0
+#define PM_REC_ID_POS               1
+#define PM_YEAR_POS                 2
 
-#define PM_TT_OFFSET                CP_HEADER
-#define PM_TT                       0
-#define PM_TT_A                     1
-#define PM_TT_D                     2
+/*#define PM_TT_OFFSET                CP_HEADER*/
+#define PM_TT_POS                   0
+#define PM_TT_A_POS                 1
+#define PM_TT_D_POS                 2
 
-#define PM_CH_A_OFFSET              TT_OFFSET + CP_TT
-#define PM_AN                       0
-#define PM_CHID                     1
-#define PM_PH                       2
-#define PM_CCBM                     3
-#define PM_UU                       4
-#define PM_A                        5
-#define PM_B                        6
-#define PM_SKEW                     7
-#define PM_MIN                      8
-#define PM_MAX                      9
-#define PM_PRIM                     10
-#define PM_SEC                      11
-#define PM_PS                       12
+/*#define PM_CH_A_OFFSET              TT_OFFSET + CP_TT*/
+#define PM_AN_POS                   0
+#define PM_CHID_POS                 1
+#define PM_PH_POS                   2
+#define PM_CCBM_POS                 3
+#define PM_UU_POS                   4
+#define PM_A_POS                    5
+#define PM_B_POS                    6
+#define PM_SKEW_POS                 7
+#define PM_MIN_POS                  8
+#define PM_MAX_POS                  9
+#define PM_PRIM_POS                 10
+#define PM_SEC_POS                  11
+#define PM_PS_POS                   12
 
-#define PM_CH_D_OFFSET              PM_CH_A_OFFSET + CP_AN_1999
-#define PM_DN                       0
-#define PM_Y_1991                   2
-#define PM_Y_1999                   4
+/*#define PM_CH_D_OFFSET              PM_CH_A_OFFSET + CP_AN_1999*/
+#define PM_DN_POS                   0
+#define PM_Y_1991_POS               2
+#define PM_Y_1999_POS               4
 
-#define PM_LF_OFFSET                PM_CH_D_OFFSET + CP_DN_1999
-#define PM_LF                       0
+/*#define PM_LF_OFFSET                PM_CH_D_OFFSET + CP_DN_1999*/
+#define PM_LF_POS                   0
 
-#define PM_NRATES_OFFSET            PM_LF_OFFSET + CP_LF
-#define PM_NRATES                   0
+/*#define PM_NRATES_OFFSET            PM_LF_OFFSET + CP_LF*/
+#define PM_NRATES_POS               0
 
-#define PM_SAMP_OFFSET              PM_NRATES_OFFSET + CP_NRATES
-#define PM_SAMP                     1
-#define PM_ENDSAMP                  2
+/*#define PM_SAMP_OFFSET              PM_NRATES_OFFSET + CP_NRATES*/
+#define PM_SAMP_POS                 1
+#define PM_ENDSAMP_POS              2
 
-#define PM_TIME_OFFSET              PM_SAMP_OFFSET + CP_DATE_TIME
-#define PM_DAY                      0
-#define PM_MON                      1
-#define PM_YYYY                     2
-#define PM_HOUR                     3
-#define PM_MINUT                    4
-#define PM_SECONDS                  5
+/*#define PM_TIME_OFFSET              PM_SAMP_OFFSET + CP_DATE_TIME*/
+#define PM_DAY_POS                  0
+#define PM_MON_POS                  1
+#define PM_YYYY_POS                 2
+#define PM_HOUR_POS                 3
+#define PM_MINUT_POS                4
+#define PM_SECONDS_POS              5
 
-#define PM_FILETYPE                 0
+#define PM_FILETYPE_POS             0
 
-#define PM_TIMEMULT                 0
+#define PM_TIMEMULT_POS             0
 
-#define PM_TC                       0
-#define PM_LC                       1
+#define PM_TC_POS                   0
+#define PM_LC_POS                   1
 
-#define PM_TMQ                      0
-#define PM_LEAPSEC                  1
+#define PM_TMQ_POS                  0
+#define PM_LEAPSEC_POS              1
 
 #if 0
 #define LN_ERR_MSK                  (LN_ERR_NOCR | LN_ERR_EXTRA_SPACES |\
@@ -297,7 +297,7 @@
                                     LN_ERR_INCORRECT_PARAM)
 #endif
 
-enum scales_ind {none, primary, secondary};
+/*enum scales_ind {none, primary, secondary};*/
 enum file_format {ascii, binary, binary32, float32};
 enum param_type {pstring, pchar, pint, pintc, pfloat};
 enum revision
@@ -308,16 +308,38 @@ enum revision
     rev2013 = 2013 
 };
 
+enum cfg_pnum
+{
+    psname,
+    prec_id,
+    prev_year,
+    ptt,
+    ptt_a,
+    ptt_d,
+    pan,
+    pach_id,
+    paphase,
+    paccbm,
+    pauu,
+    paa,
+    pab,
+    paskew,
+    pamin,
+    pamax,
+    paprimary,
+    pasecondary,
+    paps,
+    pdn,
+    pdch_id,
+    pdphase,
+    pdccbm,
+    pdy_1991,
+    pdy_1999
+};
+
 typedef struct {
-    enum param_type ptype;
-    int num;
-    int len_min;
-    int len_max;
-    int ival_min;
-    int ival_max;
-    double dval_min;
-    double dval_max;
     int index;
+    int chindex;
     int len;
     int val_int;
     double val_float;
