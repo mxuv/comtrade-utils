@@ -11,8 +11,7 @@
 
 #define IS_CORRECT_INTPARAM_VAL(a, b, c)    is_correct_param_length(a, b, c)
 
-enum getstring_status
-{
+enum getstring_status {
     gss_ok,
     gss_empty,
     gss_eof,
@@ -20,8 +19,7 @@ enum getstring_status
     gss_overflow
 };
 
-enum analyze_cfg_state
-{
+enum analyze_cfg_state {
     analyze_header,
     analyze_tt,
     analyze_ach,
@@ -37,16 +35,14 @@ enum analyze_cfg_state
     analyze_tmqcode
 };
 
-typedef struct
-{
+typedef struct {
     const char *str;
     int strlen;
     int nstr;
     int param_count;
 } cfg_str_t;
 
-typedef struct
-{
+typedef struct {
     enum param_type ptype;
     int num;
     int err;
@@ -445,18 +441,6 @@ int get_param_count(const char *str, int len)
     return count;
 }
 
-#if 0
-void extract_parameter_from_string(char *buffer, const char *str)
-{
-    while ((*str != ',') && (*str != '\r')) {
-        *buffer = *str;
-        str++;
-        buffer++;
-    }
-    *buffer = 0;
-}
-#endif
-
 void get_param(char *dest, const char *str, int index, int len)
 {
     stringcopy_c(dest, str+index, len);
@@ -490,24 +474,6 @@ int get_param_length(const char *str, int stringlen, int param, int param_count)
     else
         return get_param_index(str, param + 1) - index - 1;
 }
-
-#if 0
-void get_all_param_len(const char *str, int stringlen, int param_count, int *len)
-{
-    int i;
-
-    for (i = 0; i < param_count; i++)
-        len[i] = get_param_length(str, stringlen, i, param_count);
-}
-
-void get_all_param_index(const char *str, int param_count, int *index)
-{
-    int i;
-
-    for (i = 0; i < param_count; i++)
-        index[i] = get_param_index(str, i);
-}
-#endif
 
 void add_error_field(cmtrd_cfg_t *cfg_rec)
 {
@@ -649,28 +615,6 @@ int get_empty_field(int *p, int count, int fieldsize)
     }
     return -1;
 }
-
-#if 0
-int get_empty_anfield(cmtrd_cfg_t *cfg_rec, cmtrd_an_t *ch)
-{
-    int i;
-    for (i = 0; i < cfg_rec->an_count; i++) {
-        if ((ch + i)->num == 0)
-            return i;
-    }
-    return -1;
-}
-
-int get_empty_dnfield(cmtrd_cfg_t *cfg_rec, cmtrd_dn_t *ch)
-{
-    int i;
-    for (i = 0; i < cfg_rec->dn_count; i++) {
-        if ((ch + i)->num == 0)
-            return i;
-    }
-    return -1;
-}
-#endif
 
 int is_match_ach_rev(int param_count, int rev_year)
 {
@@ -876,53 +820,6 @@ void parsing_parameter(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
         add_error_code(cfg_str->nstr, pm->err, ERRCODE(pvv[pn]->err), cfg_rec); 
 }
 
-#if 0
-void parsing_recdevid(cfg_pm_t *pm, cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
-{
-    memcpy(pm, &recdevid, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_REC_ID), cfg_rec); 
-    cfg_rec->rec_dev_id = add_str_item(cfg_str->str + pm->index, pm->len);
-}
-
-void parsing_revyear(cfg_pm_t *pm, cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
-{
-    memcpy(pm, &revyear, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_YEAR), cfg_rec); 
-    cfg_rec->rev_year = pm->val_int;
-}
-
-void parsing_tt(cfg_pm_t *pm, cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
-{
-    memcpy(pm, &tt, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_TT), cfg_rec); 
-    cfg_rec->ch_count = pm->val_int;
-}
-
-void parsing_tt_a(cfg_pm_t *pm, cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
-{
-    memcpy(pm, &tt_a, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_TT_A), cfg_rec); 
-    cfg_rec->an_count = pm->val_int;
-}
-
-void parsing_tt_d(cfg_pm_t *pm, cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
-{
-    memcpy(pm, &tt_d, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_TT_D), cfg_rec); 
-    cfg_rec->dn_count = pm->val_int;
-}
-
-#endif
 int analyze_cfg_header(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 {
     int error;
@@ -981,155 +878,19 @@ int analyze_cfg_chinfo(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     return error;
 }
 
-#if 0
-void parsing_a_num(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &ach_num, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_AN), cfg_rec); 
-    (cfg_rec->anv + ch_index)->num = pm->val_int;
-}
-
-void parsing_a_chid(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &ach_chid, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_CHID), cfg_rec); 
-    (cfg_rec->anv + ch_index)->ch_id = add_str_item(cfg_str->str + pm->index,
-            pm->len);
-}
-
-void parsing_a_phase(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &ach_phase, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_PH), cfg_rec); 
-    (cfg_rec->anv + ch_index)->phase = add_str_item(cfg_str->str + pm->index,
-            pm->len);
-}
-
-void parsing_a_ccbm(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &ach_ccbm, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_CCBM), cfg_rec); 
-    (cfg_rec->anv + ch_index)->ccbm = add_str_item(cfg_str->str + pm->index,
-            pm->len);
-}
-
-void parsing_a_uu(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &ach_uu, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_UU), cfg_rec); 
-    (cfg_rec->anv + ch_index)->uu = add_str_item(cfg_str->str + pm->index,
-            pm->len);
-}
-
-void parsing_a_a(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &ach_a, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_A), cfg_rec); 
-    (cfg_rec->anv + ch_index)->a = pm->val_float;
-}
-
-void parsing_a_b(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &ach_b, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_B), cfg_rec); 
-    (cfg_rec->anv + ch_index)->b = pm->val_float;
-}
-
-void parsing_a_skew(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &ach_skew, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_SKEW), cfg_rec); 
-    (cfg_rec->anv + ch_index)->skew = pm->val_float;
-}
-
-void parsing_a_min(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &ach_min, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_MIN), cfg_rec); 
-    (cfg_rec->anv + ch_index)->min = pm->val_float;
-}
-
-void parsing_a_max(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &ach_max, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_MAX), cfg_rec); 
-    (cfg_rec->anv + ch_index)->max = pm->val_float;
-}
-
-void parsing_a_prim(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &ach_primary, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_PRIM), cfg_rec); 
-    (cfg_rec->anv + ch_index)->primary = pm->val_float;
-}
-
-void parsing_a_sec(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &ach_secondary, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_SEC), cfg_rec); 
-    (cfg_rec->anv + ch_index)->secondary = pm->val_float;
-}
-
-void parsing_a_ps(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &ach_ps, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    (cfg_rec->anv + ch_index)->ps = check_ps_value(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_PS), cfg_rec);
-}
-#endif
-
-    /* Channel number */
-    /* Channel id */
-    /* Channel phase */
-    /* Channel circuit component */
-    /* Channel unit */
-    /* Channel multipler (a) */
-    /* Channel offset (b) */
-    /* Channel time skew */
-    /* Channel minimum scale */
-    /* Channel maximum scale */
-    /* channel primary value */
-    /* channel secondary value */
-    /* channel p/s */
+/* Channel number */
+/* Channel id */
+/* Channel phase */
+/* Channel circuit component */
+/* Channel unit */
+/* Channel multipler (a) */
+/* Channel offset (b) */
+/* Channel time skew */
+/* Channel minimum scale */
+/* Channel maximum scale */
+/* channel primary value */
+/* channel secondary value */
+/* channel p/s */
 int analyze_cfg_achannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 {
     int error;
@@ -1158,65 +919,6 @@ int analyze_cfg_achannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     return pm.ch_index;
 }
 
-#if 0
-void parsing_d_num(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &dch_num, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_DN), cfg_rec); 
-    (cfg_rec->dnv + ch_index)->num = pm->val_int;
-}
-
-void parsing_d_chid(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &dch_chid, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_CHID), cfg_rec); 
-    (cfg_rec->dnv + ch_index)->ch_id = add_str_item(cfg_str->str + pm->index,
-            pm->len);
-}
-
-void parsing_d_phase(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &dch_phase, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_PH), cfg_rec); 
-    (cfg_rec->dnv + ch_index)->phase = add_str_item(cfg_str->str + pm->index,
-            pm->len);
-}
-
-void parsing_d_ccbm(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    memcpy(pm, &dch_ccbm, sizeof(cfg_pvv_t));
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_CCBM), cfg_rec); 
-    (cfg_rec->dnv + ch_index)->ccbm = add_str_item(cfg_str->str + pm->index,
-            pm->len);
-}
-
-void parsing_d_y(cfg_pm_t *pm, cfg_str_t *cfg_str,
-        cmtrd_cfg_t *cfg_rec, int ch_index)
-{
-    if (cfg_rec->rev_year < rev1999)
-        memcpy(pm, &dch_y1991, sizeof(cfg_pvv_t));
-    else
-        memcpy(pm, &dch_y1999, sizeof(cfg_pvv_t));
-
-    parsing_parameter(cfg_str, pm);
-    if (pm->err)
-        add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_Y), cfg_rec); 
-    (cfg_rec->dnv + ch_index)->y = pm->val_int;
-}
-
-#endif
 int analyze_cfg_dchannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 {
     int error;

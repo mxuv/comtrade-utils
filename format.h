@@ -297,19 +297,16 @@
                                     LN_ERR_INCORRECT_PARAM)
 #endif
 
-/*enum scales_ind {none, primary, secondary};*/
 enum file_format {ascii, binary, binary32, float32};
 enum param_type {pstring, pchar, pint, pintc, pfloat};
-enum revision
-{
+enum revision {
     rev1991 = 1991,
     rev1999 = 1999,
     rev2001 = 2001,
     rev2013 = 2013 
 };
 
-enum cfg_pnum
-{
+enum cfg_pnum {
     psname,
     prec_id,
     prev_year,
