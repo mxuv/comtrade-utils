@@ -339,7 +339,7 @@ enum cfg_pnum
 
 typedef struct {
     int index;
-    int chindex;
+    int ch_index;
     int len;
     int val_int;
     double val_float;

@@ -294,6 +294,7 @@ const cfg_pvv_t ach_max = {
 const cfg_pvv_t ach_primary = {
     pfloat,
     PM_PRIM_POS,
+    PM_ERR_PRIM,
     A_PRIMARY_LEN_MIN,
     A_PRIMARY_LEN_MAX,
     0,
@@ -693,7 +694,7 @@ int is_match_dch_rev(int param_count, int rev_year)
     return 0;
 }
 
-void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
+void save_header_items(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
         cmtrd_cfg_t *cfg_rec)
 {
     switch (pn) {
@@ -706,6 +707,15 @@ void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     case prev_year:
         cfg_rec->rev_year = pm->val_int;
         break;
+    default:
+        break;
+    }
+}
+
+void save_chinfo_items(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
+        cmtrd_cfg_t *cfg_rec)
+{
+    switch (pn) {
     case ptt:
         cfg_rec->ch_count = pm->val_int;
         break;
@@ -715,6 +725,114 @@ void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     case ptt_d:
         cfg_rec->dn_count = pm->val_int;
         break;
+    default:
+        break;
+    }
+}
+
+void save_achannel_items(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
+        cmtrd_cfg_t *cfg_rec)
+{
+    switch (pn) {
+    case pan:
+        (cfg_rec->anv + pm->ch_index)->num = pm->val_int;
+        break;
+    case pach_id:
+        (cfg_rec->anv + pm->ch_index)->ch_id = add_str_item(cfg_str->str +
+                pm->index, pm->len);
+        break;
+    case paphase:
+        (cfg_rec->anv + pm->ch_index)->phase = add_str_item(cfg_str->str +
+                pm->index, pm->len);
+        break;
+    case paccbm:
+        (cfg_rec->anv + pm->ch_index)->ccbm = add_str_item(cfg_str->str +
+                pm->index, pm->len);
+        break;
+    case pauu:
+        (cfg_rec->anv + pm->ch_index)->uu = add_str_item(cfg_str->str +
+                pm->index, pm->len);
+        break;
+    case paa:
+        (cfg_rec->anv + pm->ch_index)->a = pm->val_float;
+        break;
+    case pab:
+        (cfg_rec->anv + pm->ch_index)->b = pm->val_float;
+        break;
+    case paskew:
+        (cfg_rec->anv + pm->ch_index)->skew = pm->val_float;
+        break;
+    case pamin:
+        (cfg_rec->anv + pm->ch_index)->min = pm->val_float;
+        break;
+    case pamax:
+        (cfg_rec->anv + pm->ch_index)->max = pm->val_float;
+        break;
+    case paprimary:
+        (cfg_rec->anv + pm->ch_index)->primary = pm->val_float;
+        break;
+    case pasecondary:
+        (cfg_rec->anv + pm->ch_index)->secondary = pm->val_float;
+        break;
+    case paps:
+        (cfg_rec->anv + pm->ch_index)->ps = check_ps_value(cfg_str, pm);
+        break;
+    default:
+        break;
+    }
+}
+
+void save_dchannel_items(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
+        cmtrd_cfg_t *cfg_rec)
+{
+    switch (pn) {
+    case pdn:
+        (cfg_rec->dnv + pm->ch_index)->num = pm->val_int;
+        break;
+    case pdch_id:
+        (cfg_rec->dnv + pm->ch_index)->ch_id = add_str_item(cfg_str->str +
+                pm->index, pm->len);
+        break;
+    case pdphase:
+        (cfg_rec->dnv + pm->ch_index)->phase = add_str_item(cfg_str->str +
+                pm->index, pm->len);
+        break;
+    case pdccbm:
+        (cfg_rec->dnv + pm->ch_index)->ccbm = add_str_item(cfg_str->str +
+                pm->index, pm->len);
+        break;
+    case pdy_1991:
+    case pdy_1999:
+        (cfg_rec->dnv + pm->ch_index)->y = pm->val_int;
+        break;
+    default:
+        break;
+    }
+}
+
+void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
+        cmtrd_cfg_t *cfg_rec)
+{
+    if (pn >= psname && pn <= prev_year) {
+        save_header_items(pn, cfg_str, pm, cfg_rec);
+        return;
+    }
+
+    if (pn >= ptt && pn <= ptt_d) {
+        save_chinfo_items(pn, cfg_str, pm, cfg_rec);
+        return;
+    }
+
+    if (pn >= pan && pn <= paps) {
+        save_achannel_items(pn, cfg_str, pm, cfg_rec);
+        return;
+    }
+
+    if (pn >= pdn && pn <= pdy_1999) {
+        save_dchannel_items(pn, cfg_str, pm, cfg_rec);
+        return;
+    }
+    switch (pn) {
     default:
         break;
     }
@@ -832,10 +950,14 @@ int analyze_cfg_header(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     return 0;
 }
 
+/* Total channels count */
+/* Analog channels count */
+/* Digital channels count */
 int analyze_cfg_chinfo(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 {
     int error;
     cfg_pm_t pm;
+    enum cfg_pnum pn;
     
     error = check_param_count(cfg_str->param_count, CP_TT, CP_TT);
     if (error)
@@ -844,19 +966,11 @@ int analyze_cfg_chinfo(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
         return 1;
 
     error = 0;
-
-    /* Total channels count */
-    parsing_parameter(ptt, cfg_str, &pm, cfg_rec);
-
-    /* Analog channels count */
-    parsing_parameter(ptt_a, cfg_str, &pm, cfg_rec);
-    if (pm.err & ERRCODE(LN_ERR_INCORRECT_PARAM))
-        error++;
-
-    /* Digital channels count */
-    parsing_parameter(ptt_d, cfg_str, &pm, cfg_rec);
-    if (pm.err & ERRCODE(LN_ERR_INCORRECT_PARAM))
-        error++;
+    for (pn = ptt; pn < pan; pn++) {
+        parsing_parameter(pn, cfg_str, &pm, cfg_rec);
+        if (pm.err & ERRCODE(LN_ERR_INCORRECT_PARAM))
+            error++;
+    }
 
     if ((cfg_rec->an_count + cfg_rec->dn_count) != cfg_rec->ch_count) {
         add_error_code(cfg_str->nstr, ERRCODE(LN_ERR_INCORRECT_PARAM_SUM),
@@ -864,7 +978,6 @@ int analyze_cfg_chinfo(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
                  ERRCODE(PM_ERR_TT_D)), cfg_rec);
         error++;
     }
-
     return error;
 }
 
@@ -1002,69 +1115,50 @@ void parsing_a_ps(cfg_pm_t *pm, cfg_str_t *cfg_str,
     if (pm->err)
         add_error_code(cfg_str->nstr, pm->err, ERRCODE(PM_ERR_PS), cfg_rec);
 }
+#endif
 
+    /* Channel number */
+    /* Channel id */
+    /* Channel phase */
+    /* Channel circuit component */
+    /* Channel unit */
+    /* Channel multipler (a) */
+    /* Channel offset (b) */
+    /* Channel time skew */
+    /* Channel minimum scale */
+    /* Channel maximum scale */
+    /* channel primary value */
+    /* channel secondary value */
+    /* channel p/s */
 int analyze_cfg_achannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 {
     int error;
-    int ch_index;
     cfg_pm_t pm;
+    enum cfg_pnum pn;
 
     error = check_param_count(cfg_str->param_count, CP_AN_1991, CP_AN_1999);
-    ch_index = get_empty_field(&cfg_rec->anv->num, cfg_rec->an_count,
+    pm.ch_index = get_empty_field(&cfg_rec->anv->num, cfg_rec->an_count,
             sizeof(cmtrd_an_t));
-    /* ch_index = get_empty_anfield(cfg_rec, cfg_rec->anv); */
-    /* printf("%d\n", sizeof(*(cfg_rec->anv))); */
     if (error)
         add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
     if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
-        return ch_index;
-    if (ch_index == -1)
-        return ch_index;
+        return pm.ch_index;
+    if (pm.ch_index == -1)
+        return pm.ch_index;
 
-    /* Channel number */
-    parsing_a_num(&pm, cfg_str, cfg_rec, ch_index);
-
-    /* Channel id */
-    parsing_a_chid(&pm, cfg_str, cfg_rec, ch_index);
-
-    /* Channel phase */
-    parsing_a_phase(&pm, cfg_str, cfg_rec, ch_index);
-
-    /* Channel circuit component */
-    parsing_a_ccbm(&pm, cfg_str, cfg_rec, ch_index);
-
-    /* Channel unit */
-    parsing_a_uu(&pm, cfg_str, cfg_rec, ch_index);
-
-    /* Channel multipler (a) */
-    parsing_a_a(&pm, cfg_str, cfg_rec, ch_index);
-
-    /* Channel offset (b) */
-    parsing_a_b(&pm, cfg_str, cfg_rec, ch_index);
-
-    /* Channel time skew */
-    parsing_a_skew(&pm, cfg_str, cfg_rec, ch_index);
-
-    /* Channel minimum scale */
-    parsing_a_min(&pm, cfg_str, cfg_rec, ch_index);
-
-    /* Channel maximum scale */
-    parsing_a_max(&pm, cfg_str, cfg_rec, ch_index);
+    for (pn = pan; pn < paprimary; pn++)
+        parsing_parameter(pn, cfg_str, &pm, cfg_rec);
 
     if (cfg_str->param_count != CP_AN_1999)
-        return ch_index;
+        return pm.ch_index;
 
-    /* Channel primary value */
-    parsing_a_prim(&pm, cfg_str, cfg_rec, ch_index);
+    for (pn = paprimary; pn < pdn; pn++)
+        parsing_parameter(pn, cfg_str, &pm, cfg_rec);
 
-    /* Channel secondary value */
-    parsing_a_sec(&pm, cfg_str, cfg_rec, ch_index);
-
-    /* Channel P/S */
-    parsing_a_ps(&pm, cfg_str, cfg_rec, ch_index);
-    return ch_index;
+    return pm.ch_index;
 }
 
+#if 0
 void parsing_d_num(cfg_pm_t *pm, cfg_str_t *cfg_str,
         cmtrd_cfg_t *cfg_rec, int ch_index)
 {
@@ -1122,43 +1216,45 @@ void parsing_d_y(cfg_pm_t *pm, cfg_str_t *cfg_str,
     (cfg_rec->dnv + ch_index)->y = pm->val_int;
 }
 
+#endif
 int analyze_cfg_dchannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 {
     int error;
-    int ch_index;
     cfg_pm_t pm;
 
     error = check_param_count(cfg_str->param_count, CP_DN_1991, CP_DN_1999);
-    ch_index = get_empty_field(&cfg_rec->dnv->num, cfg_rec->dn_count,
+    pm.ch_index = get_empty_field(&cfg_rec->dnv->num, cfg_rec->dn_count,
             sizeof(cmtrd_dn_t));
     if (error)
         add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
     if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
-        return ch_index;
-    if (ch_index == -1)
-        return ch_index;
+        return pm.ch_index;
+    if (pm.ch_index == -1)
+        return pm.ch_index;
 
     /* Channel number */
-    parsing_d_num(&pm, cfg_str, cfg_rec, ch_index);
+    parsing_parameter(pdn, cfg_str, &pm, cfg_rec);
 
     /* Channel id */
-    parsing_d_chid(&pm, cfg_str, cfg_rec, ch_index);
+    parsing_parameter(pdch_id, cfg_str, &pm, cfg_rec);
 
     if (cfg_str->param_count >= CP_DN_1999) {
 
         /* Channel phase */
-        parsing_d_phase(&pm, cfg_str, cfg_rec, ch_index);
+        parsing_parameter(pdphase, cfg_str, &pm, cfg_rec);
 
         /* Channel circuit component */
-        parsing_d_ccbm(&pm, cfg_str, cfg_rec, ch_index);
+        parsing_parameter(pdccbm, cfg_str, &pm, cfg_rec);
+
+        /* Channel default state */
+        parsing_parameter(pdy_1999, cfg_str, &pm, cfg_rec);
     }
 
     /* Channel default state */
-    parsing_d_y(&pm, cfg_str, cfg_rec, ch_index);
+    parsing_parameter(pdy_1991, cfg_str, &pm, cfg_rec);
 
-    return ch_index;
+    return pm.ch_index;
 }
-#endif
 
 /* Return values:
  * 0-Ok
@@ -1195,22 +1291,20 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
             next_state++;
             break;
         case analyze_ach:
-            /* result = analyze_cfg_achannel(&cfg_str, cfg_rec); */
-            /* if (result == -1 || result == cfg_rec->an_count - 1) */
-            /*     next_state++; */
-            /* if (!is_match_ach_rev(cfg_str.param_count, cfg_rec->rev_year)) */
-            /*     add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR), */
-            /*         ERRNULL, cfg_rec); */
-            next_state++;
+            result = analyze_cfg_achannel(&cfg_str, cfg_rec);
+            if (result == -1 || result == cfg_rec->an_count - 1)
+                next_state++;
+            if (!is_match_ach_rev(cfg_str.param_count, cfg_rec->rev_year))
+                add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR),
+                    ERRNULL, cfg_rec);
             break;
         case analyze_dch:
-            /* result = analyze_cfg_dchannel(&cfg_str, cfg_rec); */
-            /* if (result == -1 || result == cfg_rec->dn_count - 1) */
-            /*     next_state++; */
-            /* if (!is_match_dch_rev(cfg_str.param_count, cfg_rec->rev_year)) */
-            /*     add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR), */
-            /*         ERRNULL, cfg_rec); */
-            next_state++;
+            result = analyze_cfg_dchannel(&cfg_str, cfg_rec);
+            if (result == -1 || result == cfg_rec->dn_count - 1)
+                next_state++;
+            if (!is_match_dch_rev(cfg_str.param_count, cfg_rec->rev_year))
+                add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR),
+                    ERRNULL, cfg_rec);
             break;
         default:
             return 0;
