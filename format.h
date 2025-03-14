@@ -331,7 +331,8 @@ enum cfg_pnum {
     pdphase,
     pdccbm,
     pdy_1991,
-    pdy_1999
+    pdy_1999,
+    plf
 };
 
 typedef struct {
