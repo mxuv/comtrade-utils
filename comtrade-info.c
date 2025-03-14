@@ -397,11 +397,23 @@ const cfg_pvv_t lf = {
     0,
     0
 };
+const cfg_pvv_t nrates = {
+    pint,
+    PM_NRATES_POS,
+    PM_ERR_NRATES,
+    NRATES_LEN_MIN,
+    NRATES_LEN_MAX,
+    NRATES_VAL_MIN,
+    NRATES_VAL_MAX,
+    0,
+    0
+};
 
 const cfg_pvv_t *pvv[] = { &sname, &recdevid, &revyear, &tt, &tt_a, &tt_d,
     &ach_num, &ach_chid, &ach_phase, &ach_ccbm, &ach_uu, &ach_a, &ach_b,
     &ach_skew, &ach_min, &ach_max, &ach_primary, &ach_secondary, &ach_ps,
-    &dch_num, &dch_chid, &dch_phase, &dch_ccbm, &dch_y1991, &dch_y1999, &lf };
+    &dch_num, &dch_chid, &dch_phase, &dch_ccbm, &dch_y1991, &dch_y1999, &lf,
+    &nrates };
 
 int match_char(char ch, char patt)
 {
@@ -792,6 +804,9 @@ void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     case plf:
         cfg_rec->frequency = pm->val_float;
         break;
+    case pnrates:
+        cfg_rec->nrates = pm->val_int;
+        break;
     default:
         break;
     }
@@ -986,6 +1001,18 @@ void analyze_cfg_line_frequency(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     parsing_parameter(plf, cfg_str, &pm, cfg_rec);
 }
 
+void analyze_cfg_nrates(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+{
+    int error;
+    cfg_pm_t pm;
+    
+    error = check_param_count(cfg_str->param_count, CP_NRATES, CP_NRATES);
+    if (error)
+        add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
+
+    /* Number of sample rates */
+    parsing_parameter(pnrates, cfg_str, &pm, cfg_rec);
+}
 /* Return values:
  * 0-Ok
  * 2-Unexcepted end of file
@@ -1038,6 +1065,10 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
             break;
         case analyze_lf:
             analyze_cfg_line_frequency(&cfg_str, cfg_rec);
+            next_state++;
+            break;
+        case analyze_nrates:
+            analyze_cfg_nrates(&cfg_str, cfg_rec);
             next_state++;
             break;
         default:
@@ -1128,6 +1159,7 @@ void print_info(cmtrd_cfg_t *cfg_rec)
     printf("    Recorder id: %s\n", cfg_rec->rec_dev_id);
     printf("    Format revision: %d\n", cfg_rec->rev_year);
     printf("    Line frequency: %lf\n", cfg_rec->frequency);
+    printf("    Nrates:  %d\n", cfg_rec->nrates);
     printf("Channels info:\n");
     printf("    Total channels count: %d\n", cfg_rec->ch_count);
     printf("    Analog channels count: %d\n", cfg_rec->an_count);
