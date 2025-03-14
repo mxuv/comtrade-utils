@@ -81,7 +81,7 @@ const char parammsg14[] = "Channel minimum data value";
 const char parammsg15[] = "Channel maximum data value";
 const char parammsg16[] = "Channel transformer ratio primary factor";
 const char parammsg17[] = "Channel transformer ratio secondary factor";
-const char parammsg18[] = "Channel primary or secondary data scalling indentifier;";
+const char parammsg18[] = "Channel primary or secondary data scalling indentifier";
 const char parammsg19[] = "Digital channel number";
 const char parammsg20[] = "Channel normal state";
 const char parammsg21[] = "Line frequency";
@@ -1119,20 +1119,19 @@ void print_achannels_info(cmtrd_cfg_t *cfg_rec)
 
     for (i = 0; i < cfg_rec->an_count; i++) {
         printf("Analog channel:\n");
-        printf("    Channel number: %d\n", (cfg_rec->anv + i)->num);
-        printf("    Channel id: %s\n", (cfg_rec->anv + i)->ch_id);
-        printf("    Channel phase: %s\n", (cfg_rec->anv + i)->phase);
-        printf("    Channel circuit: %s\n", (cfg_rec->anv + i)->ccbm);
-        printf("    Channel unit: %s\n", (cfg_rec->anv + i)->uu);
-        printf("    Channel multipler: %lf\n", (cfg_rec->anv + i)->a);
-        printf("    Channel offset: %lf\n", (cfg_rec->anv + i)->b);
-        printf("    Channel time skew: %lf\n", (cfg_rec->anv + i)->skew);
-        printf("    Channel min scale: %lf\n", (cfg_rec->anv + i)->min);
-        printf("    Channel max scale: %lf\n", (cfg_rec->anv + i)->max);
-        printf("    Channel primary value: %lf\n", (cfg_rec->anv + i)->primary);
-        printf("    Channel secondary value: %lf\n",
-                (cfg_rec->anv + i)->secondary);
-        printf("    Channel P or S: %c\n", (cfg_rec->anv + i)->ps);
+        printf("    %s: %d\n", parammsg6, (cfg_rec->anv + i)->num);
+        printf("    %s: %s\n", parammsg7, (cfg_rec->anv + i)->ch_id);
+        printf("    %s: %s\n", parammsg8, (cfg_rec->anv + i)->phase);
+        printf("    %s: %s\n", parammsg9, (cfg_rec->anv + i)->ccbm);
+        printf("    %s: %s\n", parammsg10, (cfg_rec->anv + i)->uu);
+        printf("    %s: %lf\n", parammsg11, (cfg_rec->anv + i)->a);
+        printf("    %s: %lf\n", parammsg12, (cfg_rec->anv + i)->b);
+        printf("    %s: %lf\n", parammsg13, (cfg_rec->anv + i)->skew);
+        printf("    %s: %lf\n", parammsg14, (cfg_rec->anv + i)->min);
+        printf("    %s: %lf\n", parammsg15, (cfg_rec->anv + i)->max);
+        printf("    %s: %lf\n", parammsg16, (cfg_rec->anv + i)->primary);
+        printf("    %s: %lf\n", parammsg17, (cfg_rec->anv + i)->secondary);
+        printf("    %s: %c\n", parammsg18, (cfg_rec->anv + i)->ps);
 
     }
 }
@@ -1155,15 +1154,15 @@ void print_dchannels_info(cmtrd_cfg_t *cfg_rec)
 void print_info(cmtrd_cfg_t *cfg_rec)
 {
     printf("General info:\n");
-    printf("    Station name: %s\n", cfg_rec->station_name);
-    printf("    Recorder id: %s\n", cfg_rec->rec_dev_id);
-    printf("    Format revision: %d\n", cfg_rec->rev_year);
-    printf("    Line frequency: %lf\n", cfg_rec->frequency);
-    printf("    Nrates:  %d\n", cfg_rec->nrates);
+    printf("    %s: %s\n", parammsg0, cfg_rec->station_name);
+    printf("    %s: %s\n", parammsg1, cfg_rec->rec_dev_id);
+    printf("    %s: %d\n", parammsg2, cfg_rec->rev_year);
+    printf("    %s: %lf\n", parammsg21, cfg_rec->frequency);
+    printf("    %s: %d\n", parammsg22, cfg_rec->nrates);
     printf("Channels info:\n");
-    printf("    Total channels count: %d\n", cfg_rec->ch_count);
-    printf("    Analog channels count: %d\n", cfg_rec->an_count);
-    printf("    Digital channels count: %d\n", cfg_rec->dn_count);
+    printf("    %s: %d\n", parammsg3, cfg_rec->ch_count);
+    printf("    %s: %d\n", parammsg4, cfg_rec->an_count);
+    printf("    %s: %d\n", parammsg5, cfg_rec->dn_count);
     print_achannels_info(cfg_rec);
     print_dchannels_info(cfg_rec);
 }
