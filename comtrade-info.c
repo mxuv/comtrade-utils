@@ -965,10 +965,10 @@ int analyze_cfg_dchannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 
         /* Channel default state */
         parsing_parameter(pdy_1999, cfg_str, &pm, cfg_rec);
-    }
-
+    } else {
     /* Channel default state */
-    parsing_parameter(pdy_1991, cfg_str, &pm, cfg_rec);
+        parsing_parameter(pdy_1991, cfg_str, &pm, cfg_rec);
+    }
 
     return pm.ch_index;
 }
