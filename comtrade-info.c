@@ -556,7 +556,7 @@ char* add_str_item(const char *src, int length)
     stringcopy_c(str, src, length);
     return str;
 }
-/*ERROR*/
+
 void create_channels_fields(cmtrd_cfg_t *cfg_rec)
 {
     void *p;
@@ -565,14 +565,14 @@ void create_channels_fields(cmtrd_cfg_t *cfg_rec)
         p = malloc(sizeof(cmtrd_an_t) * cfg_rec->an_count);
         if (p == NULL)
             EXIT_MEMERR();
-        memset(p, 0, sizeof(cmtrd_an_t));
+        memset(p, 0, sizeof(cmtrd_an_t) * cfg_rec->an_count);
         cfg_rec->anv = (cmtrd_an_t*)p;
     }
     if (cfg_rec->dn_count) {
         p = malloc(sizeof(cmtrd_dn_t) * cfg_rec->dn_count);
         if (p == NULL)
             EXIT_MEMERR();
-        memset(p, 0, sizeof(cmtrd_dn_t));
+        memset(p, 0, sizeof(cmtrd_dn_t) * cfg_rec->dn_count);
         cfg_rec->dnv = (cmtrd_dn_t*)p;
     }
 }
