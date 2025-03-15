@@ -556,7 +556,7 @@ char* add_str_item(const char *src, int length)
     stringcopy_c(str, src, length);
     return str;
 }
-
+/*ERROR*/
 void create_channels_fields(cmtrd_cfg_t *cfg_rec)
 {
     void *p;
@@ -575,6 +575,22 @@ void create_channels_fields(cmtrd_cfg_t *cfg_rec)
         memset(p, 0, sizeof(cmtrd_dn_t));
         cfg_rec->dnv = (cmtrd_dn_t*)p;
     }
+}
+
+void create_samp_fields(cmtrd_cfg_t *cfg_rec)
+{
+    cmtrd_samp_t *p;
+    int n;
+    if (cfg_rec->nrates)
+        n = cfg_rec->nrates;
+    else
+        n = 1;
+
+    p = malloc(sizeof(cmtrd_samp_t) * n);
+    if (p == NULL)
+        EXIT_MEMERR();
+    memset(p, 0, sizeof(cmtrd_samp_t) * n);
+    cfg_rec->samps = p;
 }
 
 int check_param_count(int count, int min, int max)
@@ -1001,7 +1017,7 @@ void analyze_cfg_line_frequency(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     parsing_parameter(plf, cfg_str, &pm, cfg_rec);
 }
 
-void analyze_cfg_nrates(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+int analyze_cfg_nrates(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
 {
     int error;
     cfg_pm_t pm;
@@ -1011,7 +1027,11 @@ void analyze_cfg_nrates(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
         add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
 
     /* Number of sample rates */
+    error = 0;
     parsing_parameter(pnrates, cfg_str, &pm, cfg_rec);
+    if (pm.err && ERRCODE(LN_ERR_INCORRECT_PARAM))
+        error++;
+    return error;
 }
 /* Return values:
  * 0-Ok
@@ -1068,7 +1088,9 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
             next_state++;
             break;
         case analyze_nrates:
-            analyze_cfg_nrates(&cfg_str, cfg_rec);
+            if (analyze_cfg_nrates(&cfg_str, cfg_rec))
+                return 1;
+            create_samp_fields(cfg_rec);
             next_state++;
             break;
         default:
