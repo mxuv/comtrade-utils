@@ -48,8 +48,8 @@ typedef struct {
     int err;
     int len_min;
     int len_max;
-    int ival_min;
-    int ival_max;
+    long int ival_min;
+    long int ival_max;
     double dval_min;
     double dval_max;
 } cfg_pvv_t;
@@ -408,12 +408,34 @@ const cfg_pvv_t nrates = {
     0,
     0
 };
+const cfg_pvv_t samp = {
+    pfloat,
+    PM_SAMP_POS,
+    PM_ERR_SAMP,
+    SAMP_LEN_MIN,
+    SAMP_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t endsamp = {
+    pint,
+    PM_ENDSAMP_POS,
+    PM_ERR_ENDSAMP,
+    ENDSAMP_LEN_MIN,
+    ENDSAMP_LEN_MAX,
+    ENDSAMP_VAL_MIN,
+    ENDSAMP_VAL_MAX,
+    0,
+    0
+};
 
 const cfg_pvv_t *pvv[] = { &sname, &recdevid, &revyear, &tt, &tt_a, &tt_d,
     &ach_num, &ach_chid, &ach_phase, &ach_ccbm, &ach_uu, &ach_a, &ach_b,
     &ach_skew, &ach_min, &ach_max, &ach_primary, &ach_secondary, &ach_ps,
     &dch_num, &dch_chid, &dch_phase, &dch_ccbm, &dch_y1991, &dch_y1999, &lf,
-    &nrates };
+    &nrates, &samp, &endsamp };
 
 int match_char(char ch, char patt)
 {
@@ -580,16 +602,11 @@ void create_channels_fields(cmtrd_cfg_t *cfg_rec)
 void create_samp_fields(cmtrd_cfg_t *cfg_rec)
 {
     cmtrd_samp_t *p;
-    int n;
-    if (cfg_rec->nrates)
-        n = cfg_rec->nrates;
-    else
-        n = 1;
 
-    p = malloc(sizeof(cmtrd_samp_t) * n);
+    p = malloc(sizeof(cmtrd_samp_t) * cfg_rec->real_nrates);
     if (p == NULL)
         EXIT_MEMERR();
-    memset(p, 0, sizeof(cmtrd_samp_t) * n);
+    memset(p, 0, sizeof(cmtrd_samp_t) * cfg_rec->real_nrates);
     cfg_rec->samps = p;
 }
 
@@ -608,7 +625,7 @@ void check_parameter_len(cfg_pm_t *param, int min, int max)
         param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM_LEN);
 }
 
-void check_parameter_ival(cfg_pm_t *param, int min, int max)
+void check_parameter_ival(cfg_pm_t *param, long int min, long int max)
 {
     if (!IS_CORRECT_INTPARAM_VAL(param->val_int, min, max))
         param->err |= ERRCODE(LN_ERR_INCORRECT_PARAM);
@@ -645,12 +662,18 @@ char check_ps_value(cfg_str_t *cfg_str, cfg_pm_t *pm)
     }
 }
 
-int get_empty_field(int *p, int count, int fieldsize)
+int get_empty_field(void *p, int psize, int count, int fieldsize)
 {
     int i;
     for (i = 0; i < count; i++) {
-        if (*(p + (i * fieldsize / sizeof(*p))) == 0)
-            return i;
+        if (psize == sizeof(int)) {
+            if (*((int*)p + (i * fieldsize / sizeof(int))) == 0)
+                return i;
+        }
+        if (psize == sizeof(long int)) {
+            if (*((long int*)p + (i * fieldsize / sizeof(long int))) == 0)
+                return i;
+        }
     }
     return -1;
 }
@@ -823,6 +846,12 @@ void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     case pnrates:
         cfg_rec->nrates = pm->val_int;
         break;
+    case psamp:
+        (cfg_rec->samps + pm->ch_index)->samp = pm->val_float;
+        break;
+    case pendsamp:
+        (cfg_rec->samps + pm->ch_index)->end_samp = pm->val_int;
+        break;
     default:
         break;
     }
@@ -944,8 +973,8 @@ int analyze_cfg_achannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     enum cfg_pnum pn;
 
     error = check_param_count(cfg_str->param_count, CP_AN_1991, CP_AN_1999);
-    pm.ch_index = get_empty_field(&cfg_rec->anv->num, cfg_rec->an_count,
-            sizeof(cmtrd_an_t));
+    pm.ch_index = get_empty_field(&cfg_rec->anv->num, sizeof(int),
+            cfg_rec->an_count, sizeof(cmtrd_an_t));
     if (error)
         add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
     if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
@@ -971,8 +1000,8 @@ int analyze_cfg_dchannel(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     cfg_pm_t pm;
 
     error = check_param_count(cfg_str->param_count, CP_DN_1991, CP_DN_1999);
-    pm.ch_index = get_empty_field(&cfg_rec->dnv->num, cfg_rec->dn_count,
-            sizeof(cmtrd_dn_t));
+    pm.ch_index = get_empty_field(&cfg_rec->dnv->num, sizeof(int),
+            cfg_rec->dn_count, sizeof(cmtrd_dn_t));
     if (error)
         add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
     if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
@@ -1031,8 +1060,34 @@ int analyze_cfg_nrates(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     parsing_parameter(pnrates, cfg_str, &pm, cfg_rec);
     if (pm.err && ERRCODE(LN_ERR_INCORRECT_PARAM))
         error++;
+    if (!cfg_rec->nrates)
+        cfg_rec->real_nrates = 1;
+    else
+        cfg_rec->real_nrates = cfg_rec->nrates;
+
     return error;
 }
+
+int analyze_cfg_samp(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+{
+    int error;
+    cfg_pm_t pm;
+
+    error = check_param_count(cfg_str->param_count, CP_SAMP, CP_SAMP);
+    pm.ch_index = get_empty_field(&cfg_rec->samps->end_samp, sizeof(long int),
+            cfg_rec->real_nrates, sizeof(cmtrd_samp_t));
+    if (error)
+        add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
+    if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
+        return pm.ch_index;
+    if (pm.ch_index == -1)
+        return pm.ch_index;
+
+    parsing_parameter(psamp, cfg_str, &pm, cfg_rec);
+    parsing_parameter(pendsamp, cfg_str, &pm, cfg_rec);
+    return pm.ch_index;
+}
+
 /* Return values:
  * 0-Ok
  * 2-Unexcepted end of file
@@ -1092,6 +1147,11 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
                 return 1;
             create_samp_fields(cfg_rec);
             next_state++;
+            break;
+        case analyze_samp:
+            result = analyze_cfg_samp(&cfg_str, cfg_rec);
+            if (result == -1 || result == cfg_rec->real_nrates - 1)
+                next_state++;
             break;
         default:
             return 0;
@@ -1175,12 +1235,19 @@ void print_dchannels_info(cmtrd_cfg_t *cfg_rec)
 
 void print_info(cmtrd_cfg_t *cfg_rec)
 {
+    int i;
+
     printf("General info:\n");
     printf("    %s: %s\n", parammsg0, cfg_rec->station_name);
     printf("    %s: %s\n", parammsg1, cfg_rec->rec_dev_id);
     printf("    %s: %d\n", parammsg2, cfg_rec->rev_year);
     printf("    %s: %lf\n", parammsg21, cfg_rec->frequency);
     printf("    %s: %d\n", parammsg22, cfg_rec->nrates);
+    for (i = 0; i < cfg_rec->real_nrates; i++) {
+        printf("    %s: %lf\n", parammsg23, (cfg_rec->samps + i)->samp);
+        printf("    %s: %ld\n", parammsg24, (cfg_rec->samps + i)->end_samp);
+    }
+
     printf("Channels info:\n");
     printf("    %s: %d\n", parammsg3, cfg_rec->ch_count);
     printf("    %s: %d\n", parammsg4, cfg_rec->an_count);

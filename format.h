@@ -269,8 +269,8 @@
 #define PM_NRATES_POS               0
 
 /*#define PM_SAMP_OFFSET              PM_NRATES_OFFSET + CP_NRATES*/
-#define PM_SAMP_POS                 1
-#define PM_ENDSAMP_POS              2
+#define PM_SAMP_POS                 0
+#define PM_ENDSAMP_POS              1
 
 /*#define PM_TIME_OFFSET              PM_SAMP_OFFSET + CP_DATE_TIME*/
 #define PM_DAY_POS                  0
@@ -306,41 +306,16 @@ enum revision {
     rev2013 = 2013 
 };
 
-enum cfg_pnum {
-    psname,
-    prec_id,
-    prev_year,
-    ptt,
-    ptt_a,
-    ptt_d,
-    pan,
-    pach_id,
-    paphase,
-    paccbm,
-    pauu,
-    paa,
-    pab,
-    paskew,
-    pamin,
-    pamax,
-    paprimary,
-    pasecondary,
-    paps,
-    pdn,
-    pdch_id,
-    pdphase,
-    pdccbm,
-    pdy_1991,
-    pdy_1999,
-    plf,
-    pnrates
-};
+enum cfg_pnum { psname, prec_id, prev_year, ptt, ptt_a, ptt_d, pan, pach_id,
+    paphase, paccbm, pauu, paa, pab, paskew, pamin, pamax, paprimary,
+    pasecondary, paps, pdn, pdch_id, pdphase, pdccbm, pdy_1991, pdy_1999,
+    plf, pnrates, psamp, pendsamp };
 
 typedef struct {
     int index;
     int ch_index;
     int len;
-    int val_int;
+    long int val_int;
     double val_float;
     int err;
 } cfg_pm_t;
@@ -371,7 +346,7 @@ typedef struct {
 
 typedef struct {
     double samp;
-    int end_samp;
+    long int end_samp;
 } cmtrd_samp_t;
 
 typedef struct {
@@ -401,6 +376,7 @@ typedef struct {
     cmtrd_dn_t *dnv;
     double frequency;
     int nrates;
+    int real_nrates;
     cmtrd_samp_t *samps;
     cmtrd_timestamp_t timestamps;
     enum file_format ft;
