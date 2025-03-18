@@ -100,6 +100,8 @@ const char parammsg33[] = "Time code";
 const char parammsg34[] = "Local time code";
 const char parammsg35[] = "Time quality code";
 const char parammsg36[] = "Leap second indicator";
+const char parammsg37[] = "Timestamp: date";
+const char parammsg38[] = "Timestamp: time";
 
 const char *lnerrmsg[] = { lnerrmsg0, lnerrmsg1, lnerrmsg2, lnerrmsg3,
     lnerrmsg4, lnerrmsg5, lnerrmsg6, lnerrmsg7 };
@@ -110,7 +112,7 @@ const char *parammsg[] = { parammsg0, parammsg1, parammsg2, parammsg3,
     parammsg16, parammsg17, parammsg18, parammsg19, parammsg20, parammsg21,
     parammsg22, parammsg23, parammsg24, parammsg25, parammsg26, parammsg27,
     parammsg28, parammsg29, parammsg30, parammsg31, parammsg32, parammsg33, 
-    parammsg34, parammsg35, parammsg36 }; 
+    parammsg34, parammsg35, parammsg36, parammsg37, parammsg38 }; 
 
 const cfg_pvv_t sname = {
     pstring,
@@ -430,12 +432,34 @@ const cfg_pvv_t endsamp = {
     0,
     0
 };
+const cfg_pvv_t startdate = {
+    pdate,
+    PM_DATE_POS,
+    PM_ERR_DATE,
+    DATE_LEN_MIN,
+    DATE_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t starttime = {
+    ptime,
+    PM_TIME_POS,
+    PM_ERR_TIME,
+    TIME_LEN_MIN,
+    TIME_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
 
 const cfg_pvv_t *pvv[] = { &sname, &recdevid, &revyear, &tt, &tt_a, &tt_d,
     &ach_num, &ach_chid, &ach_phase, &ach_ccbm, &ach_uu, &ach_a, &ach_b,
     &ach_skew, &ach_min, &ach_max, &ach_primary, &ach_secondary, &ach_ps,
     &dch_num, &dch_chid, &dch_phase, &dch_ccbm, &dch_y1991, &dch_y1999, &lf,
-    &nrates, &samp, &endsamp };
+    &nrates, &samp, &endsamp, &startdate, &starttime };
 
 int match_char(char ch, char patt)
 {
@@ -474,11 +498,11 @@ int is_line_ending_ok(const char *str, int len)
         return 0;
 }
 
-int get_param_count(const char *str, int len)
+int get_param_count(const char *str, char separater, int len)
 {
     int count = 0;
     while (len) {
-        if (*str == ',')
+        if (*str == separater) 
             count++;
         str++;
         len--;
@@ -537,7 +561,7 @@ void add_error_field(cmtrd_cfg_t *cfg_rec)
     cfg_rec->errcount++;
 }
 
-void add_error_code(int line, int strcode, int paramcode,
+void add_error_code(int line, int strcode, long int paramcode,
                     cmtrd_cfg_t *cfg_rec)
 {
     int i;
@@ -870,6 +894,8 @@ void parsing_parameter(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     switch (pvv[pn]->ptype) {
     case pstring:
     case pchar:
+    case pdate:
+    case ptime:
         break;
     case pint:
         stringcopy_c(s, cfg_str->str + pm->index, pm->len);
@@ -1088,6 +1114,30 @@ int analyze_cfg_samp(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     return pm.ch_index;
 }
 
+void parsing_date(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt)
+{
+    int param_count;
+    if (!pm->len)
+        return;
+    param_count = get_param_count(cfg_str->str, '/', pm->len) + 1;
+}
+void analyze_cfg_datetime(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec,
+        enum analyze_cfg_state state)
+{
+    int error;
+    cfg_pm_t pm;
+    cmtrd_timestamp_t dt;
+
+    error = check_param_count(cfg_str->param_count, CP_DATE_TIME, CP_DATE_TIME);
+    if (error)
+        add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
+    if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
+        return;
+
+    parsing_parameter(psdate, cfg_str, &pm, cfg_rec);
+    parsing_parameter(pstime, cfg_str, &pm, cfg_rec);
+}
+
 /* Return values:
  * 0-Ok
  * 2-Unexcepted end of file
@@ -1110,7 +1160,7 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
             add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_NOCR), ERRNULL, cfg_rec);
 
         cfg_str.str = buffer;
-        cfg_str.param_count = get_param_count(buffer, cfg_str.strlen) + 1;
+        cfg_str.param_count = get_param_count(buffer, ',', cfg_str.strlen) + 1;
         switch (next_state) {
         case analyze_header:
             analyze_cfg_header(&cfg_str, cfg_rec);
@@ -1120,7 +1170,10 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
             if (analyze_cfg_chinfo(&cfg_str, cfg_rec))
                 return 1;
             create_channels_fields(cfg_rec);
-            next_state++;
+            if (cfg_rec->an_count)
+                next_state = analyze_ach;
+            else
+                next_state = analyze_dch;
             break;
         case analyze_ach:
             result = analyze_cfg_achannel(&cfg_str, cfg_rec);
@@ -1129,6 +1182,10 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
             if (!is_match_ach_rev(cfg_str.param_count, cfg_rec->rev_year))
                 add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR),
                     ERRNULL, cfg_rec);
+            if (cfg_rec->dn_count)
+                next_state = analyze_dch;
+            else
+                next_state = analyze_lf;
             break;
         case analyze_dch:
             result = analyze_cfg_dchannel(&cfg_str, cfg_rec);
@@ -1152,6 +1209,11 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
             result = analyze_cfg_samp(&cfg_str, cfg_rec);
             if (result == -1 || result == cfg_rec->real_nrates - 1)
                 next_state++;
+            break;
+        case analyze_sdatetime:
+        case analyze_trigdatetime:
+            analyze_cfg_datetime(&cfg_str, cfg_rec, next_state);
+            next_state++;
             break;
         default:
             return 0;
@@ -1187,7 +1249,7 @@ void print_errors(cmtrd_cfg_t *cfg_rec)
         if ((cfg_rec->errors + i)->paramerr) {
             long int j = 1;
             printf("    parameters with errors:\n");
-            for (msg_index = 0; msg_index < PARAM_COUNT_MAX; msg_index++) {
+            for (msg_index = 0; msg_index < PM_ERR_COUNT; msg_index++) {
                 if ((cfg_rec->errors + i)->paramerr & (j << msg_index))
                     printf("        %s\n", parammsg[msg_index]);
             }

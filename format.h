@@ -109,9 +109,13 @@
 #define SECONDS_M_LEN_MIN           9
 #define SECONDS_M_LEN_MAX           9
 #define SECONDS_N_LEN_MIN           12
-#define SECONDS_N_LEN_MIN           12
-#define TIME_LEN_MIN                DAY_LEN_MIN + MON_LEN_MIN + YEAR_LEN_MIN + \
-                                    HOUR_LEN_MIN
+#define SECONDS_N_LEN_MAX           12
+#define DATE_LEN_MIN                DAY_LEN_MIN + MON_LEN_MIN + YEAR_LEN_MIN + 2
+#define DATE_LEN_MAX                DAY_LEN_MAX + MON_LEN_MAX + YEAR_LEN_MAX + 2
+#define TIME_LEN_MIN                HOUR_LEN_MIN + MIN_LEN_MIN + \
+                                    SECONDS_M_LEN_MIN + 2
+#define TIME_LEN_MAX                HOUR_LEN_MAX + MIN_LEN_MAX + \
+                                    SECONDS_N_LEN_MAX + 2
 
 #define FILE_TYPE_LEN_MIN           5
 #define FILE_TYPE_LEN_MAX           8
@@ -211,7 +215,6 @@
 #define PM_ERR_Y                    20
 
 #define PM_ERR_LF                   21
-
 #define PM_ERR_NRATES               22
 #define PM_ERR_SAMP                 23
 #define PM_ERR_ENDSAMP              24
@@ -228,9 +231,11 @@
 #define PM_ERR_LC                   34
 #define PM_ERR_TMQ                  35
 #define PM_ERR_LEAPSEC              36
-#define PM_ERR_COUNT                37
+#define PM_ERR_DATE                 37
+#define PM_ERR_TIME                 38
+#define PM_ERR_COUNT                39
 
-#define ERRCODE(x)                  (1<<x)
+#define ERRCODE(x)                  (1L<<x)
 #define ERRNULL                     -1
 
 #define PM_SNAME_POS                0
@@ -273,6 +278,9 @@
 #define PM_ENDSAMP_POS              1
 
 /*#define PM_TIME_OFFSET              PM_SAMP_OFFSET + CP_DATE_TIME*/
+#define PM_DATE_POS                 0
+#define PM_TIME_POS                 1
+
 #define PM_DAY_POS                  0
 #define PM_MON_POS                  1
 #define PM_YYYY_POS                 2
@@ -298,7 +306,7 @@
 #endif
 
 enum file_format {ascii, binary, binary32, float32};
-enum param_type {pstring, pchar, pint, pintc, pfloat};
+enum param_type {pstring, pchar, pint, pintc, pfloat, pdate, ptime};
 enum revision {
     rev1991 = 1991,
     rev1999 = 1999,
@@ -309,7 +317,7 @@ enum revision {
 enum cfg_pnum { psname, prec_id, prev_year, ptt, ptt_a, ptt_d, pan, pach_id,
     paphase, paccbm, pauu, paa, pab, paskew, pamin, pamax, paprimary,
     pasecondary, paps, pdn, pdch_id, pdphase, pdccbm, pdy_1991, pdy_1999,
-    plf, pnrates, psamp, pendsamp };
+    plf, pnrates, psamp, pendsamp, psdate, pstime };
 
 typedef struct {
     int index;
@@ -378,7 +386,8 @@ typedef struct {
     int nrates;
     int real_nrates;
     cmtrd_samp_t *samps;
-    cmtrd_timestamp_t timestamps;
+    cmtrd_timestamp_t start_datetime; 
+    cmtrd_timestamp_t trig_datetime; 
     enum file_format ft;
     double timemult;
     char *time_code;
