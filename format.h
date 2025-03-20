@@ -191,7 +191,7 @@
 /* Parameters error codes */
 #define PM_ERR_SNAME                0
 #define PM_ERR_REC_ID               1
-#define PM_ERR_YEAR                 2
+#define PM_ERR_REVYEAR              2
 
 #define PM_ERR_TT                   3
 #define PM_ERR_TT_A                 4
@@ -221,7 +221,7 @@
 
 #define PM_ERR_DAY                  25
 #define PM_ERR_MON                  26
-#define PM_ERR_YYYY                 27
+#define PM_ERR_YEAR                 27
 #define PM_ERR_HOUR                 28
 #define PM_ERR_MINUT                29
 #define PM_ERR_SECONDS              30
@@ -283,10 +283,11 @@
 
 #define PM_DAY_POS                  0
 #define PM_MON_POS                  1
-#define PM_YYYY_POS                 2
-#define PM_HOUR_POS                 3
-#define PM_MINUT_POS                4
-#define PM_SECONDS_POS              5
+#define PM_YEAR_POS                 2
+
+#define PM_HOUR_POS                 0
+#define PM_MINUT_POS                1
+#define PM_SECONDS_POS              2
 
 #define PM_FILETYPE_POS             0
 
@@ -317,7 +318,7 @@ enum revision {
 enum cfg_pnum { psname, prec_id, prev_year, ptt, ptt_a, ptt_d, pan, pach_id,
     paphase, paccbm, pauu, paa, pab, paskew, pamin, pamax, paprimary,
     pasecondary, paps, pdn, pdch_id, pdphase, pdccbm, pdy_1991, pdy_1999,
-    plf, pnrates, psamp, pendsamp, psdate, pstime };
+    plf, pnrates, psamp, pendsamp, psdate, pstime, pday, pmon, pyear };
 
 typedef struct {
     int index;

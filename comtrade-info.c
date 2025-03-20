@@ -139,7 +139,7 @@ const cfg_pvv_t recdevid = {
 const cfg_pvv_t revyear = {
     pint,
     PM_YEAR_POS,
-    PM_ERR_YEAR,
+    PM_ERR_REVYEAR,
     REVYEAR_LEN_MIN,
     REVYEAR_LEN_MAX,
     REV_YEAR_VAL_MIN,
@@ -433,7 +433,7 @@ const cfg_pvv_t endsamp = {
     0
 };
 const cfg_pvv_t startdate = {
-    pdate,
+    pstring,
     PM_DATE_POS,
     PM_ERR_DATE,
     DATE_LEN_MIN,
@@ -444,7 +444,7 @@ const cfg_pvv_t startdate = {
     0
 };
 const cfg_pvv_t starttime = {
-    ptime,
+    pstring,
     PM_TIME_POS,
     PM_ERR_TIME,
     TIME_LEN_MIN,
@@ -454,12 +454,45 @@ const cfg_pvv_t starttime = {
     0,
     0
 };
+const cfg_pvv_t day = {
+    pdate,
+    PM_DAY_POS,
+    PM_ERR_DAY,
+    DAY_LEN_MIN,
+    DAY_LEN_MAX,
+    DAY_VAL_MIN,
+    DAY_VAL_MAX,
+    0,
+    0
+};
+const cfg_pvv_t mon = {
+    pdate,
+    PM_MON_POS,
+    PM_ERR_MON,
+    MON_LEN_MIN,
+    MON_LEN_MAX,
+    MON_VAL_MIN,
+    MON_VAL_MAX,
+    0,
+    0
+};
+const cfg_pvv_t year = {
+    pdate,
+    PM_YEAR_POS,
+    PM_ERR_YEAR,
+    YEAR_LEN_MIN,
+    YEAR_LEN_MAX,
+    YEAR_VAL_MIN,
+    YEAR_VAL_MAX,
+    0,
+    0
+};
 
 const cfg_pvv_t *pvv[] = { &sname, &recdevid, &revyear, &tt, &tt_a, &tt_d,
     &ach_num, &ach_chid, &ach_phase, &ach_ccbm, &ach_uu, &ach_a, &ach_b,
     &ach_skew, &ach_min, &ach_max, &ach_primary, &ach_secondary, &ach_ps,
     &dch_num, &dch_chid, &dch_phase, &dch_ccbm, &dch_y1991, &dch_y1999, &lf,
-    &nrates, &samp, &endsamp, &startdate, &starttime };
+    &nrates, &samp, &endsamp, &startdate, &starttime, &day, &mon, &year };
 
 int match_char(char ch, char patt)
 {
@@ -498,11 +531,11 @@ int is_line_ending_ok(const char *str, int len)
         return 0;
 }
 
-int get_param_count(const char *str, char separater, int len)
+int get_param_count(const char *str, char separator, int len)
 {
     int count = 0;
     while (len) {
-        if (*str == separater) 
+        if (*str == separator) 
             count++;
         str++;
         len--;
@@ -515,25 +548,26 @@ void get_param(char *dest, const char *str, int index, int len)
     stringcopy_c(dest, str+index, len);
 }
 
-int get_param_index(const char *str, int param)
+int get_param_index(const char *str, int param, char separator)
 {
     int param_curr = 0;
     const char *p;
 
     p = str;
     while (param_curr != param) {
-        if (match_char(*str, ','))
+        if (match_char(*str, separator))
             param_curr++;
         str++;
     }
     return str - p;
 }
 
-int get_param_length(const char *str, int stringlen, int param, int param_count)
+int get_param_length(const char *str, int stringlen, int param,
+    int param_count, char separator)
 {
     int index;
 
-    index = get_param_index(str, param);
+    index = get_param_index(str, param, separator);
     if ((param + 1) == param_count) {
         if (match_char(*(str+(stringlen - 2)), '\r'))
             return stringlen - 2 - index;
@@ -541,7 +575,7 @@ int get_param_length(const char *str, int stringlen, int param, int param_count)
             return stringlen - 1 - index;
     }
     else
-        return get_param_index(str, param + 1) - index - 1;
+        return get_param_index(str, param + 1, separator) - index - 1;
 }
 
 void add_error_field(cmtrd_cfg_t *cfg_rec)
@@ -881,23 +915,37 @@ void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     }
 }
 
+char set_separator(enum param_type ptype)
+{
+    switch (ptype) {
+    case pdate:
+        return '/';
+    case ptime:
+        return ':';
+    default:
+        return ',';
+    }
+}
+
 void parsing_parameter(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
         cmtrd_cfg_t *cfg_rec)
 {
     char s[PARAM_LEN_MAX+1];
+    char c;
 
+    c = set_separator(pvv[pn]->ptype);
     pm->err = 0;
-    pm->index = get_param_index(cfg_str->str, pvv[pn]->num);
+    pm->index = get_param_index(cfg_str->str, pvv[pn]->num, c);
     pm->len = get_param_length(cfg_str->str, cfg_str->strlen, pvv[pn]->num,
-            cfg_str->param_count);
+            cfg_str->param_count, c);
     check_parameter_len(pm, pvv[pn]->len_min, pvv[pn]->len_max);
     switch (pvv[pn]->ptype) {
     case pstring:
     case pchar:
-    case pdate:
     case ptime:
         break;
     case pint:
+    case pdate:
         stringcopy_c(s, cfg_str->str + pm->index, pm->len);
         pm->val_int = atoi(s);
         check_parameter_ival(pm, pvv[pn]->ival_min, pvv[pn]->ival_max);
@@ -1114,12 +1162,35 @@ int analyze_cfg_samp(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     return pm.ch_index;
 }
 
-void parsing_date(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt)
+void init_substring(cfg_str_t *str, cfg_str_t *substr, cfg_pm_t *pm)
 {
-    int param_count;
+    substr->str = str->str;
+    substr->nstr = str->nstr;
+    substr->strlen = pm->len;
+    substr->param_count = get_param_count(substr->str, '/', substr->strlen) + 1;
+}
+
+void parsing_date(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt,
+        cmtrd_cfg_t *cfg_rec)
+{
+    cfg_str_t substr;
+    cfg_pm_t subpm;
     if (!pm->len)
         return;
-    param_count = get_param_count(cfg_str->str, '/', pm->len) + 1;
+
+    init_substring(cfg_str, &substr, pm);
+    parsing_parameter(pday, &substr, &subpm, cfg_rec);
+    dt->day = subpm.val_int;
+    parsing_parameter(pmon, &substr, &subpm, cfg_rec);
+    dt->mon = subpm.val_int;
+    parsing_parameter(pyear, &substr, &subpm, cfg_rec);
+    dt->year = subpm.val_int;
+    printf("Param index: %d\n", subpm.index);
+    printf("Param len: %d\n", subpm.len);
+    printf("String len: %d\n", substr.strlen);
+    printf("Param count: %d\n", substr.param_count);
+    printf("Param value: %d\n", subpm.val_int);
+
 }
 void analyze_cfg_datetime(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec,
         enum analyze_cfg_state state)
@@ -1135,7 +1206,8 @@ void analyze_cfg_datetime(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec,
         return;
 
     parsing_parameter(psdate, cfg_str, &pm, cfg_rec);
-    parsing_parameter(pstime, cfg_str, &pm, cfg_rec);
+    parsing_date(cfg_str, &pm, &dt, cfg_rec);
+    /* parsing_parameter(pstime, cfg_str, &pm, cfg_rec); */
 }
 
 /* Return values:
@@ -1177,15 +1249,15 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
             break;
         case analyze_ach:
             result = analyze_cfg_achannel(&cfg_str, cfg_rec);
-            if (result == -1 || result == cfg_rec->an_count - 1)
-                next_state++;
+            if (result == -1 || result == cfg_rec->an_count - 1) {
+                if (cfg_rec->dn_count)
+                    next_state = analyze_dch;
+                else
+                    next_state = analyze_lf;
+            }
             if (!is_match_ach_rev(cfg_str.param_count, cfg_rec->rev_year))
                 add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR),
                     ERRNULL, cfg_rec);
-            if (cfg_rec->dn_count)
-                next_state = analyze_dch;
-            else
-                next_state = analyze_lf;
             break;
         case analyze_dch:
             result = analyze_cfg_dchannel(&cfg_str, cfg_rec);
