@@ -569,10 +569,10 @@ int get_param_length(const char *str, int stringlen, int param,
 
     index = get_param_index(str, param, separator);
     if ((param + 1) == param_count) {
-        if (match_char(*(str+(stringlen - 2)), '\r'))
-            return stringlen - 2 - index;
-        else
+        if (match_char(*(str+(stringlen - 1)), '\r'))
             return stringlen - 1 - index;
+        else
+            return stringlen - index;
     }
     else
         return get_param_index(str, param + 1, separator) - index - 1;
@@ -1231,6 +1231,7 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
         if (!is_line_ending_ok(buffer, cfg_str.strlen))
             add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_NOCR), ERRNULL, cfg_rec);
 
+        cfg_str.strlen--;
         cfg_str.str = buffer;
         cfg_str.param_count = get_param_count(buffer, ',', cfg_str.strlen) + 1;
         switch (next_state) {
