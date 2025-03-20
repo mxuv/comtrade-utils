@@ -307,7 +307,7 @@
 #endif
 
 enum file_format {ascii, binary, binary32, float32};
-enum param_type {pstring, pchar, pint, pintc, pfloat, pdate, ptime};
+enum param_type {pstring, pchar, pint, pintc, pfloat, pdate, ptime, pstime};
 enum revision {
     rev1991 = 1991,
     rev1999 = 1999,
@@ -318,7 +318,8 @@ enum revision {
 enum cfg_pnum { psname, prec_id, prev_year, ptt, ptt_a, ptt_d, pan, pach_id,
     paphase, paccbm, pauu, paa, pab, paskew, pamin, pamax, paprimary,
     pasecondary, paps, pdn, pdch_id, pdphase, pdccbm, pdy_1991, pdy_1999,
-    plf, pnrates, psamp, pendsamp, psdate, pstime, pday, pmon, pyear };
+    plf, pnrates, psamp, pendsamp, pstdate, psttime, pday, pmon, pyear, phours,
+    pminuts, pseconds };
 
 typedef struct {
     int index;

@@ -487,12 +487,46 @@ const cfg_pvv_t year = {
     0,
     0
 };
+const cfg_pvv_t hours = {
+    ptime,
+    PM_HOUR_POS,
+    PM_ERR_HOUR,
+    HOUR_LEN_MIN,
+    HOUR_LEN_MAX,
+    HOUR_VAL_MIN,
+    HOUR_VAL_MAX,
+    0,
+    0
+};
+const cfg_pvv_t minuts = {
+    ptime,
+    PM_MINUT_POS,
+    PM_ERR_MINUT,
+    MIN_LEN_MIN,
+    MIN_LEN_MAX,
+    MIN_VAL_MIN,
+    MIN_VAL_MAX,
+    0,
+    0
+};
+const cfg_pvv_t seconds = {
+    pstime,
+    PM_SECONDS_POS,
+    PM_ERR_SECONDS,
+    SECONDS_M_LEN_MIN,
+    SECONDS_N_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
 
 const cfg_pvv_t *pvv[] = { &sname, &recdevid, &revyear, &tt, &tt_a, &tt_d,
     &ach_num, &ach_chid, &ach_phase, &ach_ccbm, &ach_uu, &ach_a, &ach_b,
     &ach_skew, &ach_min, &ach_max, &ach_primary, &ach_secondary, &ach_ps,
     &dch_num, &dch_chid, &dch_phase, &dch_ccbm, &dch_y1991, &dch_y1999, &lf,
-    &nrates, &samp, &endsamp, &startdate, &starttime, &day, &mon, &year };
+    &nrates, &samp, &endsamp, &startdate, &starttime, &day, &mon, &year,
+    &hours, &minuts, &seconds };
 
 int match_char(char ch, char patt)
 {
@@ -921,6 +955,7 @@ char set_separator(enum param_type ptype)
     case pdate:
         return '/';
     case ptime:
+    case pstime:
         return ':';
     default:
         return ',';
@@ -942,10 +977,11 @@ void parsing_parameter(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     switch (pvv[pn]->ptype) {
     case pstring:
     case pchar:
-    case ptime:
+    case pstime:
         break;
     case pint:
     case pdate:
+    case ptime:
         stringcopy_c(s, cfg_str->str + pm->index, pm->len);
         pm->val_int = atoi(s);
         check_parameter_ival(pm, pvv[pn]->ival_min, pvv[pn]->ival_max);
@@ -1162,12 +1198,14 @@ int analyze_cfg_samp(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     return pm.ch_index;
 }
 
-void init_substring(cfg_str_t *str, cfg_str_t *substr, cfg_pm_t *pm)
+void init_substring(cfg_str_t *str, cfg_str_t *substr, cfg_pm_t *pm,
+        int offset, char separator)
 {
-    substr->str = str->str;
+    substr->str = str->str + offset;
     substr->nstr = str->nstr;
     substr->strlen = pm->len;
-    substr->param_count = get_param_count(substr->str, '/', substr->strlen) + 1;
+    substr->param_count = get_param_count(substr->str, separator,
+            substr->strlen) + 1;
 }
 
 void parsing_date(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt,
@@ -1175,23 +1213,40 @@ void parsing_date(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt,
 {
     cfg_str_t substr;
     cfg_pm_t subpm;
-    if (!pm->len)
-        return;
 
-    init_substring(cfg_str, &substr, pm);
+    init_substring(cfg_str, &substr, pm, 0, '/');
     parsing_parameter(pday, &substr, &subpm, cfg_rec);
     dt->day = subpm.val_int;
     parsing_parameter(pmon, &substr, &subpm, cfg_rec);
     dt->mon = subpm.val_int;
     parsing_parameter(pyear, &substr, &subpm, cfg_rec);
     dt->year = subpm.val_int;
+}
+
+void parsing_time(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt,
+        cmtrd_cfg_t *cfg_rec)
+{
+    cfg_str_t substr;
+    cfg_pm_t subpm;
+
+    init_substring(cfg_str, &substr, pm, pm->index, ':');
+    parsing_parameter(phours, &substr, &subpm, cfg_rec);
+    dt->hour = subpm.val_int;
+    printf("String len: %d\n", substr.strlen);
     printf("Param index: %d\n", subpm.index);
     printf("Param len: %d\n", subpm.len);
-    printf("String len: %d\n", substr.strlen);
     printf("Param count: %d\n", substr.param_count);
     printf("Param value: %d\n", subpm.val_int);
-
+    parsing_parameter(pminuts, &substr, &subpm, cfg_rec);
+    dt->min = subpm.val_int;
+    printf("Param index: %d\n", subpm.index);
+    printf("Param len: %d\n", subpm.len);
+    printf("Param count: %d\n", substr.param_count);
+    printf("Param value: %d\n", subpm.val_int);
+    /* parsing_parameter(pyear, &substr, &subpm, cfg_rec); */
+    /* dt->year = subpm.val_int; */
 }
+
 void analyze_cfg_datetime(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec,
         enum analyze_cfg_state state)
 {
@@ -1205,9 +1260,12 @@ void analyze_cfg_datetime(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec,
     if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
         return;
 
-    parsing_parameter(psdate, cfg_str, &pm, cfg_rec);
-    parsing_date(cfg_str, &pm, &dt, cfg_rec);
-    /* parsing_parameter(pstime, cfg_str, &pm, cfg_rec); */
+    parsing_parameter(pstdate, cfg_str, &pm, cfg_rec);
+    if (pm.len)
+        parsing_date(cfg_str, &pm, &dt, cfg_rec);
+    parsing_parameter(psttime, cfg_str, &pm, cfg_rec);
+    if (pm.len)
+        parsing_time(cfg_str, &pm, &dt, cfg_rec);
 }
 
 /* Return values:
