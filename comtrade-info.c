@@ -513,10 +513,32 @@ const cfg_pvv_t seconds = {
     pstime,
     PM_SECONDS_POS,
     PM_ERR_SECONDS,
-    SECONDS_M_LEN_MIN,
-    SECONDS_N_LEN_MAX,
+    SECONDS_LEN_MIN,
+    SECONDS_LEN_MAX,
     0,
     0,
+    0,
+    0
+};
+const cfg_pvv_t seconds_p = {
+    psecond,
+    PM_SECONDS_P_POS,
+    PM_ERR_SECONDS,
+    SECONDS_P_LEN_MIN,
+    SECONDS_P_LEN_MAX,
+    SECONDS_P_VAL_MIN,
+    SECONDS_P_VAL_MAX,
+    0,
+    0
+};
+const cfg_pvv_t seconds_s = {
+    psecond,
+    PM_SECONDS_S_POS,
+    PM_ERR_SECONDS,
+    SECONDS_S_LEN_MIN,
+    SECONDS_S_LEN_MAX,
+    SECONDS_S_VAL_MIN,
+    SECONDS_S_VAL_MAX,
     0,
     0
 };
@@ -526,7 +548,7 @@ const cfg_pvv_t *pvv[] = { &sname, &recdevid, &revyear, &tt, &tt_a, &tt_d,
     &ach_skew, &ach_min, &ach_max, &ach_primary, &ach_secondary, &ach_ps,
     &dch_num, &dch_chid, &dch_phase, &dch_ccbm, &dch_y1991, &dch_y1999, &lf,
     &nrates, &samp, &endsamp, &startdate, &starttime, &day, &mon, &year,
-    &hours, &minuts, &seconds };
+    &hours, &minuts, &seconds, &seconds_p, &seconds_s };
 
 int match_char(char ch, char patt)
 {
@@ -957,6 +979,8 @@ char set_separator(enum param_type ptype)
     case ptime:
     case pstime:
         return ':';
+    case psecond:
+        return '.';
     default:
         return ',';
     }
@@ -1223,6 +1247,15 @@ void parsing_date(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt,
     dt->year = subpm.val_int;
 }
 
+void parsing_time_seconds(cfg_str_t *cfg_str, cfg_pm_t *pm,
+        cmtrd_timestamp_t *dt, cmtrd_cfg_t *cfg_rec)
+{
+    cfg_str_t substr;
+    cfg_pm_t subpm;
+
+    init_substring(cfg_str, &substr, pm, pm->index, '.');
+}
+
 void parsing_time(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt,
         cmtrd_cfg_t *cfg_rec)
 {
@@ -1232,19 +1265,18 @@ void parsing_time(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt,
     init_substring(cfg_str, &substr, pm, pm->index, ':');
     parsing_parameter(phours, &substr, &subpm, cfg_rec);
     dt->hour = subpm.val_int;
-    printf("String len: %d\n", substr.strlen);
-    printf("Param index: %d\n", subpm.index);
-    printf("Param len: %d\n", subpm.len);
-    printf("Param count: %d\n", substr.param_count);
-    printf("Param value: %d\n", subpm.val_int);
+    /* printf("String len: %d\n", substr.strlen); */
+    /* printf("Param index: %d\n", subpm.index); */
+    /* printf("Param len: %d\n", subpm.len); */
+    /* printf("Param count: %d\n", substr.param_count); */
+    /* printf("Param value: %d\n", subpm.val_int); */
     parsing_parameter(pminuts, &substr, &subpm, cfg_rec);
     dt->min = subpm.val_int;
-    printf("Param index: %d\n", subpm.index);
-    printf("Param len: %d\n", subpm.len);
-    printf("Param count: %d\n", substr.param_count);
-    printf("Param value: %d\n", subpm.val_int);
-    /* parsing_parameter(pyear, &substr, &subpm, cfg_rec); */
-    /* dt->year = subpm.val_int; */
+    /* printf("Param index: %d\n", subpm.index); */
+    /* printf("Param len: %d\n", subpm.len); */
+    /* printf("Param count: %d\n", substr.param_count); */
+    /* printf("Param value: %d\n", subpm.val_int); */
+    parsing_parameter(pseconds, &substr, &subpm, cfg_rec);
 }
 
 void analyze_cfg_datetime(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec,

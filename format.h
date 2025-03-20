@@ -20,6 +20,9 @@
 #define CP_SAMP                     2
 
 #define CP_DATE_TIME                2
+#define CP_DATE                     3
+#define CP_TIME                     3
+#define CP_SECONDS                  2
 
 #define CP_TRIGG_DATE_TIME          2
 
@@ -106,16 +109,19 @@
 #define HOUR_LEN_MAX                2
 #define MIN_LEN_MIN                 2
 #define MIN_LEN_MAX                 2
-#define SECONDS_M_LEN_MIN           9
-#define SECONDS_M_LEN_MAX           9
-#define SECONDS_N_LEN_MIN           12
-#define SECONDS_N_LEN_MAX           12
+#define SECONDS_LEN_MIN             9
+#define SECONDS_LEN_MAX             12
+#define SECONDS_P_LEN_MIN           2
+#define SECONDS_P_LEN_MAX           2
+#define SECONDS_S_LEN_MIN           6
+#define SECONDS_S_LEN_MAX           9
+
 #define DATE_LEN_MIN                DAY_LEN_MIN + MON_LEN_MIN + YEAR_LEN_MIN + 2
 #define DATE_LEN_MAX                DAY_LEN_MAX + MON_LEN_MAX + YEAR_LEN_MAX + 2
 #define TIME_LEN_MIN                HOUR_LEN_MIN + MIN_LEN_MIN + \
-                                    SECONDS_M_LEN_MIN + 2
+                                    SECONDS_LEN_MIN + 2
 #define TIME_LEN_MAX                HOUR_LEN_MAX + MIN_LEN_MAX + \
-                                    SECONDS_N_LEN_MAX + 2
+                                    SECONDS_LEN_MAX + 2
 
 #define FILE_TYPE_LEN_MIN           5
 #define FILE_TYPE_LEN_MAX           8
@@ -173,6 +179,10 @@
 #define HOUR_VAL_MAX                23
 #define MIN_VAL_MIN                 0
 #define MIN_VAL_MAX                 59
+#define SECONDS_P_VAL_MIN           0
+#define SECONDS_P_VAL_MAX           59
+#define SECONDS_S_VAL_MIN           0
+#define SECONDS_S_VAL_MAX           999999
 
 #define LEAPSEC_VAL_MIN             0 
 #define LEAPSEC_VAL_MAX             3 
@@ -289,6 +299,9 @@
 #define PM_MINUT_POS                1
 #define PM_SECONDS_POS              2
 
+#define PM_SECONDS_P_POS            0
+#define PM_SECONDS_S_POS            1
+
 #define PM_FILETYPE_POS             0
 
 #define PM_TIMEMULT_POS             0
@@ -307,7 +320,9 @@
 #endif
 
 enum file_format {ascii, binary, binary32, float32};
-enum param_type {pstring, pchar, pint, pintc, pfloat, pdate, ptime, pstime};
+enum param_type {pstring, pchar, pint, pintc, pfloat, pdate, ptime,
+    pstime, psecond};
+
 enum revision {
     rev1991 = 1991,
     rev1999 = 1999,
@@ -319,7 +334,7 @@ enum cfg_pnum { psname, prec_id, prev_year, ptt, ptt_a, ptt_d, pan, pach_id,
     paphase, paccbm, pauu, paa, pab, paskew, pamin, pamax, paprimary,
     pasecondary, paps, pdn, pdch_id, pdphase, pdccbm, pdy_1991, pdy_1999,
     plf, pnrates, psamp, pendsamp, pstdate, psttime, pday, pmon, pyear, phours,
-    pminuts, pseconds };
+    pminuts, pseconds, pseconds_p, pseconds_s };
 
 typedef struct {
     int index;
