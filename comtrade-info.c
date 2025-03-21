@@ -100,8 +100,8 @@ const char parammsg33[] = "Time code";
 const char parammsg34[] = "Local time code";
 const char parammsg35[] = "Time quality code";
 const char parammsg36[] = "Leap second indicator";
-const char parammsg37[] = "Timestamp: date";
-const char parammsg38[] = "Timestamp: time";
+const char parammsg37[] = "Timestamp. Date";
+const char parammsg38[] = "Timestamp. Time";
 
 const char *lnerrmsg[] = { lnerrmsg0, lnerrmsg1, lnerrmsg2, lnerrmsg3,
     lnerrmsg4, lnerrmsg5, lnerrmsg6, lnerrmsg7 };
@@ -1267,17 +1267,8 @@ void parsing_time_seconds(cfg_str_t *cfg_str, cfg_pm_t *pm,
     }
     parsing_parameter(pseconds_p, &substr, &subpm, cfg_rec);
     dt->sec = subpm.val_int;
-    printf("String len: %d\n", substr.strlen);
-    printf("Param index: %d\n", subpm.index);
-    printf("Param len: %d\n", subpm.len);
-    printf("Param count: %d\n", substr.param_count);
-    printf("Param value: %d\n", subpm.val_int);
     parsing_parameter(pseconds_s, &substr, &subpm, cfg_rec);
     dt->subsec = subpm.val_int;
-    printf("Param index: %d\n", subpm.index);
-    printf("Param len: %d\n", subpm.len);
-    printf("Param count: %d\n", substr.param_count);
-    printf("Param value: %d\n", subpm.val_int);
 }
 
 void parsing_time(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt,
@@ -1294,17 +1285,8 @@ void parsing_time(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt,
     }
     parsing_parameter(phours, &substr, &subpm, cfg_rec);
     dt->hour = subpm.val_int;
-    /* printf("String len: %d\n", substr.strlen); */
-    /* printf("Param index: %d\n", subpm.index); */
-    /* printf("Param len: %d\n", subpm.len); */
-    /* printf("Param count: %d\n", substr.param_count); */
-    /* printf("Param value: %d\n", subpm.val_int); */
     parsing_parameter(pminuts, &substr, &subpm, cfg_rec);
     dt->min = subpm.val_int;
-    /* printf("Param index: %d\n", subpm.index); */
-    /* printf("Param len: %d\n", subpm.len); */
-    /* printf("Param count: %d\n", substr.param_count); */
-    /* printf("Param value: %d\n", subpm.val_int); */
     parsing_parameter(pseconds, &substr, &subpm, cfg_rec);
     if (subpm.len)
         parsing_time_seconds(&substr, &subpm, dt, cfg_rec);
@@ -1329,6 +1311,10 @@ void analyze_cfg_datetime(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec,
     parsing_parameter(psttime, cfg_str, &pm, cfg_rec);
     if (pm.len)
         parsing_time(cfg_str, &pm, &dt, cfg_rec);
+    if (state == analyze_sdatetime)
+        memcpy(&cfg_rec->start_datetime, &dt, sizeof(dt));
+    else if (state == analyze_trigdatetime)
+        memcpy(&cfg_rec->trig_datetime, &dt, sizeof(dt));
 }
 
 /* Return values:
@@ -1499,6 +1485,16 @@ void print_info(cmtrd_cfg_t *cfg_rec)
     printf("    %s: %d\n", parammsg2, cfg_rec->rev_year);
     printf("    %s: %lf\n", parammsg21, cfg_rec->frequency);
     printf("    %s: %d\n", parammsg22, cfg_rec->nrates);
+    printf("    Start timestamp: %02d/%02d/%d %02d:%02d:%02d.%d\n", 
+            cfg_rec->start_datetime.day, cfg_rec->start_datetime.mon,
+            cfg_rec->start_datetime.year, cfg_rec->start_datetime.hour,
+            cfg_rec->start_datetime.min, cfg_rec->start_datetime.sec,
+            cfg_rec->start_datetime.subsec);
+    printf("    Trigger timestamp: %02d/%02d/%d %02d:%02d:%02d.%d\n", 
+            cfg_rec->trig_datetime.day, cfg_rec->trig_datetime.mon,
+            cfg_rec->trig_datetime.year, cfg_rec->trig_datetime.hour,
+            cfg_rec->trig_datetime.min, cfg_rec->trig_datetime.sec,
+            cfg_rec->trig_datetime.subsec);
     for (i = 0; i < cfg_rec->real_nrates; i++) {
         printf("    %s: %lf\n", parammsg23, (cfg_rec->samps + i)->samp);
         printf("    %s: %ld\n", parammsg24, (cfg_rec->samps + i)->end_samp);
