@@ -182,7 +182,7 @@
 #define SECONDS_P_VAL_MIN           0
 #define SECONDS_P_VAL_MAX           59
 #define SECONDS_S_VAL_MIN           0
-#define SECONDS_S_VAL_MAX           999999
+#define SECONDS_S_VAL_MAX           999999999
 
 #define LEAPSEC_VAL_MIN             0 
 #define LEAPSEC_VAL_MAX             3 

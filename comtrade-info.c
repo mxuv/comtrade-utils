@@ -1006,6 +1006,7 @@ void parsing_parameter(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     case pint:
     case pdate:
     case ptime:
+    case psecond:
         stringcopy_c(s, cfg_str->str + pm->index, pm->len);
         pm->val_int = atoi(s);
         check_parameter_ival(pm, pvv[pn]->ival_min, pvv[pn]->ival_max);
@@ -1259,6 +1260,24 @@ void parsing_time_seconds(cfg_str_t *cfg_str, cfg_pm_t *pm,
     cfg_pm_t subpm;
 
     init_substring(cfg_str, &substr, pm, pm->index, '.');
+    if (substr.param_count != CP_SECONDS) {
+        add_error_code(substr.nstr, ERRCODE(LN_ERR_INCORRECT_PARAM),
+                ERRCODE(PM_ERR_TIME), cfg_rec);
+        return;
+    }
+    parsing_parameter(pseconds_p, &substr, &subpm, cfg_rec);
+    dt->sec = subpm.val_int;
+    printf("String len: %d\n", substr.strlen);
+    printf("Param index: %d\n", subpm.index);
+    printf("Param len: %d\n", subpm.len);
+    printf("Param count: %d\n", substr.param_count);
+    printf("Param value: %d\n", subpm.val_int);
+    parsing_parameter(pseconds_s, &substr, &subpm, cfg_rec);
+    dt->subsec = subpm.val_int;
+    printf("Param index: %d\n", subpm.index);
+    printf("Param len: %d\n", subpm.len);
+    printf("Param count: %d\n", substr.param_count);
+    printf("Param value: %d\n", subpm.val_int);
 }
 
 void parsing_time(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt,
@@ -1287,6 +1306,8 @@ void parsing_time(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt,
     /* printf("Param count: %d\n", substr.param_count); */
     /* printf("Param value: %d\n", subpm.val_int); */
     parsing_parameter(pseconds, &substr, &subpm, cfg_rec);
+    if (subpm.len)
+        parsing_time_seconds(&substr, &subpm, dt, cfg_rec);
 }
 
 void analyze_cfg_datetime(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec,
