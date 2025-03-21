@@ -320,8 +320,8 @@
 #endif
 
 enum file_format {ascii, binary, binary32, float32};
-enum param_type {pstring, pchar, pint, pintc, pfloat, pdate, ptime,
-    pstime, psecond};
+enum param_type {ptstring, ptchar, ptint, ptintc, ptfloat, ptdate, pttime,
+    ptstime, ptsecond};
 
 enum revision {
     rev1991 = 1991,

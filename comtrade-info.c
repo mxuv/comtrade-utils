@@ -115,7 +115,7 @@ const char *parammsg[] = { parammsg0, parammsg1, parammsg2, parammsg3,
     parammsg34, parammsg35, parammsg36, parammsg37, parammsg38 }; 
 
 const cfg_pvv_t sname = {
-    pstring,
+    ptstring,
     PM_SNAME_POS,
     PM_ERR_SNAME,
     SNAME_LEN_MIN,
@@ -126,7 +126,7 @@ const cfg_pvv_t sname = {
     0
 };
 const cfg_pvv_t recdevid = {
-    pstring,
+    ptstring,
     PM_REC_ID_POS,
     PM_ERR_REC_ID,
     RECDEV_LEN_MIN,
@@ -137,7 +137,7 @@ const cfg_pvv_t recdevid = {
     0
 };
 const cfg_pvv_t revyear = {
-    pint,
+    ptint,
     PM_YEAR_POS,
     PM_ERR_REVYEAR,
     REVYEAR_LEN_MIN,
@@ -148,7 +148,7 @@ const cfg_pvv_t revyear = {
     0
 };
 const cfg_pvv_t tt = {
-    pint,
+    ptint,
     PM_TT_POS,
     PM_ERR_TT,
     TT_LEN_MIN,
@@ -159,7 +159,7 @@ const cfg_pvv_t tt = {
     0
 };
 const cfg_pvv_t tt_a = {
-    pintc,
+    ptintc,
     PM_TT_A_POS,
     PM_ERR_TT_A,
     AN_LEN_MIN,
@@ -170,7 +170,7 @@ const cfg_pvv_t tt_a = {
     0
 };
 const cfg_pvv_t tt_d = {
-    pintc,
+    ptintc,
     PM_TT_D_POS,
     PM_ERR_TT_D,
     DN_LEN_MIN,
@@ -181,7 +181,7 @@ const cfg_pvv_t tt_d = {
     0
 };
 const cfg_pvv_t ach_num = {
-    pint,
+    ptint,
     PM_AN_POS,
     PM_ERR_AN,
     A_N_LEN_MIN,
@@ -192,7 +192,7 @@ const cfg_pvv_t ach_num = {
     0
 };
 const cfg_pvv_t ach_chid = {
-    pstring,
+    ptstring,
     PM_CHID_POS,
     PM_ERR_CHID,
     A_CHID_LEN_MIN,
@@ -203,7 +203,7 @@ const cfg_pvv_t ach_chid = {
     0
 };
 const cfg_pvv_t ach_phase = {
-    pstring,
+    ptstring,
     PM_PH_POS,
     PM_ERR_PH,
     A_PH_LEN_MIN,
@@ -214,7 +214,7 @@ const cfg_pvv_t ach_phase = {
     0
 };
 const cfg_pvv_t ach_ccbm = {
-    pstring,
+    ptstring,
     PM_CCBM_POS,
     PM_ERR_CCBM,
     A_CCBM_LEN_MIN,
@@ -225,7 +225,7 @@ const cfg_pvv_t ach_ccbm = {
     0
 };
 const cfg_pvv_t ach_uu = {
-    pstring, 
+    ptstring, 
     PM_UU_POS,
     PM_ERR_UU,
     A_UU_LEN_MIN,
@@ -236,7 +236,7 @@ const cfg_pvv_t ach_uu = {
     0
 };
 const cfg_pvv_t ach_a = {
-    pfloat,
+    ptfloat,
     PM_A_POS,
     PM_ERR_A,
     A_A_LEN_MIN,
@@ -247,7 +247,7 @@ const cfg_pvv_t ach_a = {
     0
 };
 const cfg_pvv_t ach_b = {
-    pfloat,
+    ptfloat,
     PM_B_POS,
     PM_ERR_B,
     A_B_LEN_MIN,
@@ -258,7 +258,7 @@ const cfg_pvv_t ach_b = {
     0
 };
 const cfg_pvv_t ach_skew = {
-    pfloat,
+    ptfloat,
     PM_SKEW_POS,
     PM_ERR_SKEW,
     A_SKEW_LEN_MIN,
@@ -268,7 +268,7 @@ const cfg_pvv_t ach_skew = {
     0,
     0
 }; const cfg_pvv_t ach_min = {
-    pfloat,
+    ptfloat,
     PM_MIN_POS,
     PM_ERR_MIN,
     A_MINSC_LEN_MIN,
@@ -279,7 +279,7 @@ const cfg_pvv_t ach_skew = {
     A_MINSC_VAL_MAX
 };
 const cfg_pvv_t ach_max = {
-    pfloat,
+    ptfloat,
     PM_MAX_POS,
     PM_ERR_MAX,
     A_MAXSC_LEN_MIN,
@@ -290,7 +290,7 @@ const cfg_pvv_t ach_max = {
     A_MAXSC_VAL_MAX
 };
 const cfg_pvv_t ach_primary = {
-    pfloat,
+    ptfloat,
     PM_PRIM_POS,
     PM_ERR_PRIM,
     A_PRIMARY_LEN_MIN,
@@ -301,7 +301,7 @@ const cfg_pvv_t ach_primary = {
     0
 };
 const cfg_pvv_t ach_secondary = {
-    pfloat,
+    ptfloat,
     PM_SEC_POS,
     PM_ERR_SEC,
     A_SECONDARY_LEN_MIN,
@@ -312,7 +312,7 @@ const cfg_pvv_t ach_secondary = {
     0
 };
 const cfg_pvv_t ach_ps = {
-    pchar,
+    ptchar,
     PM_PS_POS,
     PM_ERR_PS,
     A_PS_LEN_MIN,
@@ -323,7 +323,7 @@ const cfg_pvv_t ach_ps = {
     0
 };
 const cfg_pvv_t dch_num = {
-    pint,
+    ptint,
     PM_DN_POS,
     PM_ERR_DN,
     D_N_LEN_MIN,
@@ -334,7 +334,7 @@ const cfg_pvv_t dch_num = {
     0
 };
 const cfg_pvv_t dch_chid = {
-    pstring,
+    ptstring,
     PM_CHID_POS,
     PM_ERR_CHID,
     D_CHID_LEN_MIN,
@@ -345,7 +345,7 @@ const cfg_pvv_t dch_chid = {
     0
 };
 const cfg_pvv_t dch_phase = {
-    pstring,
+    ptstring,
     PM_PH_POS,
     PM_ERR_PH,
     D_PH_LEN_MIN,
@@ -356,7 +356,7 @@ const cfg_pvv_t dch_phase = {
     0
 };
 const cfg_pvv_t dch_ccbm = {
-    pstring,
+    ptstring,
     PM_CCBM_POS,
     PM_ERR_CCBM,
     D_CCBM_LEN_MIN,
@@ -367,7 +367,7 @@ const cfg_pvv_t dch_ccbm = {
     0
 };
 const cfg_pvv_t dch_y1991 = {
-    pint,
+    ptint,
     PM_Y_1991_POS,
     PM_ERR_Y,
     D_Y_LEN_MIN,
@@ -378,7 +378,7 @@ const cfg_pvv_t dch_y1991 = {
     0
 };
 const cfg_pvv_t dch_y1999 = {
-    pint,
+    ptint,
     PM_Y_1999_POS,
     PM_ERR_Y,
     D_Y_LEN_MIN,
@@ -389,7 +389,7 @@ const cfg_pvv_t dch_y1999 = {
     0
 };
 const cfg_pvv_t lf = {
-    pfloat,
+    ptfloat,
     PM_LF_POS,
     PM_ERR_LF,
     LF_LEN_MIN,
@@ -400,7 +400,7 @@ const cfg_pvv_t lf = {
     0
 };
 const cfg_pvv_t nrates = {
-    pint,
+    ptint,
     PM_NRATES_POS,
     PM_ERR_NRATES,
     NRATES_LEN_MIN,
@@ -411,7 +411,7 @@ const cfg_pvv_t nrates = {
     0
 };
 const cfg_pvv_t samp = {
-    pfloat,
+    ptfloat,
     PM_SAMP_POS,
     PM_ERR_SAMP,
     SAMP_LEN_MIN,
@@ -422,7 +422,7 @@ const cfg_pvv_t samp = {
     0
 };
 const cfg_pvv_t endsamp = {
-    pint,
+    ptint,
     PM_ENDSAMP_POS,
     PM_ERR_ENDSAMP,
     ENDSAMP_LEN_MIN,
@@ -433,7 +433,7 @@ const cfg_pvv_t endsamp = {
     0
 };
 const cfg_pvv_t startdate = {
-    pstring,
+    ptstring,
     PM_DATE_POS,
     PM_ERR_DATE,
     DATE_LEN_MIN,
@@ -444,7 +444,7 @@ const cfg_pvv_t startdate = {
     0
 };
 const cfg_pvv_t starttime = {
-    pstring,
+    ptstring,
     PM_TIME_POS,
     PM_ERR_TIME,
     TIME_LEN_MIN,
@@ -455,7 +455,7 @@ const cfg_pvv_t starttime = {
     0
 };
 const cfg_pvv_t day = {
-    pdate,
+    ptdate,
     PM_DAY_POS,
     PM_ERR_DAY,
     DAY_LEN_MIN,
@@ -466,7 +466,7 @@ const cfg_pvv_t day = {
     0
 };
 const cfg_pvv_t mon = {
-    pdate,
+    ptdate,
     PM_MON_POS,
     PM_ERR_MON,
     MON_LEN_MIN,
@@ -477,7 +477,7 @@ const cfg_pvv_t mon = {
     0
 };
 const cfg_pvv_t year = {
-    pdate,
+    ptdate,
     PM_YEAR_POS,
     PM_ERR_YEAR,
     YEAR_LEN_MIN,
@@ -488,7 +488,7 @@ const cfg_pvv_t year = {
     0
 };
 const cfg_pvv_t hours = {
-    ptime,
+    pttime,
     PM_HOUR_POS,
     PM_ERR_HOUR,
     HOUR_LEN_MIN,
@@ -499,7 +499,7 @@ const cfg_pvv_t hours = {
     0
 };
 const cfg_pvv_t minuts = {
-    ptime,
+    pttime,
     PM_MINUT_POS,
     PM_ERR_MINUT,
     MIN_LEN_MIN,
@@ -510,7 +510,7 @@ const cfg_pvv_t minuts = {
     0
 };
 const cfg_pvv_t seconds = {
-    pstime,
+    ptstime,
     PM_SECONDS_POS,
     PM_ERR_SECONDS,
     SECONDS_LEN_MIN,
@@ -521,7 +521,7 @@ const cfg_pvv_t seconds = {
     0
 };
 const cfg_pvv_t seconds_p = {
-    psecond,
+    ptsecond,
     PM_SECONDS_P_POS,
     PM_ERR_SECONDS,
     SECONDS_P_LEN_MIN,
@@ -532,7 +532,7 @@ const cfg_pvv_t seconds_p = {
     0
 };
 const cfg_pvv_t seconds_s = {
-    psecond,
+    ptsecond,
     PM_SECONDS_S_POS,
     PM_ERR_SECONDS,
     SECONDS_S_LEN_MIN,
@@ -974,12 +974,12 @@ void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
 char set_separator(enum param_type ptype)
 {
     switch (ptype) {
-    case pdate:
+    case ptdate:
         return '/';
-    case ptime:
-    case pstime:
+    case pttime:
+    case ptstime:
         return ':';
-    case psecond:
+    case ptsecond:
         return '.';
     default:
         return ',';
@@ -999,24 +999,24 @@ void parsing_parameter(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
             cfg_str->param_count, c);
     check_parameter_len(pm, pvv[pn]->len_min, pvv[pn]->len_max);
     switch (pvv[pn]->ptype) {
-    case pstring:
-    case pchar:
-    case pstime:
+    case ptstring:
+    case ptchar:
+    case ptstime:
         break;
-    case pint:
-    case pdate:
-    case ptime:
-    case psecond:
+    case ptint:
+    case ptdate:
+    case pttime:
+    case ptsecond:
         stringcopy_c(s, cfg_str->str + pm->index, pm->len);
         pm->val_int = atoi(s);
         check_parameter_ival(pm, pvv[pn]->ival_min, pvv[pn]->ival_max);
         break;
-    case pintc:
+    case ptintc:
         stringcopy_c(s, cfg_str->str + pm->index, pm->len - 1);
         pm->val_int = atoi(s);
         check_parameter_ival(pm, pvv[pn]->ival_min, pvv[pn]->ival_max);
         break;
-    case pfloat:
+    case ptfloat:
         stringcopy_c(s, cfg_str->str + pm->index, pm->len);
         pm->val_float = atof(s);
         check_parameter_dval(pm, pvv[pn]->dval_min, pvv[pn]->dval_max);
