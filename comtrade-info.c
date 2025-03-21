@@ -1239,6 +1239,11 @@ void parsing_date(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt,
     cfg_pm_t subpm;
 
     init_substring(cfg_str, &substr, pm, 0, '/');
+    if (substr.param_count != CP_DATE) {
+        add_error_code(substr.nstr, ERRCODE(LN_ERR_INCORRECT_PARAM),
+                ERRCODE(PM_ERR_DATE), cfg_rec);
+        return;
+    }
     parsing_parameter(pday, &substr, &subpm, cfg_rec);
     dt->day = subpm.val_int;
     parsing_parameter(pmon, &substr, &subpm, cfg_rec);
@@ -1263,6 +1268,11 @@ void parsing_time(cfg_str_t *cfg_str, cfg_pm_t *pm, cmtrd_timestamp_t *dt,
     cfg_pm_t subpm;
 
     init_substring(cfg_str, &substr, pm, pm->index, ':');
+    if (substr.param_count != CP_TIME) {
+        add_error_code(substr.nstr, ERRCODE(LN_ERR_INCORRECT_PARAM),
+                ERRCODE(PM_ERR_TIME), cfg_rec);
+        return;
+    }
     parsing_parameter(phours, &substr, &subpm, cfg_rec);
     dt->hour = subpm.val_int;
     /* printf("String len: %d\n", substr.strlen); */
