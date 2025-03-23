@@ -43,10 +43,29 @@ void stringcopy_c(char *dest, const char *src, int count)
     *dest = 0;
 }
 
+int stringmatch(const char *str, const char *pattern)
+{
+    if (!*pattern)
+        return *str == 0;
+    if (*str != *pattern)
+        return 0;
+    else 
+        return stringmatch(str + 1, pattern + 1);
+}
+
 char upcase_letter(char c)
 {
     if (c >= 'a' && c <= 'z')
-        return c - 'a' - 'A';
+        return c - ('a' - 'A');
     else
         return c;
 }
+
+void upcase_string(char *str)
+{
+    while (*str) {
+        *str = upcase_letter(*str);
+        str++;
+    }
+}
+
