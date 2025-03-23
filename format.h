@@ -334,7 +334,8 @@ enum cfg_pnum { psname, prec_id, prev_year, ptt, ptt_a, ptt_d, pan, pach_id,
     paphase, paccbm, pauu, paa, pab, paskew, pamin, pamax, paprimary,
     pasecondary, paps, pdn, pdch_id, pdphase, pdccbm, pdy_1991, pdy_1999,
     plf, pnrates, psamp, pendsamp, pstdate, psttime, pday, pmon, pyear, phours,
-    pminuts, pseconds, pseconds_p, pseconds_s, pfiletype };
+    pminuts, pseconds, pseconds_p, pseconds_s, pfiletype, ptimemult, ptimecode,
+    plocalcode, ptmqcode, pleapsec };
 
 typedef struct {
     int index;

@@ -501,13 +501,47 @@ const cfg_pvv_t filetype = {
     0,
     0
 };
+const cfg_pvv_t timemult = {
+    ptfloat,
+    PM_TIMEMULT_POS,
+    PM_ERR_TIMEMULT,
+    TIMEMULT_LEN_MIN,
+    TIMEMULT_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t timecode = {
+    ptstring,
+    PM_TC_POS,
+    PM_ERR_TC,
+    TIME_CODE_LEN_MIN,
+    TIME_CODE_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
+const cfg_pvv_t localcode = {
+    ptstring,
+    PM_LC_POS,
+    PM_ERR_LC,
+    LOCAL_CODE_LEN_MIN,
+    LOCAL_CODE_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
 
 const cfg_pvv_t *pvv[] = { &sname, &recdevid, &revyear, &tt, &tt_a, &tt_d,
     &ach_num, &ach_chid, &ach_phase, &ach_ccbm, &ach_uu, &ach_a, &ach_b,
     &ach_skew, &ach_min, &ach_max, &ach_primary, &ach_secondary, &ach_ps,
     &dch_num, &dch_chid, &dch_phase, &dch_ccbm, &dch_y1991, &dch_y1999, &lf,
     &nrates, &samp, &endsamp, &startdate, &starttime, &day, &mon, &year,
-    &hours, &minuts, &seconds, &seconds_p, &seconds_s, &filetype };
+    &hours, &minuts, &seconds, &seconds_p, &seconds_s, &filetype, &timemult,
+    &timecode, &localcode};
 
 int match_char(char ch, char patt)
 {
