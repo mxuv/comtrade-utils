@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "comtrade-info_msg.h"
 #include "strutils.h"
 #include "format.h"
 
@@ -60,66 +61,6 @@ const char ff_binary32[] = "BINARY32";
 const char ff_float32[] = "FLOAT32";
 
 const char *ffv[] = {ff_ascii, ff_binary, ff_binary32, ff_float32};
-
-const char lnerrmsg0[] = "Missing symbol <CR> at end of line";
-const char lnerrmsg1[] = "Line contains extra spaces";
-const char lnerrmsg2[] = "Line contains too many parametrs";
-const char lnerrmsg3[] = "Line contains too few parametrs";
-const char lnerrmsg4[] = "Incorrect parameter";
-const char lnerrmsg5[] = "Incorrect parameter length";
-const char lnerrmsg6[] = "Incorrect parameters summ";
-const char lnerrmsg7[] = "Format line dosen't match revision";
-
-const char parammsg0[] = "Station name";
-const char parammsg1[] = "Recording device id";
-const char parammsg2[] = "Year of the standart revision";
-const char parammsg3[] = "Total channels count";
-const char parammsg4[] = "Analog channels count";
-const char parammsg5[] = "Digital channels count";
-const char parammsg6[] = "Analog channel number";
-const char parammsg7[] = "Channel id";
-const char parammsg8[] = "Phase id";
-const char parammsg9[] = "Circuit component";
-const char parammsg10[] = "Channel unit";
-const char parammsg11[] = "Channel multipler";
-const char parammsg12[] = "Channel offset";
-const char parammsg13[] = "Channel time skew";
-const char parammsg14[] = "Channel minimum data value";
-const char parammsg15[] = "Channel maximum data value";
-const char parammsg16[] = "Channel transformer ratio primary factor";
-const char parammsg17[] = "Channel transformer ratio secondary factor";
-const char parammsg18[] = "Channel primary or secondary data scalling indentifier";
-const char parammsg19[] = "Digital channel number";
-const char parammsg20[] = "Channel normal state";
-const char parammsg21[] = "Line frequency";
-const char parammsg22[] = "Number of sampling rates";
-const char parammsg23[] = "Sample rate";
-const char parammsg24[] = "Last sample number";
-const char parammsg25[] = "Day";
-const char parammsg26[] = "Month";
-const char parammsg27[] = "Year";
-const char parammsg28[] = "Hour";
-const char parammsg29[] = "Minuts";
-const char parammsg30[] = "Seconds";
-const char parammsg31[] = "Data file type";
-const char parammsg32[] = "Time multiplication factor";
-const char parammsg33[] = "Time code";
-const char parammsg34[] = "Local time code";
-const char parammsg35[] = "Time quality code";
-const char parammsg36[] = "Leap second indicator";
-const char parammsg37[] = "Timestamp. Date";
-const char parammsg38[] = "Timestamp. Time";
-
-const char *lnerrmsg[] = { lnerrmsg0, lnerrmsg1, lnerrmsg2, lnerrmsg3,
-    lnerrmsg4, lnerrmsg5, lnerrmsg6, lnerrmsg7 };
-
-const char *parammsg[] = { parammsg0, parammsg1, parammsg2, parammsg3,
-    parammsg4, parammsg5, parammsg6, parammsg7, parammsg8, parammsg9,
-    parammsg10, parammsg11, parammsg12, parammsg13, parammsg14, parammsg15,
-    parammsg16, parammsg17, parammsg18, parammsg19, parammsg20, parammsg21,
-    parammsg22, parammsg23, parammsg24, parammsg25, parammsg26, parammsg27,
-    parammsg28, parammsg29, parammsg30, parammsg31, parammsg32, parammsg33, 
-    parammsg34, parammsg35, parammsg36, parammsg37, parammsg38 }; 
 
 const cfg_pvv_t sname = {
     ptstring,
@@ -1501,19 +1442,19 @@ void print_achannels_info(cmtrd_cfg_t *cfg_rec)
 
     for (i = 0; i < cfg_rec->an_count; i++) {
         printf("Analog channel:\n");
-        printf("    %s: %d\n", parammsg6, (cfg_rec->anv + i)->num);
-        printf("    %s: %s\n", parammsg7, (cfg_rec->anv + i)->ch_id);
-        printf("    %s: %s\n", parammsg8, (cfg_rec->anv + i)->phase);
-        printf("    %s: %s\n", parammsg9, (cfg_rec->anv + i)->ccbm);
-        printf("    %s: %s\n", parammsg10, (cfg_rec->anv + i)->uu);
-        printf("    %s: %lf\n", parammsg11, (cfg_rec->anv + i)->a);
-        printf("    %s: %lf\n", parammsg12, (cfg_rec->anv + i)->b);
-        printf("    %s: %lf\n", parammsg13, (cfg_rec->anv + i)->skew);
-        printf("    %s: %lf\n", parammsg14, (cfg_rec->anv + i)->min);
-        printf("    %s: %lf\n", parammsg15, (cfg_rec->anv + i)->max);
-        printf("    %s: %lf\n", parammsg16, (cfg_rec->anv + i)->primary);
-        printf("    %s: %lf\n", parammsg17, (cfg_rec->anv + i)->secondary);
-        printf("    %s: %c\n", parammsg18, (cfg_rec->anv + i)->ps);
+        printf("    %s: %d\n", parammsg[6], (cfg_rec->anv + i)->num);
+        printf("    %s: %s\n", parammsg[7], (cfg_rec->anv + i)->ch_id);
+        printf("    %s: %s\n", parammsg[8], (cfg_rec->anv + i)->phase);
+        printf("    %s: %s\n", parammsg[9], (cfg_rec->anv + i)->ccbm);
+        printf("    %s: %s\n", parammsg[10], (cfg_rec->anv + i)->uu);
+        printf("    %s: %lf\n", parammsg[11], (cfg_rec->anv + i)->a);
+        printf("    %s: %lf\n", parammsg[12], (cfg_rec->anv + i)->b);
+        printf("    %s: %lf\n", parammsg[13], (cfg_rec->anv + i)->skew);
+        printf("    %s: %lf\n", parammsg[14], (cfg_rec->anv + i)->min);
+        printf("    %s: %lf\n", parammsg[15], (cfg_rec->anv + i)->max);
+        printf("    %s: %lf\n", parammsg[16], (cfg_rec->anv + i)->primary);
+        printf("    %s: %lf\n", parammsg[17], (cfg_rec->anv + i)->secondary);
+        printf("    %s: %c\n", parammsg[18], (cfg_rec->anv + i)->ps);
 
     }
 }
@@ -1538,11 +1479,11 @@ void print_info(cmtrd_cfg_t *cfg_rec)
     int i;
 
     printf("General info:\n");
-    printf("    %s: %s\n", parammsg0, cfg_rec->station_name);
-    printf("    %s: %s\n", parammsg1, cfg_rec->rec_dev_id);
-    printf("    %s: %d\n", parammsg2, cfg_rec->rev_year);
-    printf("    %s: %lf\n", parammsg21, cfg_rec->frequency);
-    printf("    %s: %d\n", parammsg22, cfg_rec->nrates);
+    printf("    %s: %s\n", parammsg[0], cfg_rec->station_name);
+    printf("    %s: %s\n", parammsg[1], cfg_rec->rec_dev_id);
+    printf("    %s: %d\n", parammsg[2], cfg_rec->rev_year);
+    printf("    %s: %lf\n", parammsg[21], cfg_rec->frequency);
+    printf("    %s: %d\n", parammsg[22], cfg_rec->nrates);
     printf("    Start timestamp: %02d/%02d/%d %02d:%02d:%02d.%d\n", 
             cfg_rec->start_datetime.day, cfg_rec->start_datetime.mon,
             cfg_rec->start_datetime.year, cfg_rec->start_datetime.hour,
@@ -1554,18 +1495,18 @@ void print_info(cmtrd_cfg_t *cfg_rec)
             cfg_rec->trig_datetime.min, cfg_rec->trig_datetime.sec,
             cfg_rec->trig_datetime.subsec);
     for (i = 0; i < cfg_rec->real_nrates; i++) {
-        printf("    %s: %lf\n", parammsg23, (cfg_rec->samps + i)->samp);
-        printf("    %s: %ld\n", parammsg24, (cfg_rec->samps + i)->end_samp);
+        printf("    %s: %lf\n", parammsg[23], (cfg_rec->samps + i)->samp);
+        printf("    %s: %ld\n", parammsg[24], (cfg_rec->samps + i)->end_samp);
     }
     if (cfg_rec->ft == undef)
-        printf("    %s: Undefined\n", parammsg31);
+        printf("    %s: Undefined\n", parammsg[31]);
     else
-        printf("    %s: %s\n", parammsg31, ffv[cfg_rec->ft]);
+        printf("    %s: %s\n", parammsg[31], ffv[cfg_rec->ft]);
 
     printf("Channels info:\n");
-    printf("    %s: %d\n", parammsg3, cfg_rec->ch_count);
-    printf("    %s: %d\n", parammsg4, cfg_rec->an_count);
-    printf("    %s: %d\n", parammsg5, cfg_rec->dn_count);
+    printf("    %s: %d\n", parammsg[3], cfg_rec->ch_count);
+    printf("    %s: %d\n", parammsg[4], cfg_rec->an_count);
+    printf("    %s: %d\n", parammsg[5], cfg_rec->dn_count);
     print_achannels_info(cfg_rec);
     print_dchannels_info(cfg_rec);
 }
