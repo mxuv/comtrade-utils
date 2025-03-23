@@ -54,6 +54,13 @@ typedef struct {
     double dval_max;
 } cfg_pvv_t;
 
+const char ff_ascii[] = "ASCII";
+const char ff_binary[] = "BINARY";
+const char ff_binary32[] = "BINARY32";
+const char ff_float32[] = "FLOAT32";
+
+const char *ffv[] = {ff_ascii, ff_binary, ff_binary32, ff_float32};
+
 const char lnerrmsg0[] = "Missing symbol <CR> at end of line";
 const char lnerrmsg1[] = "Line contains extra spaces";
 const char lnerrmsg2[] = "Line contains too many parametrs";
@@ -542,13 +549,24 @@ const cfg_pvv_t seconds_s = {
     0,
     0
 };
+const cfg_pvv_t filetype = {
+    ptstring,
+    PM_FILETYPE_POS,
+    PM_ERR_FILETYPE,
+    FILE_TYPE_LEN_MIN,
+    FILE_TYPE_LEN_MAX,
+    0,
+    0,
+    0,
+    0
+};
 
 const cfg_pvv_t *pvv[] = { &sname, &recdevid, &revyear, &tt, &tt_a, &tt_d,
     &ach_num, &ach_chid, &ach_phase, &ach_ccbm, &ach_uu, &ach_a, &ach_b,
     &ach_skew, &ach_min, &ach_max, &ach_primary, &ach_secondary, &ach_ps,
     &dch_num, &dch_chid, &dch_phase, &dch_ccbm, &dch_y1991, &dch_y1999, &lf,
     &nrates, &samp, &endsamp, &startdate, &starttime, &day, &mon, &year,
-    &hours, &minuts, &seconds, &seconds_p, &seconds_s };
+    &hours, &minuts, &seconds, &seconds_p, &seconds_s, &filetype };
 
 int match_char(char ch, char patt)
 {
@@ -930,6 +948,27 @@ void save_dchannel_items(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     }
 }
 
+void save_fileformat(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
+        cmtrd_cfg_t *cfg_rec)
+{
+    char paramstr[FILE_TYPE_LEN_MAX + 1];
+    enum file_format ff;
+
+    cfg_rec->ft = undef;
+    if (pm->err & ERRCODE(LN_ERR_INCORRECT_PARAM_LEN))
+        return;
+    stringcopy_c(paramstr, cfg_str->str + pm->index, pm->len);
+    upcase_string(paramstr);
+    for (ff = 0; ff < undef; ff++) {
+        if (stringmatch(paramstr, ffv[ff])) {
+            cfg_rec->ft = ff;
+            break;
+        }
+    }
+    if (cfg_rec->ft == undef)
+        pm->err |= ERRCODE(LN_ERR_INCORRECT_PARAM);
+}
+
 void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
         cmtrd_cfg_t *cfg_rec)
 {
@@ -965,6 +1004,9 @@ void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
         break;
     case pendsamp:
         (cfg_rec->samps + pm->ch_index)->end_samp = pm->val_int;
+        break;
+    case pfiletype:
+        save_fileformat(pn, cfg_str, pm, cfg_rec);
         break;
     default:
         break;
@@ -1317,6 +1359,18 @@ void analyze_cfg_datetime(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec,
         memcpy(&cfg_rec->trig_datetime, &dt, sizeof(dt));
 }
 
+void analyze_cfg_filetype(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+{
+    int error;
+    cfg_pm_t pm;
+
+    error = check_param_count(cfg_str->param_count, CP_FILETYPE, CP_FILETYPE);
+    if (error)
+        add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
+
+    /* Data file type */
+    parsing_parameter(pfiletype, cfg_str, &pm, cfg_rec);
+}
 /* Return values:
  * 0-Ok
  * 2-Unexcepted end of file
@@ -1393,6 +1447,10 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
         case analyze_sdatetime:
         case analyze_trigdatetime:
             analyze_cfg_datetime(&cfg_str, cfg_rec, next_state);
+            next_state++;
+            break;
+        case analyze_filetype:
+            analyze_cfg_filetype(&cfg_str, cfg_rec);
             next_state++;
             break;
         default:
@@ -1499,6 +1557,10 @@ void print_info(cmtrd_cfg_t *cfg_rec)
         printf("    %s: %lf\n", parammsg23, (cfg_rec->samps + i)->samp);
         printf("    %s: %ld\n", parammsg24, (cfg_rec->samps + i)->end_samp);
     }
+    if (cfg_rec->ft == undef)
+        printf("    %s: Undefined\n", parammsg31);
+    else
+        printf("    %s: %s\n", parammsg31, ffv[cfg_rec->ft]);
 
     printf("Channels info:\n");
     printf("    %s: %d\n", parammsg3, cfg_rec->ch_count);

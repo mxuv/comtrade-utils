@@ -319,7 +319,7 @@
                                     LN_ERR_INCORRECT_PARAM)
 #endif
 
-enum file_format {ascii, binary, binary32, float32};
+enum file_format {ascii, binary, binary32, float32, undef};
 enum param_type {ptstring, ptchar, ptint, ptintc, ptfloat, ptdate, pttime,
     ptstime, ptsecond};
 
@@ -334,7 +334,7 @@ enum cfg_pnum { psname, prec_id, prev_year, ptt, ptt_a, ptt_d, pan, pach_id,
     paphase, paccbm, pauu, paa, pab, paskew, pamin, pamax, paprimary,
     pasecondary, paps, pdn, pdch_id, pdphase, pdccbm, pdy_1991, pdy_1999,
     plf, pnrates, psamp, pendsamp, pstdate, psttime, pday, pmon, pyear, phours,
-    pminuts, pseconds, pseconds_p, pseconds_s };
+    pminuts, pseconds, pseconds_p, pseconds_s, pfiletype };
 
 typedef struct {
     int index;
