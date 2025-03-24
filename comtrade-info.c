@@ -986,6 +986,12 @@ void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     case ptimemult:
         cfg_rec->timemult = pm->val_float;
         break;
+    case ptimecode:
+        cfg_rec->time_code = add_str_item(cfg_str->str + pm->index, pm->len);
+        break;
+    case plocalcode:
+        cfg_rec->local_code = add_str_item(cfg_str->str + pm->index, pm->len);
+        break;
     default:
         break;
     }
@@ -1363,6 +1369,24 @@ void analyze_cfg_timemult(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     parsing_parameter(ptimemult, cfg_str, &pm, cfg_rec);
 }
 
+void analyze_cfg_timecode(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+{
+    int error;
+    cfg_pm_t pm;
+    
+    error = check_param_count(cfg_str->param_count, CP_TIME_CODE, CP_TIME_CODE);
+    if (error)
+        add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
+    if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
+        return ;
+
+    /* Time code */
+    parsing_parameter(ptimecode, cfg_str, &pm, cfg_rec);
+
+    /* Local code  */
+    parsing_parameter(plocalcode, cfg_str, &pm, cfg_rec);
+}
+
 /* Return values:
  * 0-Ok
  * 2-Unexcepted end of file
@@ -1447,6 +1471,11 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
             break;
         case analyze_timemult:
             analyze_cfg_timemult(&cfg_str, cfg_rec);
+            next_state++;
+            break;
+        case analyze_timecode:
+            analyze_cfg_timecode(&cfg_str, cfg_rec);
+            next_state++;
             break;
         default:
             return 0;
@@ -1536,8 +1565,15 @@ void print_info(cmtrd_cfg_t *cfg_rec)
     printf("    %s: %s\n", parammsg[0], cfg_rec->station_name);
     printf("    %s: %s\n", parammsg[1], cfg_rec->rec_dev_id);
     printf("    %s: %d\n", parammsg[2], cfg_rec->rev_year);
+    printf("    %s: %d\n", parammsg[3], cfg_rec->ch_count);
+    printf("    %s: %d\n", parammsg[4], cfg_rec->an_count);
+    printf("    %s: %d\n", parammsg[5], cfg_rec->dn_count);
     printf("    %s: %lf\n", parammsg[21], cfg_rec->frequency);
     printf("    %s: %d\n", parammsg[22], cfg_rec->nrates);
+    for (i = 0; i < cfg_rec->real_nrates; i++) {
+        printf("    %s: %lf\n", parammsg[23], (cfg_rec->samps + i)->samp);
+        printf("    %s: %ld\n", parammsg[24], (cfg_rec->samps + i)->end_samp);
+    }
     printf("    Start timestamp: %02d/%02d/%d %02d:%02d:%02d.%d\n", 
             cfg_rec->start_datetime.day, cfg_rec->start_datetime.mon,
             cfg_rec->start_datetime.year, cfg_rec->start_datetime.hour,
@@ -1548,23 +1584,22 @@ void print_info(cmtrd_cfg_t *cfg_rec)
             cfg_rec->trig_datetime.year, cfg_rec->trig_datetime.hour,
             cfg_rec->trig_datetime.min, cfg_rec->trig_datetime.sec,
             cfg_rec->trig_datetime.subsec);
-    for (i = 0; i < cfg_rec->real_nrates; i++) {
-        printf("    %s: %lf\n", parammsg[23], (cfg_rec->samps + i)->samp);
-        printf("    %s: %ld\n", parammsg[24], (cfg_rec->samps + i)->end_samp);
-    }
     if (cfg_rec->ft == undef)
         printf("    %s: Undefined\n", parammsg[31]);
     else
         printf("    %s: %s\n", parammsg[31], ffv[cfg_rec->ft]);
 
     printf("    %s: %lf\n", parammsg[32], cfg_rec->timemult);
-
+    printf("    %s: %s\n", parammsg[33], cfg_rec->time_code);
+    printf("    %s: %s\n", parammsg[34], cfg_rec->local_code);
+#if 0
     printf("Channels info:\n");
     printf("    %s: %d\n", parammsg[3], cfg_rec->ch_count);
     printf("    %s: %d\n", parammsg[4], cfg_rec->an_count);
     printf("    %s: %d\n", parammsg[5], cfg_rec->dn_count);
     print_achannels_info(cfg_rec);
     print_dchannels_info(cfg_rec);
+#endif
 }
 
 /* return codes:
