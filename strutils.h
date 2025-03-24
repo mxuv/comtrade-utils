@@ -1,6 +1,8 @@
 #ifndef _STINGS_H_
 #define _STINGS_H_
 
+int ishexdigit (char c);
+int char2int(char c);
 char upcase_letter(char c);
 void upcase_string(char *str);
 int stringlen(const char *str);

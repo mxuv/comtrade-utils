@@ -69,3 +69,24 @@ void upcase_string(char *str)
     }
 }
 
+int ishexdigit (char c)
+{
+    if ((c >= '0' && c <= '9') || 
+        (c >= 'A' && c <= 'F') ||
+        (c >= 'a' && c <= 'f'))
+        return 1;
+    else
+        return 0;
+}
+
+int char2int(char c)
+{
+    if (c >= '0' && c <= '9')
+        return c - '0';
+    if (c >= 'A' && c <= 'F')
+        return c - '7';
+    if (c >= 'a' && c <= 'f')
+        return c - 'W';
+
+    return -1;
+}
