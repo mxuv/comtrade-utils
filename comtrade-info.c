@@ -983,6 +983,9 @@ void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     case pfiletype:
         save_fileformat(pn, cfg_str, pm, cfg_rec);
         break;
+    case ptimemult:
+        cfg_rec->timemult = pm->val_float;
+        break;
     default:
         break;
     }
@@ -1346,6 +1349,20 @@ void analyze_cfg_filetype(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     /* Data file type */
     parsing_parameter(pfiletype, cfg_str, &pm, cfg_rec);
 }
+
+void analyze_cfg_timemult(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+{
+    int error;
+    cfg_pm_t pm;
+    
+    error = check_param_count(cfg_str->param_count, CP_TIMEMULT, CP_TIMEMULT);
+    if (error)
+        add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
+
+    /* Line frequency */
+    parsing_parameter(ptimemult, cfg_str, &pm, cfg_rec);
+}
+
 /* Return values:
  * 0-Ok
  * 2-Unexcepted end of file
@@ -1427,6 +1444,9 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
         case analyze_filetype:
             analyze_cfg_filetype(&cfg_str, cfg_rec);
             next_state++;
+            break;
+        case analyze_timemult:
+            analyze_cfg_timemult(&cfg_str, cfg_rec);
             break;
         default:
             return 0;
@@ -1536,6 +1556,8 @@ void print_info(cmtrd_cfg_t *cfg_rec)
         printf("    %s: Undefined\n", parammsg[31]);
     else
         printf("    %s: %s\n", parammsg[31], ffv[cfg_rec->ft]);
+
+    printf("    %s: %lf\n", parammsg[32], cfg_rec->timemult);
 
     printf("Channels info:\n");
     printf("    %s: %d\n", parammsg[3], cfg_rec->ch_count);
