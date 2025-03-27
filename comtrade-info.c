@@ -848,8 +848,7 @@ void save_header_items(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     }
 }
 
-void save_chinfo_items(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
-        cmtrd_cfg_t *cfg_rec)
+void save_chinfo_items(enum cfg_pnum pn, cfg_pm_t *pm, cmtrd_cfg_t *cfg_rec)
 {
     switch (pn) {
     case ptt:
@@ -946,7 +945,7 @@ void save_dchannel_items(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     }
 }
 
-void save_fileformat(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
+void save_fileformat(cfg_str_t *cfg_str, cfg_pm_t *pm,
         cmtrd_cfg_t *cfg_rec)
 {
     char paramstr[FILE_TYPE_LEN_MAX + 1];
@@ -976,7 +975,7 @@ void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     }
 
     if (pn >= ptt && pn <= ptt_d) {
-        save_chinfo_items(pn, cfg_str, pm, cfg_rec);
+        save_chinfo_items(pn, pm, cfg_rec);
         return;
     }
 
@@ -1004,7 +1003,7 @@ void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
         (cfg_rec->samps + pm->ch_index)->end_samp = pm->val_int;
         break;
     case pfiletype:
-        save_fileformat(pn, cfg_str, pm, cfg_rec);
+        save_fileformat(cfg_str, pm, cfg_rec);
         break;
     case ptimemult:
         cfg_rec->timemult = pm->val_float;
