@@ -1,3 +1,5 @@
+#include "strutils.h"
+
 int stringlen(const char *str)
 {
    const char *p;
