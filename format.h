@@ -184,6 +184,9 @@
 #define SECONDS_S_VAL_MIN           0
 #define SECONDS_S_VAL_MAX           999999999
 
+#define TMQ_VAL_MIN                 0
+#define TMQ_VAL_MAX                 15
+
 #define LEAPSEC_VAL_MIN             0 
 #define LEAPSEC_VAL_MAX             3 
 
@@ -320,8 +323,8 @@
 #endif
 
 enum file_format {ascii, binary, binary32, float32, undef};
-enum param_type {ptstring, ptchar, ptint, ptintc, ptfloat, ptdate, pttime,
-    ptstime, ptsecond};
+enum param_type {ptstring, ptchar, ptcharhex, ptint, ptintc, ptfloat, ptdate,
+    pttime, ptstime, ptsecond};
 
 enum revision {
     rev1991 = 1991,
@@ -410,7 +413,7 @@ typedef struct {
     double timemult;
     char *time_code;
     char *local_code;
-    int tmp_code;
+    int tmq_code;
     int leapsec;
     int errcount;
     cmtrd_err_t *errors;

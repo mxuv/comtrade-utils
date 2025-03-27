@@ -33,7 +33,8 @@ enum analyze_cfg_state {
     analyze_filetype,
     analyze_timemult,
     analyze_timecode,
-    analyze_tmqcode
+    analyze_tmqcode,
+    analyze_end
 };
 
 typedef struct {
@@ -534,6 +535,28 @@ const cfg_pvv_t localcode = {
     0,
     0
 };
+const cfg_pvv_t tmqcode = {
+    ptcharhex,
+    PM_TMQ_POS,
+    PM_ERR_TMQ,
+    TMQ_CODE_LEN_MIN,
+    TMQ_CODE_LEN_MAX,
+    TMQ_VAL_MIN,
+    TMQ_VAL_MAX,
+    0,
+    0
+};
+const cfg_pvv_t leapsec = {
+    ptint,
+    PM_LEAPSEC_POS,
+    PM_ERR_LEAPSEC,
+    LEAPSEC_LEN_MIN,
+    LEAPSEC_LEN_MAX,
+    LEAPSEC_VAL_MIN,
+    LEAPSEC_VAL_MAX,
+    0,
+    0
+};
 
 const cfg_pvv_t *pvv[] = { &sname, &recdevid, &revyear, &tt, &tt_a, &tt_d,
     &ach_num, &ach_chid, &ach_phase, &ach_ccbm, &ach_uu, &ach_a, &ach_b,
@@ -541,7 +564,7 @@ const cfg_pvv_t *pvv[] = { &sname, &recdevid, &revyear, &tt, &tt_a, &tt_d,
     &dch_num, &dch_chid, &dch_phase, &dch_ccbm, &dch_y1991, &dch_y1999, &lf,
     &nrates, &samp, &endsamp, &startdate, &starttime, &day, &mon, &year,
     &hours, &minuts, &seconds, &seconds_p, &seconds_s, &filetype, &timemult,
-    &timecode, &localcode};
+    &timecode, &localcode, &tmqcode, &leapsec};
 
 int match_char(char ch, char patt)
 {
@@ -992,6 +1015,12 @@ void save_value2rec(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     case plocalcode:
         cfg_rec->local_code = add_str_item(cfg_str->str + pm->index, pm->len);
         break;
+    case ptmqcode:
+        cfg_rec->tmq_code = pm->val_int;
+        break;
+    case pleapsec:
+        cfg_rec->leapsec = pm->val_int;
+        break;
     default:
         break;
     }
@@ -1040,6 +1069,11 @@ void parsing_parameter(enum cfg_pnum pn, cfg_str_t *cfg_str, cfg_pm_t *pm,
     case ptintc:
         stringcopy_c(s, cfg_str->str + pm->index, pm->len - 1);
         pm->val_int = atoi(s);
+        check_parameter_ival(pm, pvv[pn]->ival_min, pvv[pn]->ival_max);
+        break;
+    case ptcharhex:
+        c = cfg_str->str[pm->index];
+        pm->val_int = char2int(c);
         check_parameter_ival(pm, pvv[pn]->ival_min, pvv[pn]->ival_max);
         break;
     case ptfloat:
@@ -1387,6 +1421,24 @@ void analyze_cfg_timecode(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     parsing_parameter(plocalcode, cfg_str, &pm, cfg_rec);
 }
 
+void analyze_cfg_tmq(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
+{
+    int error;
+    cfg_pm_t pm;
+    
+    error = check_param_count(cfg_str->param_count, CP_TMQ_CODE, CP_TMQ_CODE);
+    if (error)
+        add_error_code(cfg_str->nstr, error, ERRNULL, cfg_rec); 
+    if (error & ERRCODE(LN_ERR_TOO_FEW_PARAM))
+        return ;
+
+    /* TMQ code */
+    parsing_parameter(ptmqcode, cfg_str, &pm, cfg_rec);
+
+    /* Leapsec  */
+    parsing_parameter(pleapsec, cfg_str, &pm, cfg_rec);
+}
+
 /* Return values:
  * 0-Ok
  * 2-Unexcepted end of file
@@ -1406,8 +1458,8 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
         if (status)
             return status;
         if (!is_line_ending_ok(buffer, cfg_str.strlen))
-            add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_NOCR), ERRNULL, cfg_rec);
-
+            add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_NOCR), ERRNULL,
+                    cfg_rec);
         cfg_str.strlen--;
         cfg_str.str = buffer;
         cfg_str.param_count = get_param_count(buffer, ',', cfg_str.strlen) + 1;
@@ -1467,14 +1519,24 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
             break;
         case analyze_filetype:
             analyze_cfg_filetype(&cfg_str, cfg_rec);
-            next_state++;
+            if (cfg_rec->rev_year >= rev1999)
+                next_state = analyze_timemult;
+            else
+                next_state = analyze_end;
             break;
         case analyze_timemult:
             analyze_cfg_timemult(&cfg_str, cfg_rec);
-            next_state++;
+            if (cfg_rec->rev_year == rev2013)
+                next_state = analyze_timecode;
+            else
+                next_state = analyze_end;
             break;
         case analyze_timecode:
             analyze_cfg_timecode(&cfg_str, cfg_rec);
+            next_state++;
+            break;
+        case analyze_tmqcode:
+            analyze_cfg_tmq(&cfg_str, cfg_rec);
             next_state++;
             break;
         default:
@@ -1592,6 +1654,8 @@ void print_info(cmtrd_cfg_t *cfg_rec)
     printf("    %s: %lf\n", parammsg[32], cfg_rec->timemult);
     printf("    %s: %s\n", parammsg[33], cfg_rec->time_code);
     printf("    %s: %s\n", parammsg[34], cfg_rec->local_code);
+    printf("    %s: %d\n", parammsg[35], cfg_rec->tmq_code);
+    printf("    %s: %d\n", parammsg[36], cfg_rec->leapsec);
 #if 0
     printf("Channels info:\n");
     printf("    %s: %d\n", parammsg[3], cfg_rec->ch_count);
