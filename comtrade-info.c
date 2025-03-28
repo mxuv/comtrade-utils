@@ -5,6 +5,7 @@
 #include "comtrade-info_msg.h"
 #include "strutils.h"
 #include "format.h"
+#include "cmd.h"
 
 #define STR_BUFSIZE                         4096
 
@@ -1665,6 +1666,17 @@ void print_info(cmtrd_cfg_t *cfg_rec)
 #endif
 }
 
+struct cmd_opts {
+    int options;
+    char *cfg_fname;
+};
+
+void opts_init(struct cmd_opts *opts)
+{
+    memset(opts, 0, sizeof(*opts));
+    opts->options = OPT_SHORT_INFO;
+}
+
 /* return codes:
  * 0 - Ok
  * 1 - file read error
@@ -1674,7 +1686,9 @@ int main(int argc, char **argv)
     int res;
     FILE *fd;
     cmtrd_cfg_t cfg_rec;
+    struct cmd_opts opts;
 
+    opts_init(&opts);
     if (argc < 2) {
         fputs("No input file\n", stderr);
         fputs("Nothing to do\n", stderr);
