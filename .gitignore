@@ -3,4 +3,5 @@
 *.su
 *.list
 *.map
-
+*.mk
+tags
