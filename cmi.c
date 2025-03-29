@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "comtrade-info_msg.h"
+#include "cmi_msg.h"
 #include "strutils.h"
 #include "format.h"
 

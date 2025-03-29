@@ -1,4 +1,4 @@
-#include "comtrade-info_msg.h"
+#include "cmi_msg.h"
 
 const char lnerrmsg0[] = "Missing symbol <CR> at end of line";
 const char lnerrmsg1[] = "Line contains extra spaces";
