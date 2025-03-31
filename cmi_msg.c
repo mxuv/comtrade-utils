@@ -48,6 +48,8 @@ const char parammsg35[] = "Time quality code";
 const char parammsg36[] = "Leap second indicator";
 const char parammsg37[] = "Timestamp. Date";
 const char parammsg38[] = "Timestamp. Time";
+const char parammsg39[] = "Start timestamp";
+const char parammsg40[] = "Trigger timestamp";
 
 const char *lnerrmsg[] = { lnerrmsg0, lnerrmsg1, lnerrmsg2, lnerrmsg3,
     lnerrmsg4, lnerrmsg5, lnerrmsg6, lnerrmsg7 };
@@ -58,4 +60,5 @@ const char *parammsg[] = { parammsg0, parammsg1, parammsg2, parammsg3,
     parammsg16, parammsg17, parammsg18, parammsg19, parammsg20, parammsg21,
     parammsg22, parammsg23, parammsg24, parammsg25, parammsg26, parammsg27,
     parammsg28, parammsg29, parammsg30, parammsg31, parammsg32, parammsg33, 
-    parammsg34, parammsg35, parammsg36, parammsg37, parammsg38 }; 
+    parammsg34, parammsg35, parammsg36, parammsg37, parammsg38, parammsg39,
+    parammsg40  }; 
