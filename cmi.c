@@ -1685,7 +1685,8 @@ void print_noinput_file()
 
 void print_incorrect_opt(const char *str)
 {
-    printf("Error: incorrect option %s\n", str);
+    fprintf(stderr, "Error: incorrect option %s\n"
+        "Try -h for help\n", str);
 }
 
 struct cmd_opts {
@@ -1763,7 +1764,7 @@ int main(int argc, char **argv)
     if (res)
         return 1;
 
-    fd = fopen(argv[1], "r");
+    fd = fopen(opts.cfg_fname, "r");
     if (fd == NULL) {
         perror(argv[1]);
         return 1;
