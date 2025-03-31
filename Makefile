@@ -4,7 +4,7 @@ CC = gcc
 CFLAGS = -g -Wall -Wextra -Wpedantic
 
 NAME1 = comtrade-info
-SRC1 = cmi.c cmi_msg.c strutils.c
+SRC1 = cmi.c cfg.c cmi_msg.c strutils.c
 OBJ1 = $(SRC1:.c=.o)
 
 CLN = *.mk *.o $(NAME1)
