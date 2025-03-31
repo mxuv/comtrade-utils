@@ -1558,8 +1558,12 @@ void cfg_record_init(cmtrd_cfg_t *cfg_rec)
 void print_errors(cmtrd_cfg_t *cfg_rec)
 {
     int i;
+    if (!cfg_rec->errors) {
+        fputs("\nNo errors\n", stdout);
+        return;
+    }
 
-    printf("\nThe following errors were found:\n");
+    fputs("\nThe following errors were found:\n", stdout);
     for (i = 0; i < cfg_rec->errcount; i++) {
         int msg_index;
 
@@ -1584,7 +1588,6 @@ void print_errors(cmtrd_cfg_t *cfg_rec)
 void print_achannels_info(cmtrd_cfg_t *cfg_rec)
 {
     int i;
-
     for (i = 0; i < cfg_rec->an_count; i++) {
         printf("Analog channel:\n");
         printf("    %s: %d\n", parammsg[6], (cfg_rec->anv + i)->num);
@@ -1607,7 +1610,6 @@ void print_achannels_info(cmtrd_cfg_t *cfg_rec)
 void print_dchannels_info(cmtrd_cfg_t *cfg_rec)
 {
     int i;
-
     for (i = 0; i < cfg_rec->dn_count; i++) {
         printf("Digital channel:\n");
         printf("    Channel number: %d\n", (cfg_rec->dnv + i)->num);
@@ -1619,10 +1621,9 @@ void print_dchannels_info(cmtrd_cfg_t *cfg_rec)
     }
 }
 
-void print_info(cmtrd_cfg_t *cfg_rec)
+void print_general_info(cmtrd_cfg_t *cfg_rec)
 {
     int i;
-
     printf("General info:\n");
     printf("    %s: %s\n", parammsg[0], cfg_rec->station_name);
     printf("    %s: %s\n", parammsg[1], cfg_rec->rec_dev_id);
@@ -1656,14 +1657,35 @@ void print_info(cmtrd_cfg_t *cfg_rec)
     printf("    %s: %s\n", parammsg[34], cfg_rec->local_code);
     printf("    %s: %d\n", parammsg[35], cfg_rec->tmq_code);
     printf("    %s: %d\n", parammsg[36], cfg_rec->leapsec);
-#if 0
-    printf("Channels info:\n");
-    printf("    %s: %d\n", parammsg[3], cfg_rec->ch_count);
-    printf("    %s: %d\n", parammsg[4], cfg_rec->an_count);
-    printf("    %s: %d\n", parammsg[5], cfg_rec->dn_count);
-    print_achannels_info(cfg_rec);
-    print_dchannels_info(cfg_rec);
-#endif
+}
+
+void print_info(cmtrd_cfg_t *cfg_rec, int opts)
+{
+    if (0 == opts)
+
+    if (opts & OPT_ALL) {
+        print_general_info(cfg_rec);
+        print_achannels_info(cfg_rec);
+        print_dchannels_info(cfg_rec);
+        print_errors(cfg_rec);
+        return;
+    }
+
+    if (opts & OPT_ERRORS_ONLY) {
+        print_errors(cfg_rec);
+        return;
+    }
+
+    if (opts & OPT_CH_INFO_ONLY) {
+        print_achannels_info(cfg_rec);
+        print_dchannels_info(cfg_rec);
+    }
+
+    if (opts & OPT_SHORT_INFO)
+        print_general_info(cfg_rec);
+
+    if (!(opts & OPT_NOERRORS))
+        print_errors(cfg_rec);
 }
 
 void print_help()
@@ -1685,7 +1707,7 @@ void print_noinput_file()
 
 void print_incorrect_opt(const char *str)
 {
-    fprintf(stderr, "Error: incorrect option %s\n"
+    fprintf(stderr, "Incorrect option \"%s\"\n"
         "Try -h for help\n", str);
 }
 
@@ -1697,7 +1719,7 @@ struct cmd_opts {
 void opts_init(struct cmd_opts *opts)
 {
     memset(opts, 0, sizeof(*opts));
-    opts->options = OPT_SHORT_INFO;
+    /* opts->options = OPT_SHORT_INFO; */
 }
 
 int parsing_opts(int argc, char **argv, struct cmd_opts *opts)
@@ -1745,6 +1767,10 @@ int parsing_opts(int argc, char **argv, struct cmd_opts *opts)
         }
         nopt++;
     }
+    if (opts->cfg_fname == NULL) {
+        print_noinput_file();
+        return 1;
+    }
     return 0;
 }
 
@@ -1772,14 +1798,12 @@ int main(int argc, char **argv)
 
     cfg_record_init(&cfg_rec);
     res = analyze_cfgfile(fd, &cfg_rec);
-    print_info(&cfg_rec);
-    if (cfg_rec.errors)
-        print_errors(&cfg_rec);
-
     fclose(fd);
     if (res) {
-        printf("Critical error. Analysis has been aborted.\n");
+        fputs("Critical error. Analysis has been aborted.\n", stderr);
         return 2;
     }
+
+    print_info(&cfg_rec, opts.options);
     return 0;
 } 
