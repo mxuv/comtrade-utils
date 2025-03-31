@@ -1666,6 +1666,28 @@ void print_info(cmtrd_cfg_t *cfg_rec)
 #endif
 }
 
+void print_help()
+{
+    fputs("Help\n", stdout);
+}
+
+void print_version()
+{
+    fputs("Version\n", stdout);
+}
+
+void print_noinput_file()
+{
+    fputs(
+        "No input file\n"
+        "Nothing to do\n", stderr);
+}
+
+void print_incorrect_opt(const char *str)
+{
+    printf("Error: incorrect option %s\n", str);
+}
+
 struct cmd_opts {
     int options;
     char *cfg_fname;
@@ -1675,6 +1697,54 @@ void opts_init(struct cmd_opts *opts)
 {
     memset(opts, 0, sizeof(*opts));
     opts->options = OPT_SHORT_INFO;
+}
+
+int parsing_opts(int argc, char **argv, struct cmd_opts *opts)
+{
+    int nopt = 1;
+
+    if (argc < 2) {
+        print_noinput_file();
+        return 1;
+    }
+    while (nopt < argc) {
+        if (*argv[nopt] == '-') {
+            if (strlen(argv[nopt]) > 2) {
+                print_incorrect_opt(argv[nopt]);
+                return 1;
+            }
+            switch (argv[nopt][1]) {
+            case 'a':
+                opts->options |= OPT_ALL;
+                break;
+            case 'c':
+                opts->options |= OPT_CH_INFO_ONLY;
+                break;
+            case 'e':
+                opts->options |= OPT_ERRORS_ONLY;
+                break;
+            case 'E':
+                opts->options |= OPT_NOERRORS;
+                break;
+            case 'h':
+                print_help();
+                exit(0);
+            case 'i':
+                opts->options |= OPT_SHORT_INFO;
+                break;
+            case 'v':
+                print_version();
+                exit(0);
+            default:
+                print_incorrect_opt(argv[nopt]);
+                return 1;
+            }
+        } else {
+            opts->cfg_fname = argv[nopt];
+        }
+        nopt++;
+    }
+    return 0;
 }
 
 /* return codes:
@@ -1689,11 +1759,9 @@ int main(int argc, char **argv)
     struct cmd_opts opts;
 
     opts_init(&opts);
-    if (argc < 2) {
-        fputs("No input file\n", stderr);
-        fputs("Nothing to do\n", stderr);
+    res = parsing_opts(argc, argv, &opts);
+    if (res)
         return 1;
-    }
 
     fd = fopen(argv[1], "r");
     if (fd == NULL) {
