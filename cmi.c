@@ -12,11 +12,11 @@ void print_errors(cmtrd_cfg_t *cfg_rec)
 {
     int i;
     if (!cfg_rec->errors) {
-        fputs("\nNo errors\n", stdout);
+        fputs("No errors\n", stdout);
         return;
     }
 
-    fputs("\nThe following errors were found:\n", stdout);
+    fputs("The following errors were found:\n", stdout);
     for (i = 0; i < cfg_rec->errcount; i++) {
         int msg_index;
 
@@ -58,6 +58,7 @@ void print_achannels_info(cmtrd_cfg_t *cfg_rec)
         printf("    %s: %c\n", parammsg[18], (cfg_rec->anv + i)->ps);
 
     }
+    fputs("\n", stdout);
 }
 
 void print_dchannels_info(cmtrd_cfg_t *cfg_rec)
@@ -72,6 +73,7 @@ void print_dchannels_info(cmtrd_cfg_t *cfg_rec)
         printf("    Channel default state: %d\n", (cfg_rec->dnv + i)->y);
 
     }
+    fputs("\n", stdout);
 }
 
 void print_general_info(cmtrd_cfg_t *cfg_rec)
@@ -110,11 +112,13 @@ void print_general_info(cmtrd_cfg_t *cfg_rec)
     printf("    %s: %s\n", parammsg[34], cfg_rec->local_code);
     printf("    %s: %d\n", parammsg[35], cfg_rec->tmq_code);
     printf("    %s: %d\n", parammsg[36], cfg_rec->leapsec);
+    fputs("\n", stdout);
 }
 
 void print_info(cmtrd_cfg_t *cfg_rec, int opts)
 {
     if (0 == opts)
+        print_general_info(cfg_rec);
 
     if (opts & OPT_ALL) {
         print_general_info(cfg_rec);
