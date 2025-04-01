@@ -3,16 +3,15 @@
 #include <string.h>
 
 #include "cmi_msg.h"
-#include "strutils.h"
 #include "format.h"
 #include "cmd.h"
 #include "cfg.h"
 
-void print_spaces(int n)
+void print_nchar(char c, int n)
 {
     int i;
     for (i = 0; i < n; i++)
-        putc(' ', stdout);
+        putc(c, stdout);
 }
 
 int get_len_of_most_long_parammsg()
@@ -28,9 +27,10 @@ int get_len_of_most_long_parammsg()
 
 void print_msgs(int nsp_bf, int nmsg, int *spaces)
 {
-    print_spaces(nsp_bf);
-    printf("%s: ", parammsg[nmsg]);
-    print_spaces(spaces[nmsg]);
+    print_nchar(' ', nsp_bf);
+    printf("%s:", parammsg[nmsg]);
+    print_nchar('.', spaces[nmsg]);
+    putc(' ', stdout);
 }
 
 void print_errors(cmtrd_cfg_t *cfg_rec)
