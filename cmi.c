@@ -26,6 +26,13 @@ int get_len_of_most_long_parammsg()
     return res;
 }
 
+void print_msgs(int nsp_bf, int nmsg, int *spaces)
+{
+    print_spaces(nsp_bf);
+    printf("%s: ", parammsg[nmsg]);
+    print_spaces(spaces[nmsg]);
+}
+
 void print_errors(cmtrd_cfg_t *cfg_rec)
 {
     int i;
@@ -56,49 +63,60 @@ void print_errors(cmtrd_cfg_t *cfg_rec)
     }
 }
 
-void print_achannels_info(cmtrd_cfg_t *cfg_rec)
+void print_achannels_info(cmtrd_cfg_t *cfg_rec, int *spaces)
 {
     int i;
     for (i = 0; i < cfg_rec->an_count; i++) {
         printf("Analog channel:\n");
-        printf("  %s: %d\n", parammsg[6], (cfg_rec->anv + i)->num);
-        printf("  %s: %s\n", parammsg[7], (cfg_rec->anv + i)->ch_id);
-        printf("  %s: %s\n", parammsg[8], (cfg_rec->anv + i)->phase);
-        printf("  %s: %s\n", parammsg[9], (cfg_rec->anv + i)->ccbm);
-        printf("  %s: %s\n", parammsg[10], (cfg_rec->anv + i)->uu);
-        printf("  %s: %lf\n", parammsg[11], (cfg_rec->anv + i)->a);
-        printf("  %s: %lf\n", parammsg[12], (cfg_rec->anv + i)->b);
-        printf("  %s: %lf\n", parammsg[13], (cfg_rec->anv + i)->skew);
-        printf("  %s: %lf\n", parammsg[14], (cfg_rec->anv + i)->min);
-        printf("  %s: %lf\n", parammsg[15], (cfg_rec->anv + i)->max);
-        printf("  %s: %lf\n", parammsg[16], (cfg_rec->anv + i)->primary);
-        printf("  %s: %lf\n", parammsg[17], (cfg_rec->anv + i)->secondary);
-        printf("  %s: %c\n", parammsg[18], (cfg_rec->anv + i)->ps);
+        print_msgs(2, 6, spaces);
+        printf("%d\n",(cfg_rec->anv + i)->num);
+        print_msgs(2, 7, spaces);
+        printf("%s\n",(cfg_rec->anv + i)->ch_id);
+        print_msgs(2, 8, spaces);
+        printf("%s\n",(cfg_rec->anv + i)->phase);
+        print_msgs(2, 9, spaces);
+        printf("%s\n",(cfg_rec->anv + i)->ccbm);
+        print_msgs(2, 10, spaces);
+        printf("%s\n",(cfg_rec->anv + i)->uu);
+        print_msgs(2, 11, spaces);
+        printf("%lf\n",(cfg_rec->anv + i)->a);
+        print_msgs(2, 12, spaces);
+        printf("%lf\n",(cfg_rec->anv + i)->b);
+        print_msgs(2, 13, spaces);
+        printf("%lf\n",(cfg_rec->anv + i)->skew);
+        print_msgs(2, 14, spaces);
+        printf("%lf\n",(cfg_rec->anv + i)->min);
+        print_msgs(2, 15, spaces);
+        printf("%lf\n",(cfg_rec->anv + i)->max);
+        print_msgs(2, 16, spaces);
+        printf("%lf\n",(cfg_rec->anv + i)->primary);
+        print_msgs(2, 17, spaces);
+        printf("%lf\n",(cfg_rec->anv + i)->secondary);
+        print_msgs(2, 18, spaces);
+        printf("%c\n",(cfg_rec->anv + i)->ps);
 
     }
     fputs("\n", stdout);
 }
 
-void print_dchannels_info(cmtrd_cfg_t *cfg_rec)
+void print_dchannels_info(cmtrd_cfg_t *cfg_rec, int *spaces)
 {
     int i;
     for (i = 0; i < cfg_rec->dn_count; i++) {
         printf("Digital channel:\n");
-        printf("  Channel number: %d\n", (cfg_rec->dnv + i)->num);
-        printf("  Channel id: %s\n", (cfg_rec->dnv + i)->ch_id);
-        printf("  Channel phase: %s\n", (cfg_rec->dnv + i)->phase);
-        printf("  Channel circuit: %s\n", (cfg_rec->dnv + i)->ccbm);
-        printf("  Channel default state: %d\n", (cfg_rec->dnv + i)->y);
+        print_msgs(2, 19, spaces);
+        printf("%d\n", (cfg_rec->dnv + i)->num);
+        print_msgs(2, 7, spaces);
+        printf("%s\n", (cfg_rec->dnv + i)->ch_id);
+        print_msgs(2, 8, spaces);
+        printf("%s\n", (cfg_rec->dnv + i)->phase);
+        print_msgs(2, 9, spaces);
+        printf("%s\n", (cfg_rec->dnv + i)->ccbm);
+        print_msgs(2, 20, spaces);
+        printf("%d\n", (cfg_rec->dnv + i)->y);
 
     }
     fputs("\n", stdout);
-}
-
-void print_msgs(int nsp_bf, int nmsg, int *spaces)
-{
-    print_spaces(nsp_bf);
-    printf("%s: ", parammsg[nmsg]);
-    print_spaces(spaces[nmsg]);
 }
 
 void print_general_info(cmtrd_cfg_t *cfg_rec, int *spaces)
@@ -181,8 +199,8 @@ void print_info(cmtrd_cfg_t *cfg_rec, int opts)
 
     if (opts & OPT_ALL) {
         print_general_info(cfg_rec, spaces);
-        print_achannels_info(cfg_rec);
-        print_dchannels_info(cfg_rec);
+        print_achannels_info(cfg_rec, spaces);
+        print_dchannels_info(cfg_rec, spaces);
         print_errors(cfg_rec);
         return;
     }
@@ -193,8 +211,8 @@ void print_info(cmtrd_cfg_t *cfg_rec, int opts)
     }
 
     if (opts & OPT_CH_INFO_ONLY) {
-        print_achannels_info(cfg_rec);
-        print_dchannels_info(cfg_rec);
+        print_achannels_info(cfg_rec, spaces);
+        print_dchannels_info(cfg_rec, spaces);
     }
 
     if (opts & OPT_SHORT_INFO)
