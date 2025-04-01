@@ -62,6 +62,8 @@ const char ff_float32[] = "FLOAT32";
 
 const char *ffv[] = {ff_ascii, ff_binary, ff_binary32, ff_float32};
 
+const char default_strfield[] = "N/A";
+
 const cfg_pvv_t sname = {
     ptstring,
     PM_SNAME_POS,
@@ -703,6 +705,29 @@ static char* add_str_item(const char *src, int length)
     return str;
 }
 
+static void set_default_ach_strfields(cmtrd_cfg_t *cfg_rec)
+{
+    int i;
+
+    for (i = 0; i < cfg_rec->an_count; i++) {
+        (cfg_rec->anv + i)->ch_id = (char*)default_strfield;
+        (cfg_rec->anv + i)->phase = (char*)default_strfield;
+        (cfg_rec->anv + i)->ccbm = (char*)default_strfield;
+        (cfg_rec->anv + i)->uu = (char*)default_strfield;
+    }
+}
+
+static void set_default_dch_strfields(cmtrd_cfg_t *cfg_rec)
+{
+    int i;
+
+    for (i = 0; i < cfg_rec->an_count; i++) {
+        (cfg_rec->dnv + i)->ch_id = (char*)default_strfield;
+        (cfg_rec->dnv + i)->phase = (char*)default_strfield;
+        (cfg_rec->dnv + i)->ccbm = (char*)default_strfield;
+    }
+}
+
 static void create_channels_fields(cmtrd_cfg_t *cfg_rec)
 {
     void *p;
@@ -713,6 +738,7 @@ static void create_channels_fields(cmtrd_cfg_t *cfg_rec)
             EXIT_MEMERR();
         memset(p, 0, sizeof(cmtrd_an_t) * cfg_rec->an_count);
         cfg_rec->anv = (cmtrd_an_t*)p;
+        set_default_ach_strfields(cfg_rec);
     }
     if (cfg_rec->dn_count) {
         p = malloc(sizeof(cmtrd_dn_t) * cfg_rec->dn_count);
@@ -720,6 +746,7 @@ static void create_channels_fields(cmtrd_cfg_t *cfg_rec)
             EXIT_MEMERR();
         memset(p, 0, sizeof(cmtrd_dn_t) * cfg_rec->dn_count);
         cfg_rec->dnv = (cmtrd_dn_t*)p;
+        set_default_dch_strfields(cfg_rec);
     }
 }
 
@@ -1547,4 +1574,8 @@ void cfg_record_init(cmtrd_cfg_t *cfg_rec)
 {
     memset(cfg_rec, 0, sizeof(cmtrd_cfg_t));
     cfg_rec->rev_year = 1991;
+    cfg_rec->station_name = (char*)default_strfield;
+    cfg_rec->rec_dev_id = (char*)default_strfield;
+    cfg_rec->time_code = (char*)default_strfield;
+    cfg_rec->local_code = (char*)default_strfield;
 }
