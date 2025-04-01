@@ -210,13 +210,13 @@ void print_info(cmtrd_cfg_t *cfg_rec, int opts)
         return;
     }
 
+    if (opts & OPT_SHORT_INFO)
+        print_general_info(cfg_rec, spaces);
+
     if (opts & OPT_CH_INFO_ONLY) {
         print_achannels_info(cfg_rec, spaces);
         print_dchannels_info(cfg_rec, spaces);
     }
-
-    if (opts & OPT_SHORT_INFO)
-        print_general_info(cfg_rec, spaces);
 
     if (!(opts & OPT_NOERRORS))
         print_errors(cfg_rec);
