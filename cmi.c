@@ -224,7 +224,19 @@ void print_info(cmtrd_cfg_t *cfg_rec, int opts)
 
 void print_help()
 {
-    fputs("Help\n", stdout);
+    fputs(
+        "comtrade-info - printing information about COMTRADE files \n"
+        "\n"
+        "Usage: comtrade-info [options] [input file]\n"
+        "\n"
+        "Options:\n"
+        "  -a   show full information\n"
+        "  -c   show info about channels only\n"
+        "  -e   show errors only\n"
+        "  -E   show dont' show errors\n"
+        "  -i   print short info\n"
+        "  -h   show this help\n"
+        "  -v   show version\n", stdout);
 }
 
 void print_version()
