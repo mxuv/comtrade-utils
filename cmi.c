@@ -29,7 +29,7 @@ void print_msgs(int nsp_bf, int nmsg, int *spaces)
 {
     print_nchar(' ', nsp_bf);
     printf("%s:", parammsg[nmsg]);
-    print_nchar('.', spaces[nmsg]);
+    print_nchar(' ', spaces[nmsg]);
     putc(' ', stdout);
 }
 
@@ -233,7 +233,7 @@ void print_help()
         "  -a   show full information\n"
         "  -c   show info about channels only\n"
         "  -e   show errors only\n"
-        "  -E   show dont' show errors\n"
+        "  -E   dont' show errors\n"
         "  -i   print short info\n"
         "  -h   show this help\n"
         "  -v   show version\n", stdout);
@@ -323,7 +323,8 @@ int parsing_opts(int argc, char **argv, struct cmd_opts *opts)
 /* return codes:
  * 0 - Ok
  * 1 - Incorrect cmd options
- * 2 - Analysis file aborted
+ * 2 - Analysis file err
+ * 3 - Unexcepted end of file
  * 5 - Malloc error
 */
 int main(int argc, char **argv)
@@ -338,7 +339,7 @@ int main(int argc, char **argv)
     if (res)
         return 1;
 
-    fd = fopen(opts.cfg_fname, "r");
+    fd = fopen(opts.cfg_fname, "rb");
     if (fd == NULL) {
         perror(argv[1]);
         return 1;
@@ -347,9 +348,15 @@ int main(int argc, char **argv)
     cfg_record_init(&cfg_rec);
     res = analyze_cfgfile(fd, &cfg_rec);
     fclose(fd);
-    if (res) {
+    if (res == 1) {
         fputs("Critical error. Analysis has been aborted.\n", stderr);
+        print_errors(&cfg_rec);
         return 2;
+    }
+
+    if (res == 2) {
+        fputs("Unexcepted end of file. Analysis has been aborted.\n", stderr);
+        return 3;
     }
 
     print_info(&cfg_rec, opts.options);
