@@ -1460,6 +1460,47 @@ void analyze_cfg_tmq(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     parsing_parameter(pleapsec, cfg_str, &pm, cfg_rec);
 }
 
+void check_lnend_err(char *buffer, cfg_str_t *str, cmtrd_cfg_t *rec)
+{
+    if (!is_line_ending_ok(buffer, str->strlen))
+        add_error_code(str->nstr, ERRCODE(LN_ERR_NOCR), ERRNULL, rec);
+}
+
+int state_analyze_ach(cfg_str_t *str, cmtrd_cfg_t *rec)
+{
+    int result;
+
+    result = analyze_cfg_achannel(str, rec);
+    if (result == -1 || result == rec->an_count - 1) {
+        if (rec->dn_count)
+            result = analyze_dch;
+        else
+            result  = analyze_lf;
+    } else {
+        result = analyze_ach;
+    }
+
+    if (!is_match_ach_rev(str->param_count, rec->rev_year))
+        add_error_code(str->nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR), ERRNULL, rec);
+
+    return result;
+}
+
+int state_analyze_dch(cfg_str_t *str, cmtrd_cfg_t *rec)
+{
+    int result;
+
+    result = analyze_cfg_dchannel(str, rec);
+    if (result == -1 || result == rec->dn_count - 1)
+        result = analyze_lf;
+    else
+        result = analyze_dch;
+    if (!is_match_dch_rev(str->param_count, rec->rev_year))
+        add_error_code(str->nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR),
+            ERRNULL, rec);
+    return result;
+}
+
 /* Return values:
  * 0-Ok
  * 2-Unexcepted end of file
@@ -1477,10 +1518,8 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
     cfg_str.nstr = 0;
     while ((cfg_str.strlen = getstring(fd, buffer, STR_BUFSIZE, &status))) {
         if (status)
-            return status;
-        if (!is_line_ending_ok(buffer, cfg_str.strlen))
-            add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_NOCR), ERRNULL,
-                    cfg_rec);
+            break;
+        check_lnend_err(buffer, &cfg_str, cfg_rec);
         cfg_str.strlen--;
         cfg_str.str = buffer;
         cfg_str.param_count = get_param_count(buffer, ',', cfg_str.strlen) + 1;
@@ -1499,24 +1538,10 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
                 next_state = analyze_dch;
             break;
         case analyze_ach:
-            result = analyze_cfg_achannel(&cfg_str, cfg_rec);
-            if (result == -1 || result == cfg_rec->an_count - 1) {
-                if (cfg_rec->dn_count)
-                    next_state = analyze_dch;
-                else
-                    next_state = analyze_lf;
-            }
-            if (!is_match_ach_rev(cfg_str.param_count, cfg_rec->rev_year))
-                add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR),
-                    ERRNULL, cfg_rec);
+            next_state = state_analyze_ach(&cfg_str, cfg_rec);
             break;
         case analyze_dch:
-            result = analyze_cfg_dchannel(&cfg_str, cfg_rec);
-            if (result == -1 || result == cfg_rec->dn_count - 1)
-                next_state++;
-            if (!is_match_dch_rev(cfg_str.param_count, cfg_rec->rev_year))
-                add_error_code(cfg_str.nstr, ERRCODE(LN_ERR_MATCH_REV_YEAR),
-                    ERRNULL, cfg_rec);
+            next_state = state_analyze_dch(&cfg_str, cfg_rec);
             break;
         case analyze_lf:
             analyze_cfg_line_frequency(&cfg_str, cfg_rec);
@@ -1566,6 +1591,9 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
         }
         cfg_str.nstr++;
     }
+
+    if (next_state != analyze_end)
+        return 2;
 
     return 0;
 }
