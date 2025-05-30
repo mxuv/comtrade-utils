@@ -25,7 +25,8 @@ enum analyze_cfg_state {
     analyze_timemult,
     analyze_timecode,
     analyze_tmqcode,
-    analyze_end
+    analyze_end,
+    analyze_afterend
 };
 
 enum getstring_status {
@@ -1501,11 +1502,90 @@ int state_analyze_dch(cfg_str_t *str, cmtrd_cfg_t *rec)
     return result;
 }
 
+int parsing_string(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec,
+        enum analyze_cfg_state *state)
+{
+    int result;
+    switch (*state) {
+    case analyze_header:
+        analyze_cfg_header(cfg_str, cfg_rec);
+        *state = analyze_tt;
+        break;
+    case analyze_tt:
+        if (analyze_cfg_chinfo(cfg_str, cfg_rec))
+            return 1;
+        create_channels_fields(cfg_rec);
+        if (cfg_rec->an_count)
+            *state = analyze_ach;
+        else
+            *state = analyze_dch;
+        break;
+    case analyze_ach:
+        *state = state_analyze_ach(cfg_str, cfg_rec);
+        break;
+    case analyze_dch:
+        *state = state_analyze_dch(cfg_str, cfg_rec);
+        break;
+    case analyze_lf:
+        analyze_cfg_line_frequency(cfg_str, cfg_rec);
+        *state = analyze_nrates;
+        break;
+    case analyze_nrates:
+        if (analyze_cfg_nrates(cfg_str, cfg_rec))
+            return 1;
+        create_samp_fields(cfg_rec);
+        *state = analyze_samp;
+        break;
+    case analyze_samp:
+        result = analyze_cfg_samp(cfg_str, cfg_rec);
+        if (result == -1 || result == cfg_rec->real_nrates - 1)
+            *state = analyze_sdatetime;
+        break;
+    case analyze_sdatetime:
+    case analyze_trigdatetime:
+        analyze_cfg_datetime(cfg_str, cfg_rec, *state);
+        (*state)++;
+        break;
+    case analyze_filetype:
+        analyze_cfg_filetype(cfg_str, cfg_rec);
+        if (cfg_rec->rev_year >= rev1999)
+            *state = analyze_timemult;
+        else
+            *state = analyze_end;
+        break;
+    case analyze_timemult:
+        analyze_cfg_timemult(cfg_str, cfg_rec);
+        if (cfg_rec->rev_year == rev2013)
+            *state = analyze_timecode;
+        else
+            *state = analyze_end;
+        break;
+    case analyze_timecode:
+        analyze_cfg_timecode(cfg_str, cfg_rec);
+        *state = analyze_tmqcode;
+        break;
+    case analyze_tmqcode:
+        analyze_cfg_tmq(cfg_str, cfg_rec);
+        *state = analyze_end;
+        break;
+    case analyze_end:
+        cfg_rec->last_correctline = cfg_str->nstr;
+        *state = analyze_afterend;
+        break;
+    default:
+        return 0;
+        break;
+    }
+    return 0;
+}
+
 /* Return values:
  * 0-Ok
+ * 1-Incorrect data. Analysis aborted
  * 2-Unexcepted end of file
  * 3-Read error
  * 4-Buffer overflow
+ * 5-Extra lines in file
 */
 int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
 {
@@ -1520,78 +1600,24 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
         if (status)
             break;
         check_lnend_err(buffer, &cfg_str, cfg_rec);
-        cfg_str.strlen--;
+        cfg_str.strlen -= 1;
         cfg_str.str = buffer;
         cfg_str.param_count = get_param_count(buffer, ',', cfg_str.strlen) + 1;
-        switch (next_state) {
-        case analyze_header:
-            analyze_cfg_header(&cfg_str, cfg_rec);
-            next_state++;
-            break;
-        case analyze_tt:
-            if (analyze_cfg_chinfo(&cfg_str, cfg_rec))
-                return 1;
-            create_channels_fields(cfg_rec);
-            if (cfg_rec->an_count)
-                next_state = analyze_ach;
-            else
-                next_state = analyze_dch;
-            break;
-        case analyze_ach:
-            next_state = state_analyze_ach(&cfg_str, cfg_rec);
-            break;
-        case analyze_dch:
-            next_state = state_analyze_dch(&cfg_str, cfg_rec);
-            break;
-        case analyze_lf:
-            analyze_cfg_line_frequency(&cfg_str, cfg_rec);
-            next_state++;
-            break;
-        case analyze_nrates:
-            if (analyze_cfg_nrates(&cfg_str, cfg_rec))
-                return 1;
-            create_samp_fields(cfg_rec);
-            next_state++;
-            break;
-        case analyze_samp:
-            result = analyze_cfg_samp(&cfg_str, cfg_rec);
-            if (result == -1 || result == cfg_rec->real_nrates - 1)
-                next_state++;
-            break;
-        case analyze_sdatetime:
-        case analyze_trigdatetime:
-            analyze_cfg_datetime(&cfg_str, cfg_rec, next_state);
-            next_state++;
-            break;
-        case analyze_filetype:
-            analyze_cfg_filetype(&cfg_str, cfg_rec);
-            if (cfg_rec->rev_year >= rev1999)
-                next_state = analyze_timemult;
-            else
-                next_state = analyze_end;
-            break;
-        case analyze_timemult:
-            analyze_cfg_timemult(&cfg_str, cfg_rec);
-            if (cfg_rec->rev_year == rev2013)
-                next_state = analyze_timecode;
-            else
-                next_state = analyze_end;
-            break;
-        case analyze_timecode:
-            analyze_cfg_timecode(&cfg_str, cfg_rec);
-            next_state++;
-            break;
-        case analyze_tmqcode:
-            analyze_cfg_tmq(&cfg_str, cfg_rec);
-            next_state++;
-            break;
-        default:
-            return 0;
-            break;
-        }
+        result = parsing_string(&cfg_str, cfg_rec, &next_state);
         cfg_str.nstr++;
+        if (result)
+            break;
     }
 
+    cfg_rec->lastline = cfg_str.nstr;
+    if (status == gss_err)
+        return 3;
+    if (status == gss_overflow)
+        return 4;
+    if (result)
+        return result;
+    if (next_state == analyze_afterend)
+        return 5;
     if (next_state != analyze_end)
         return 2;
 

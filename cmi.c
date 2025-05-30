@@ -233,7 +233,7 @@ void print_help()
         "  -a   show full information\n"
         "  -c   show info about channels only\n"
         "  -e   show errors only\n"
-        "  -E   dont' show errors\n"
+        "  -E   don't show errors\n"
         "  -i   print short info\n"
         "  -h   show this help\n"
         "  -v   show version\n", stdout);
@@ -324,6 +324,7 @@ int parsing_opts(int argc, char **argv, struct cmd_opts *opts)
  * 0 - Ok
  * 1 - Incorrect cmd options
  * 2 - Analysis file err
+ * 4 - Reading file error
  * 3 - Unexcepted end of file
  * 5 - Malloc error
 */
@@ -349,16 +350,29 @@ int main(int argc, char **argv)
     res = analyze_cfgfile(fd, &cfg_rec);
     fclose(fd);
     if (res == 1) {
-        fputs("Critical error. Analysis has been aborted.\n", stderr);
+        fputs("Analysis has been aborted.\n", stderr);
+        fprintf(stderr, "Critical error in line %d\n", cfg_rec.lastline);
         print_errors(&cfg_rec);
         return 2;
     }
 
     if (res == 2) {
         fputs("Unexcepted end of file. Analysis has been aborted.\n", stderr);
+        fprintf(stderr, "Line %d\n", cfg_rec.lastline);
         return 3;
     }
 
+    if (res == 4) {
+        fputs("String buffer overflow\n", stderr);
+        fprintf(stderr, "Line %d\n", cfg_rec.lastline);
+        return 4;
+    }
+
     print_info(&cfg_rec, opts.options);
+    if (res == 5) { 
+        printf("Warning. Extra %d line(s) in file\n",
+                cfg_rec.lastline - cfg_rec.last_correctline);
+    }
+
     return 0;
 } 

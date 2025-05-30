@@ -416,6 +416,8 @@ typedef struct {
     int tmq_code;
     int leapsec;
     int errcount;
+    int lastline;
+    int last_correctline;
     cmtrd_err_t *errors;
 } cmtrd_cfg_t;
 
