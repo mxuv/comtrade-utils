@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <strutils/strutils.h>
+
 #include "cfg.h"
-#include "strutils.h"
 
 #define EXIT_MEMERR()                       exit(5)
 

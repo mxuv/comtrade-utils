@@ -1,5 +1,5 @@
-#ifndef _STINGS_H_
-#define _STINGS_H_
+#ifndef _STRUTILS_H_
+#define _STRUTILS_H_
 
 int ishexdigit (char c);
 int char2int(char c);
