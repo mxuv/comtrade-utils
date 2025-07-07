@@ -4,4 +4,13 @@
 *.list
 *.map
 *.mk
+*.a
 tags
+todolist.txt
+comtrade-info
+test*
+*test
+*test*
+
+records/
+
