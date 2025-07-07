@@ -342,7 +342,7 @@ int main(int argc, char **argv)
 
     fd = fopen(opts.cfg_fname, "rb");
     if (fd == NULL) {
-        perror(argv[1]);
+        perror(opts.cfg_fname);
         return 1;
     }
 

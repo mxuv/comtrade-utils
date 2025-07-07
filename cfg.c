@@ -723,7 +723,7 @@ static void set_default_dch_strfields(cmtrd_cfg_t *cfg_rec)
 {
     int i;
 
-    for (i = 0; i < cfg_rec->an_count; i++) {
+    for (i = 0; i < cfg_rec->dn_count; i++) {
         (cfg_rec->dnv + i)->ch_id = (char*)default_strfield;
         (cfg_rec->dnv + i)->phase = (char*)default_strfield;
         (cfg_rec->dnv + i)->ccbm = (char*)default_strfield;
