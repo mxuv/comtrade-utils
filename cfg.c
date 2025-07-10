@@ -1067,8 +1067,8 @@ static char set_separator(enum param_type ptype)
 static void parsing_parameter(enum cfg_pnum pn, cfg_str_t *cfg_str,
         cfg_pm_t *pm, cmtrd_cfg_t *cfg_rec)
 {
-    char s[PARAM_LEN_MAX+1];
     char c;
+    char *serr;
 
     c = set_separator(pvv[pn]->ptype);
     pm->err = 0;
@@ -1085,13 +1085,11 @@ static void parsing_parameter(enum cfg_pnum pn, cfg_str_t *cfg_str,
     case ptdate:
     case pttime:
     case ptsecond:
-        stringcopy_c(s, cfg_str->str + pm->index, pm->len);
-        pm->val_int = atoi(s);
+        pm->val_int = (int)strtol(cfg_str->str + pm->index, &serr, 10);
         check_parameter_ival(pm, pvv[pn]->ival_min, pvv[pn]->ival_max);
         break;
     case ptintc:
-        stringcopy_c(s, cfg_str->str + pm->index, pm->len - 1);
-        pm->val_int = atoi(s);
+        pm->val_int = (int)strtol(cfg_str->str + pm->index, &serr, 10);
         check_parameter_ival(pm, pvv[pn]->ival_min, pvv[pn]->ival_max);
         break;
     case ptcharhex:
@@ -1100,8 +1098,7 @@ static void parsing_parameter(enum cfg_pnum pn, cfg_str_t *cfg_str,
         check_parameter_ival(pm, pvv[pn]->ival_min, pvv[pn]->ival_max);
         break;
     case ptfloat:
-        stringcopy_c(s, cfg_str->str + pm->index, pm->len);
-        pm->val_float = atof(s);
+        pm->val_float = strtod(cfg_str->str + pm->index, &serr);
         check_parameter_dval(pm, pvv[pn]->dval_min, pvv[pn]->dval_max);
         break;
     default:
