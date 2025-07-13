@@ -1279,7 +1279,7 @@ static int analyze_cfg_nrates(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     /* Number of sample rates */
     error = 0;
     parsing_parameter(pnrates, cfg_str, &pm, cfg_rec);
-    if (pm.err && ERRCODE(LN_ERR_INCORRECT_PARAM))
+    if (pm.err & ERRCODE(LN_ERR_INCORRECT_PARAM))
         error++;
     if (!cfg_rec->nrates)
         cfg_rec->real_nrates = 1;
@@ -1619,7 +1619,7 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
     if (status == gss_overflow)
         return 4;
     if (result)
-        return result;
+        return 1;
     if (next_state == analyze_afterend)
         return 5;
     if (next_state != analyze_end)
