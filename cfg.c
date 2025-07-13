@@ -583,17 +583,20 @@ static int getstring(FILE *fd, char *buffer, int bufsize,
     int len = 0;
 
     *status = gss_ok;
-    if (fgets(buffer, bufsize, fd)) {
+    if (fgets(buffer, bufsize, fd) != NULL) {
         len = strlen(buffer);
         if (buffer[len-1] != '\n') {
-            if (len == bufsize - 1)
+            if (len == bufsize - 1) {
                 *status  = gss_overflow;
+		return len;
+	    }
         }
-    } 
-    if (feof(fd))
-        *status = gss_eof;
-    if (ferror(fd))
-        *status = gss_err;
+    } else {
+	if (feof(fd))
+	    *status = gss_eof;
+	else
+	    *status = gss_err;
+    }
 
     return len;
 }
