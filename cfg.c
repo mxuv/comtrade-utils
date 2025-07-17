@@ -12,6 +12,15 @@
 
 #define STR_BUFSIZE                         4096
 
+enum fret {
+    fret_ok,
+    fret_idate,
+    fret_ueof,
+    fret_eread,
+    fret_bovf,
+    fret_elines
+};
+
 enum analyze_cfg_state {
     analyze_header,
     analyze_tt,
@@ -39,7 +48,7 @@ enum getstring_status {
 };
 
 typedef struct {
-    const char *str;
+    char *str;
     int strlen;
     int nstr;
     int param_count;
@@ -642,9 +651,6 @@ static int get_param_length(const char *str, int stringlen, int param,
 
     index = get_param_index(str, param, separator);
     if ((param + 1) == param_count) {
-        if (match_char(*(str+(stringlen - 1)), '\r'))
-            return stringlen - 1 - index;
-        else
             return stringlen - index;
     }
     else
@@ -1462,9 +1468,9 @@ void analyze_cfg_tmq(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec)
     parsing_parameter(pleapsec, cfg_str, &pm, cfg_rec);
 }
 
-void check_lnend_err(char *buffer, cfg_str_t *str, cmtrd_cfg_t *rec)
+void check_lnend_err(cfg_str_t *str, cmtrd_cfg_t *rec)
 {
-    if (!is_line_ending_ok(buffer, str->strlen))
+    if (!is_line_ending_ok(str->str, str->strlen))
         add_error_code(str->nstr, ERRCODE(LN_ERR_NOCR), ERRNULL, rec);
 }
 
@@ -1580,6 +1586,17 @@ int parsing_string(cfg_str_t *cfg_str, cmtrd_cfg_t *cfg_rec,
     return 0;
 }
 
+void clear_crlf(cfg_str_t *cfg_str)
+{
+    if (cfg_str->str[cfg_str->strlen - 2] == '\r') {
+        cfg_str->str[cfg_str->strlen - 2] = '\0';
+        cfg_str->strlen -= 1;
+    }
+
+    cfg_str->str[cfg_str->strlen - 1] = '\0';
+    cfg_str->strlen -= 1;
+}
+
 /* Return values:
  * 0-Ok
  * 1-Incorrect data. Analysis aborted
@@ -1600,10 +1617,11 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
     while ((cfg_str.strlen = getstring(fd, buffer, STR_BUFSIZE, &status))) {
         if (status)
             break;
-        check_lnend_err(buffer, &cfg_str, cfg_rec);
-        cfg_str.strlen -= 1;
         cfg_str.str = buffer;
-        cfg_str.param_count = get_param_count(buffer, ',', cfg_str.strlen) + 1;
+        check_lnend_err(&cfg_str, cfg_rec);
+        clear_crlf(&cfg_str);
+        cfg_str.param_count = get_param_count(cfg_str.str, ',',
+                cfg_str.strlen) + 1;
         result = parsing_string(&cfg_str, cfg_rec, &next_state);
         cfg_str.nstr++;
         if (result)
@@ -1612,17 +1630,17 @@ int analyze_cfgfile(FILE *fd, cmtrd_cfg_t *cfg_rec)
 
     cfg_rec->lastline = cfg_str.nstr;
     if (status == gss_err)
-        return 3;
+        return fret_eread;
     if (status == gss_overflow)
-        return 4;
+        return fret_bovf;
     if (result)
-        return 1;
+        return fret_idate;
     if (next_state == analyze_afterend)
-        return 5;
+        return fret_elines;
     if (next_state != analyze_end)
-        return 2;
+        return fret_ueof;
 
-    return 0;
+    return fret_ok;
 }
 
 void cfg_record_init(cmtrd_cfg_t *cfg_rec)
