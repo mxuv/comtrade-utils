@@ -5,6 +5,7 @@
 #include <strutils/strutils.h>
 
 #include "cfg.h"
+#include "pars.h"
 
 #define EXIT_MEMERR()                       exit(5)
 
@@ -37,14 +38,6 @@ enum analyze_cfg_state {
     analyze_tmqcode,
     analyze_end,
     analyze_afterend
-};
-
-enum getstring_status {
-    gss_ok,
-    gss_empty,
-    gss_eof,
-    gss_err,
-    gss_overflow
 };
 
 typedef struct {
@@ -578,85 +571,6 @@ const cfg_pvv_t *pvv[] = { &sname, &recdevid, &revyear, &tt, &tt_a, &tt_d,
     &hours, &minuts, &seconds, &seconds_p, &seconds_s, &filetype, &timemult,
     &timecode, &localcode, &tmqcode, &leapsec};
 
-static int match_char(char ch, char patt)
-{
-    if (ch == patt)
-        return 1;
-    else
-        return 0;
-}
-
-static int getstring(FILE *fd, char *buffer, int bufsize,
-                enum getstring_status *status)
-{
-    int len = 0;
-
-    *status = gss_ok;
-    if (fgets(buffer, bufsize, fd) != NULL) {
-        len = strlen(buffer);
-        if (buffer[len-1] != '\n') {
-            if (len == bufsize - 1) {
-                *status  = gss_overflow;
-		return len;
-	    }
-        }
-    } else {
-	if (feof(fd))
-	    *status = gss_eof;
-	else
-	    *status = gss_err;
-    }
-
-    return len;
-}
-
-static int is_line_ending_ok(const char *str, int len)
-{
-    if (str[len-2] == '\r')
-        return 1;
-    else
-        return 0;
-}
-
-static int get_param_count(const char *str, char separator, int len)
-{
-    int count = 0;
-    while (len) {
-        if (*str == separator) 
-            count++;
-        str++;
-        len--;
-    }
-    return count;
-}
-
-static int get_param_index(const char *str, int param, char separator)
-{
-    int param_curr = 0;
-    const char *p;
-
-    p = str;
-    while (param_curr != param) {
-        if (match_char(*str, separator))
-            param_curr++;
-        str++;
-    }
-    return str - p;
-}
-
-static int get_param_length(const char *str, int stringlen, int param,
-    int param_count, char separator)
-{
-    int index;
-
-    index = get_param_index(str, param, separator);
-    if ((param + 1) == param_count) {
-            return stringlen - index;
-    }
-    else
-        return get_param_index(str, param + 1, separator) - index - 1;
-}
-
 static void add_error_field(cmtrd_cfg_t *cfg_rec)
 {
     cmtrd_err_t *p;
@@ -694,14 +608,6 @@ static void add_error_code(int line, int strcode, long int paramcode,
     (cfg_rec->errors+cfg_rec->errcount-1)->strerr |= strcode;
     if (paramcode != ERRNULL)
         (cfg_rec->errors+cfg_rec->errcount-1)->paramerr |= paramcode;
-}
-
-static int is_correct_param_length(int len, int min, int max)
-{
-    if (len >= min && len <= max)
-        return 1;
-    else
-        return 0;
 }
 
 static char* add_str_item(const char *src, int length)

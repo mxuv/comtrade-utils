@@ -7,7 +7,9 @@ CFLAGS = -Wall -Wextra -Wpedantic
 ARFLAGS = crf
 
 SRC = char2int.c ishexdigit.c stringcopy.c stringcopy_c.c stringcopy_ec.c \
-	  stringlen.c stringmatch.c upcase_letter.c upcase_string.c
+	  stringlen.c stringmatch.c upcase_letter.c upcase_string.c match_char.c \
+	  getstring.c
+
 HDR = strutils.h
 OBJ = $(SRC:.c=.o)
 

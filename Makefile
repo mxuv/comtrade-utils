@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = -g -Wall -Wextra -Wpedantic -I $(LINC)
 
 NAME1 = comtrade-info
-SRC1 = cmi.c cfg.c cmi_msg.c
+SRC1 = pars.c cmi.c cfg.c cmi_msg.c
 OBJ1 = $(SRC1:.c=.o)
 
 LINC = lib/
