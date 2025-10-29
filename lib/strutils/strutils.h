@@ -5,7 +5,6 @@
 
 enum getstring_status {
     gss_ok,
-    gss_empty,
     gss_eof,
     gss_err,
     gss_overflow

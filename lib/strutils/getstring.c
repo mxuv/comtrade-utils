@@ -13,14 +13,14 @@ int getstring(FILE *fd, char *buffer, int bufsize,
         if (buffer[len-1] != '\n') {
             if (len == bufsize - 1) {
                 *status  = gss_overflow;
-		return len;
-	    }
+                return len;
+            }
         }
     } else {
-	if (feof(fd))
-	    *status = gss_eof;
-	else
-	    *status = gss_err;
+        if (feof(fd))
+            *status = gss_eof;
+        else
+            *status = gss_err;
     }
 
     return len;
