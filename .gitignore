@@ -11,6 +11,6 @@ comtrade-info
 test*
 *test
 *test*
-
+!test*.c
 records/
 
