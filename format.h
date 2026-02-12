@@ -323,8 +323,18 @@
 #endif
 
 enum file_format {ascii, binary, binary32, float32, undef};
-enum param_type {ptstring, ptchar, ptcharhex, ptint, ptintc, ptfloat, ptdate,
-    pttime, ptstime, ptsecond};
+enum param_type {
+    ptstring,   /* simple string */ 
+    ptchar,     /* single char */ 
+    ptcharhex,  /* hex code char */ 
+    ptint,      /* integer */ 
+    ptintc,     /* int + char */ 
+    ptfloat,    /* float */ 
+    ptdate,     /* date (format XX or XXXX) */
+    pttime,     /* time (format XX) */
+    ptstime, 
+    ptsecond
+};
 
 enum revision {
     rev1991 = 1991,
