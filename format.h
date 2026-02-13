@@ -107,9 +107,24 @@ enum {
 
     tl_date_min         = tl_day_min + tl_mon_min + tl_year_min + 2,
     tl_date_max         = tl_day_max + tl_mon_max + tl_year_max + 2,
-    tl_time_min         = tl_hour_min + tl_minute_min + tl_seconds_min +2,
-    tl_time_max         = tl_hour_max + tl_minute_max + tl_seconds_max +2,
+    tl_time_min         = tl_hour_min + tl_minute_min + tl_seconds_min + 2,
+    tl_time_max         = tl_hour_max + tl_minute_max + tl_seconds_max + 2,
 
-}
+    tl_filetype_min     = 5,
+    tl_filetype_max     = 8,
+
+    tl_timemult_min     = 1,
+    tl_timemult_max     = 32,
+
+    tl_timecode_min     = 1,
+    tl_timecode_max     = 6,
+    tl_localcode_min    = 1,
+    tl_localcode_max    = 6,
+
+    tl_tmqcode_min      = 1,
+    tl_tmqcode_max      = 1,
+    tl_leapsec_min      = 1,
+    tl_leapsec_max      = 1
+};
 
 #endif
