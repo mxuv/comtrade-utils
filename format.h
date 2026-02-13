@@ -83,7 +83,32 @@ enum {
 
     tl_nrates_min       = 1,
     tl_nrates_max       = 32,
+    tl_samp_min         = 1,
+    tl_samp_max         = 32,
+    tl_endsamp_min      = 1,
+    tl_endsamp_max      = 10,
 
+    tl_day_min          = 1,
+    tl_day_max          = 2,
+    tl_mon_min          = 1,
+    tl_mon_max          = 2,
+    tl_year_min         = 4,
+    tl_year_max         = 4,
+    tl_hour_min         = 2,
+    tl_hour_max         = 2,
+    tl_minute_min       = 2,
+    tl_minute_max       = 2,
+    tl_seconds_min      = 9,
+    tl_seconds_max      = 12,
+    tl_seconds_p_min    = 2,
+    tl_seconds_p_max    = 2,
+    tl_seconds_s_min    = 6,
+    tl_seconds_s_max    = 9,
+
+    tl_date_min         = tl_day_min + tl_mon_min + tl_year_min + 2,
+    tl_date_max         = tl_day_max + tl_mon_max + tl_year_max + 2,
+    tl_time_min         = tl_hour_min + tl_minute_min + tl_seconds_min +2,
+    tl_time_max         = tl_hour_max + tl_minute_max + tl_seconds_max +2,
 
 }
 
