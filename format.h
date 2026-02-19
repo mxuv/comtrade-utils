@@ -127,4 +127,62 @@ enum {
     tl_leapsec_max      = 1
 };
 
+/* token indices in a string */
+enum {
+    ti_sname            = 0,
+    ti_recdev           = 1,
+    ti_revyear          = 2,
+
+    ti_tt               = 0,
+    ti_an               = 1,
+    ti_dn               = 2,
+
+    ti_n                = 0,
+    ti_chid             = 1,
+    ti_ph               = 2,
+    ti_ccbm             = 3,
+    ti_uu               = 4,
+    ti_a                = 5,
+    ti_b                = 6,
+    ti_skew             = 7,
+    ti_minsc            = 8,
+    ti_maxsc            = 9,
+    ti_primary          = 10,
+    ti_secondary        = 11,
+    ti_ps               = 12,
+    ti_y_1991           = 2,
+    ti_y_1999           = 4,
+
+    ti_lf               = 0,
+
+    ti_nrates           = 0,
+    ti_samp             = 0,
+    ti_endsamp          = 1,
+
+    ti_date             = 0,
+    ti_time             = 1,
+
+    ti_day              = 0,
+    ti_mon              = 1,
+    ti_year             = 2,
+
+    ti_hour             = 0,
+    ti_minute           = 1,
+    ti_seconds          = 2,
+
+    ti_seconds_p        = 0,
+    ti_seconds_s        = 1,
+
+    ti_filetype         = 0,
+
+    ti_timemult         = 0,
+
+    ti_timecode         = 0,
+    ti_localcode        = 1,
+
+    ti_tmqcode          = 0,
+    ti_leapsec          = 1
+};
+
+
 #endif
